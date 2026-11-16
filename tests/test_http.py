@@ -1,86 +1,153 @@
-import json
-import socket
-import subprocess
-import sys
-import time
-import unittest
-import urllib.error
-import urllib.request
+"""In-process HTTP integration tests for the Sound-Model FastAPI application."""
+
+from collections.abc import Iterator
+
+import pytest
+from fastapi.testclient import TestClient
+from pydantic import BaseModel, ConfigDict
+
+from src.main import app
+from src.types import Prediction
 
 
-class HTTPTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        with socket.socket() as s:
-            s.bind(('127.0.0.1', 0))
-            port = s.getsockname()[1]
-        cls.url = f'http://127.0.0.1:{port}'
-        cls.process = subprocess.Popen([sys.executable, 'run.py', '--no-browser', '--port', str(port)],
-                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        cls.addClassCleanup(cls.stop)
-        for _ in range(80):
-            try:
-                with urllib.request.urlopen(cls.url + '/api/health', timeout=0.5):
-                    return
-            except OSError:
-                if cls.process.poll() is not None:
-                    raise RuntimeError('Server exited during startup')
-                time.sleep(0.05)
-        raise RuntimeError('Server did not become ready')
+class ValidationErrorItem(BaseModel):
+    """Schema for a single sanitised validation error entry returned by the API.
 
-    @classmethod
-    def stop(cls):
-        cls.process.terminate()
-        try:
-            cls.process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            cls.process.kill()
-            cls.process.wait()
+    Forbidding extra fields guarantees raw ``input`` values and ``ctx`` objects
+    are never leaked in HTTP 422 responses.
 
-    def post(self, payload):
-        request = urllib.request.Request(self.url + '/api/predict', json.dumps(payload).encode(),
-                                         {'Content-Type': 'application/json'})
-        with urllib.request.urlopen(request, timeout=5) as response:
-            return json.load(response)
+    Attributes:
+        loc: Path segments identifying the invalid field in the request payload.
+        msg: Human-readable validation error description.
+        type: Machine-readable Pydantic error code string.
+    """
 
-    def test_serves_local_frontend(self):
-        for path, fragment in [('/', b'Sound-Model'), ('/app.js', b'api/predict'),
-                               ('/style.css', b'.sidebar'), ('/vendor/leaflet/leaflet.js', b'Leaflet')]:
-            with self.subTest(path=path), urllib.request.urlopen(self.url + path) as response:
-                self.assertEqual(response.status, 200)
-                self.assertIn(fragment, response.read())
+    model_config = ConfigDict(extra="forbid")
 
-    def test_actual_prediction_request(self):
-        result = self.post({'types': [{'id': 't', 'name': 'Test', 'lwa': 100}],
-                            'sources': [{'id': 's', 'type_id': 't', 'lat': 0, 'lng': 0}],
-                            'receivers': [{'id': 'r', 'lat': 0, 'lng': 0.001}]})
-        self.assertAlmostEqual(result['receivers'][0]['level_db'], 48.086, places=2)
-        self.assertTrue(result['example_data'])
+    loc: list[str | int]
+    msg: str
+    type: str
 
-    def test_rejects_invalid_references(self):
-        with self.assertRaises(urllib.error.HTTPError) as caught:
-            self.post({'sources': [{'id': 's', 'type_id': 'missing', 'lat': 0, 'lng': 0}]})
-        self.assertEqual(caught.exception.code, 422)
 
-    def test_empty_scenario(self):
-        result = self.post({})
-        self.assertIsNone(result['grid'])
-        self.assertEqual(result['receivers'], [])
+class ValidationErrorResponse(BaseModel):
+    """Schema for HTTP 422 validation error responses.
 
-    def test_nonfinite_input_is_validation_error(self):
-        for literal in ('1e999', 'NaN', 'Infinity'):
-            request = urllib.request.Request(self.url + '/api/predict',
-                ('{"receivers":[{"id":"r","lat":' + literal + ',"lng":0}]}').encode(),
-                {'Content-Type': 'application/json'})
-            with self.subTest(literal=literal), self.assertRaises(urllib.error.HTTPError) as caught:
-                urllib.request.urlopen(request)
-            self.assertEqual(caught.exception.code, 422)
-            error = json.load(caught.exception)
-            self.assertIn('detail', error)
-            self.assertNotIn('input', error['detail'][0])
+    Attributes:
+        detail: List of sanitised validation error items.
+    """
 
-    def test_private_repository_files_not_served(self):
-        for path in ['/requirements.txt', '/.git/config', '/run.py']:
-            with self.subTest(path=path), self.assertRaises(urllib.error.HTTPError) as caught:
-                urllib.request.urlopen(self.url + path)
-            self.assertEqual(caught.exception.code, 404)
+    model_config = ConfigDict(extra="forbid")
+
+    detail: list[ValidationErrorItem]
+
+
+@pytest.fixture(scope="module")
+def client() -> Iterator[TestClient]:
+    """Yield an in-process FastAPI TestClient with lifespan events initialized.
+
+    Yields:
+        An active :class:`TestClient` bound to the FastAPI application.
+    """
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.mark.parametrize(
+    ("path", "fragment"),
+    [
+        ("/", b"Sound-Model"),
+        ("/app.js", b"api/predict"),
+        ("/style.css", b".sidebar"),
+        ("/vendor/leaflet/leaflet.js", b"Leaflet"),
+    ],
+)
+def test_serves_local_frontend(client: TestClient, path: str, fragment: bytes) -> None:
+    """Verify that bundled HTML, JS, CSS, and vendored Leaflet assets are served locally.
+
+    Args:
+        client: In-process FastAPI test client.
+        path: Static asset URL path to request.
+        fragment: Expected byte sequence confirming the asset body was served.
+    """
+    response = client.get(path)
+    assert response.status_code == 200
+    assert fragment in response.content
+
+
+def test_actual_prediction_request(client: TestClient) -> None:
+    """Verify full round-trip acoustic prediction over HTTP POST /api/predict.
+
+    Args:
+        client: In-process FastAPI test client.
+    """
+    payload: dict[str, object] = {
+        "types": [{"id": "t", "name": "Test", "lwa": 100}],
+        "sources": [{"id": "s", "type_id": "t", "lat": 0, "lng": 0}],
+        "receivers": [{"id": "r", "lat": 0, "lng": 0.001}],
+    }
+    response = client.post("/api/predict", json=payload)
+    assert response.status_code == 200
+
+    prediction: Prediction = Prediction.model_validate_json(response.text)
+    level_db: float | None = prediction.receivers["r"].level_db
+    assert level_db == pytest.approx(48.086, abs=1e-2)
+    assert prediction.example_data is True
+
+
+def test_rejects_invalid_references(client: TestClient) -> None:
+    """Verify that sources referencing an undefined machine type return HTTP 422.
+
+    Args:
+        client: In-process FastAPI test client.
+    """
+    payload: dict[str, object] = {"sources": [{"id": "s", "type_id": "missing", "lat": 0, "lng": 0}]}
+    response = client.post("/api/predict", json=payload)
+    assert response.status_code == 422
+
+
+def test_empty_scenario(client: TestClient) -> None:
+    """Verify that an empty scenario payload succeeds with no grid or receiver outputs.
+
+    Args:
+        client: In-process FastAPI test client.
+    """
+    response = client.post("/api/predict", json={})
+    assert response.status_code == 200
+
+    prediction: Prediction = Prediction.model_validate_json(response.text)
+    assert prediction.grid is None
+    assert prediction.receivers == {}
+
+
+@pytest.mark.parametrize("literal", ["1e999", "NaN", "Infinity"])
+def test_nonfinite_input_is_validation_error(client: TestClient, literal: str) -> None:
+    """Verify that non-finite JSON numeric literals return HTTP 422 without echoing raw inputs.
+
+    Args:
+        client: In-process FastAPI test client.
+        literal: Non-standard JSON token representing overflow or non-finite floats.
+    """
+    # Send raw bytes because standard json.dumps rejects NaN/Infinity when allow_nan=False.
+    body = f'{{"receivers":[{{"id":"r","lat":{literal},"lng":0}}]}}'
+    response = client.post(
+        "/api/predict",
+        content=body.encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code == 422
+
+    # Strict validation confirms each error item contains only ("loc", "msg", "type").
+    error: ValidationErrorResponse = ValidationErrorResponse.model_validate_json(response.text)
+    assert len(error.detail) > 0
+
+
+@pytest.mark.parametrize("path", ["/requirements.txt", "/.git/config", "/run.py", "/pyproject.toml"])
+def test_private_repository_files_not_served(client: TestClient, path: str) -> None:
+    """Verify that repository metadata and source files outside src/static are not exposed.
+
+    Args:
+        client: In-process FastAPI test client.
+        path: Root-relative path that should return HTTP 404.
+    """
+    response = client.get(path)
+    assert response.status_code == 404
