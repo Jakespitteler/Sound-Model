@@ -62,3 +62,15 @@ See physics-audit.md. Reproduced missing-randomUUID and wrong-JavaScript-MIME st
 failures matching the reported symptoms; deterministic asset MIME types, a secure-context-free
 ID helper and visible ordered bootstrap now address them. Physics helpers are shared, the
 exact-maximum contour boundary bug is fixed, and 56 numerical/HTTP tests pass.
+
+## Follow-up: due diligence, numeric limits and approved optimisation
+
+Owner requested a 300 dB ceiling, an explanation of complexity errors and an assessment/app
+improvement backlog. Machine power and contour thresholds now allow 0–300; geographic
+longitude bounds remain ±180. Added nine prioritised tasks in tasks/README.md.
+
+The owner explicitly approved NumPy and ContourPy on 2026-11-16. The compiled batched/tiled
+engine produced a 6.83× median benchmark speed-up with matching reference geometry counts;
+vertex errors and closure are checked independently. A measured mixed-power case justified
+raising the bounded budget from 160,000 to 640,000 cells without coarsening the accuracy target.
+62 tests and browser flows pass. See library-options.md for evidence and remaining work.

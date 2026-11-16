@@ -2,7 +2,8 @@
 
 This is the architecture document requested as `ARCHITECURE.md`. The application remains
 Python 3.13+, uv, FastAPI, Pydantic and Uvicorn, with plain HTML/CSS/JavaScript and bundled
-Leaflet. No application dependencies were added for contours or frontend modularisation.
+Leaflet. NumPy and ContourPy were subsequently approved for compiled numerical/contour
+operations; the frontend still needs no bundler or additional UI library.
 
 ## Structure
 
@@ -14,7 +15,8 @@ Sound-Model/
 │   ├── main.py                    HTTP routes, validation errors, static serving
 │   ├── types.py                   typed request/domain/response models
 │   ├── acoustics.py               existing great-circle distance and energetic addition
-│   ├── contours.py                adaptive level-line calculation and stitching
+│   ├── contours.py                scalar reference field, domain and contour entry point
+│   ├── contour_engine.py          batched NumPy evaluation, sparse tiles, ContourPy and stitching
 │   ├── assets.py                  deterministic JS/CSS media types across platforms
 │   ├── pages.py                   HTML shell + partial assembly (standard library)
 │   ├── templates/
@@ -53,7 +55,7 @@ flowchart TD
     GeometryLane --> Cache{Successful source + level geometry cached?}
     Cache -->|yes| Lines[contour-layer.js: render with current styles]
     Cache -->|no: POST /api/contours| API[main.py + types.py: validation]
-    API --> Adaptive[contours.py: source-centred adaptive marching squares]
+    API --> Adaptive[contour_engine.py: source-centred sparse tiles and compiled contour extraction]
     Adaptive -->|connected longitude / latitude lines| Lines
     State -->|source / type / receiver edit| ReceiverLane[api.js: separate receiver lane]
     ReceiverLane -->|POST /api/predict| Physics[acoustics.py: direct receiver levels]
@@ -98,16 +100,17 @@ For each threshold:
 2. Use a quadtree to reject cells definitely wholly above or below the threshold. The spherical
    triangle inequality bounds distances from a cell centre; Mercator half-diagonals safely
    overestimate surface separation. This also discovers small rings that a coarse grid misses.
-3. Refine potential crossings to one common depth based on the smallest relevant single-source
-   radius. Marching Squares extracts edge segments; actual centre values resolve saddle cells.
-4. Bisect crossing edges to a target **0.02 dB vertex error**, then stitch by exact grid-edge
-   identity. No decimal-coordinate rounding is needed to guess which segments join.
-5. Return connected polylines, including explicit closed rings, in longitude/latitude order.
-   Leaflet reprojects those geographic lines during navigation without requesting more geometry.
+3. Refine potential crossings to a common depth based on the smallest relevant single-source
+   radius. NumPy evaluates the cell bounds in batches of at most 2,048 points against all sources.
+4. Stop at sparse 8×8-cell tiles. ContourPy generates connected paths inside each tile.
+   Join open tile endpoints by exact lattice-edge/vertex identity; keep already closed rings.
+5. Refine all contour edge crossings with vectorised bisection to the 0.02 dB vertex target,
+   then convert to longitude/latitude. A 1e-10 dB extraction/bound-comparison offset includes flat attainable maxima.
+6. Return connected polylines. Leaflet reprojects them on navigation without more geometry requests.
 
 The vertex tolerance is numerical, **not an environmental prediction accuracy claim**. Straight
 segments between vertices approximate the continuous field. Cells target at most 1/20 of the
-smallest relevant source radius (minimum target 0.05 m). Fields that exceed the safe 160,000-cell
+smallest relevant source radius (minimum target 0.05 m). Fields that exceed the safe 640,000-cell
 budget **per threshold** return an explicit 422 error instead of truncating results. Levels whose
 combined-power propagation radius exceeds 200 km, or whose domain reaches ±85° latitude, also
 return an explanation. Increase the threshold or narrow the scenario to reduce complexity.
@@ -169,11 +172,13 @@ uv run pyright
 
 Keep Python annotations and Google-style `Args`, `Returns` and `Raises` docstrings on changed
 public helpers; browser modules use JSDoc parameter/return annotations and shared domain typedefs.
-No JavaScript bundler, UI framework, contour package or extra Python dependency is required.
+No JavaScript bundler or new UI framework is required. NumPy and ContourPy are approved
+Python runtime dependencies, pinned through uv.lock. The scalar evaluator remains a test reference.
 
 The reference ZIP informed the module split, but the coherent-wave mode was excluded as the
 owner requested. The adaptive contour algorithm replaces its coarse source-domain grid and
-rounded-coordinate stitching. Style changes and receiver requests have separate invalidation.
+rounded-coordinate stitching. The subsequent NumPy/ContourPy optimisation retains the
+source-based adaptive domain, fixed accuracy target and exact tile-edge stitching. Style changes and receiver requests have separate invalidation.
 
 Model limitations remain: no ground reflection, terrain, diffraction, atmospheric absorption,
 refraction or validated cloud effect. This prototype does not establish machinery inaudibility
@@ -186,3 +191,11 @@ interaction independently of remote service/network availability.
 See [the audit](docs/physics-audit.md) for equations, physical limits, contour regression
 checks and the reported VS Code blank-map investigation. Bootstrap failures are visible;
 script/style media types do not depend on Windows registry settings.
+
+## Due-diligence work order
+
+See [tasks](docs/tasks/README.md) for assessment criteria, evidence acquisition, propagation
+engine selection, validation/uncertainty, audit reports, mitigation and operations. Current
+optimisation notes and evaluated library candidates are in [library options](docs/library-options.md).
+The allowed input range is 0–300 dB(A) for source powers and contour thresholds; longitude
+remains limited to ±180°. Numeric range is separate from equipment plausibility or model validity.

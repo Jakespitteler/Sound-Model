@@ -38,7 +38,8 @@ uv run ruff format --check src tests
 uv run pyright
 ```
 
-No new runtime or development dependencies were added relative to `walk-back`.
+The owner approved NumPy and ContourPy for compiled contour calculations. Run `uv sync --frozen`
+after updating this branch to install the locked dependencies.
 
 ## Blank map / VS Code preview
 
@@ -49,3 +50,17 @@ If only imagery fails, check access to `server.arcgisonline.com`; calculations r
 
 See [the physics and startup audit](docs/physics-audit.md) for what was checked and the limits
 of the model. Correct free-field arithmetic does not establish actual machinery inaudibility.
+
+## Assessment roadmap and performance
+
+The [due-diligence backlog](docs/tasks/README.md) prioritises assessment criteria, measured
+source/background data, validated propagation, uncertainty, reporting and operating controls.
+[Library options](docs/library-options.md) distinguish calculation speed from physical validity.
+Machine sound power and contour thresholds accept 0–300 dB(A); the upper numeric bound is
+not a realistic machinery default. The separate 200 km numerical domain guard still applies.
+
+To benchmark the compiled contour implementation:
+
+```sh
+uv run python scripts/benchmark_contours.py
+```
