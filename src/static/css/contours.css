@@ -1,0 +1,15 @@
+/* Contour controls and geographic line labels. */
+.contour-card { border:1px solid #dde5de; border-radius:7px; margin:12px 0; padding:10px; }
+.contour-card legend { font-size:12px; font-weight:600; color:var(--teal); padding:0 5px; }
+.contour-fields { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; }
+.contour-card input[type=color] { display:block; width:100%; margin-top:5px; padding:3px; height:35px; }
+.contour-card .row { display:flex; align-items:center; justify-content:space-between; }
+.contour-card label.inline { margin:0; }
+.contour-legend { display:flex; flex-wrap:wrap; gap:9px 14px; }
+.legend-chip { display:flex; align-items:center; gap:6px; font-size:10px; }
+.legend-swatch { width:24px; display:inline-block; }
+.contour-handle span { display:block; background:#fff; color:#263c3a; font-size:10px; font-weight:650; line-height:19px; text-align:center; border:2px solid; border-radius:12px; cursor:grab; box-shadow:0 1px 5px #0003; }
+.contour-handle:focus-visible { outline:3px solid #da953a; }
+.leaflet-interactive { cursor:grab; }
+.retry { margin-top:8px; }
+.calculation-status { pointer-events:auto; }

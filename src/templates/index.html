@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sound-Model · Mine noise &amp; contour explorer</title>
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="/css/contours.css">
+  <link rel="stylesheet" href="/css/map.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <script defer src="/js/bootstrap.js"></script>
+</head>
+<body>
+  {{header}}
+  <main>
+    <aside class="sidebar" aria-label="Scenario controls">
+      <div class="intro">
+        <span class="eyebrow">YOUR SCENARIO</span>
+        <h1>Understand the <br>sound around you.</h1>
+        <p>Place machines, edit dB(A) contour lines, and see how combined machine noise shapes the contours.</p>
+      </div>
+      <div class="notice">A planning illustration, not evidence of inaudibility. This session is not saved when you close or reload the page.</div>
+
+      {{catalogue-section}}
+      {{sources-section}}
+      {{contours-section}}
+      {{receivers-section}}
+
+      <section>
+        <div class="section-heading"><h2><span>05</span> Cloud cover</h2><output id="cloud-value" for="cloud">0%</output></div>
+        <input id="cloud" aria-label="Cloud cover" type="range" min="0" max="100" step="1" value="0">
+        <div class="range-labels"><span>Clear sky</span><span>Overcast</span></div>
+        <p class="hint">Recorded as a scenario condition. Cloud cover does not change calculated noise levels in this version.</p>
+      </section>
+
+      <details class="assumptions">
+        <summary>Model assumptions &amp; limits</summary>
+        <p>Independent point sources in a full-space free field. Contours use adaptive, source-centred Marching Squares so panning or zooming never reloads the model.</p>
+        <p>Levels combine energetically for independent machines. Lines are approximate level sets, not phase-cancellation fringes. Drag a line or its labelled handle to set its threshold at the drop point; its shape is always recalculated.</p>
+        <p>No ground reflection, terrain, buildings, barriers, wind, temperature or atmospheric absorption are included.</p>
+      </details>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+    </aside>
+
+    <div class="map-panel-host">{{map-overlays}}</div>
+  </main>
+</body>
+</html>

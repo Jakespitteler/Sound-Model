@@ -1,0 +1,81 @@
+/* Hidden controls must remain hidden even when button classes set display. */
+[hidden] { display:none !important; }
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button, input, select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  transition: background .15s;
+  border: 0;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 3px solid #da953a;
+  outline-offset: 2px;
+}
+button:hover:not(:disabled) {
+  filter: brightness(.96);
+}
+label {
+  display: block;
+  font-size: 11px;
+  color: #586963;
+  margin-bottom: 10px;
+}
+input:not([type=range]):not([type=checkbox]):not([type=color]), select {
+  display: block;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #dce3dd;
+  border-radius: 5px;
+  padding: 9px;
+  color: #30453e;
+  margin-top: 5px;
+  min-width: 0;
+}
+select {
+  padding-right: 4px;
+}
+.primary, .secondary {
+  display: block;
+  width: 100%;
+  padding: 11px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.primary {
+  background: var(--teal);
+  color: #fff;
+}
+.secondary {
+  background: #f3f6f2;
+  color: #375b50;
+  border: 1px solid #dde5de;
+}
+.compact {
+  width: auto;
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+.text-button {
+  background: none;
+  color: var(--teal);
+  font-size: 11px;
+  padding: 5px;
+}
+.danger {
+  color: var(--danger);
+  background: none;
+  font-size: 11px;
+  padding: 4px;
+}
