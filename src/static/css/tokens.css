@@ -1,0 +1,13 @@
+:root {
+  font-family: Inter, Segoe UI, Arial, sans-serif;
+  color: #263c3a;
+  background: #f7f8f5;
+  font-synthesis: none;
+  font-size: 14px;
+  --teal: #176b61;
+  --muted: #6a7b76;
+  --line: #e2e7e1;
+  --surface: #ffffff;
+  --surface-alt: #f8faf7;
+  --danger: #a55443;
+}

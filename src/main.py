@@ -2,13 +2,15 @@
 
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .acoustics import at_point, combine, distance_metres, inverse_mercator, mercator_y, source_level
-from .types import Bounds, Grid, MachineType, Point, Position, Prediction, Scenario
+from .acoustics import at_point
+from .contours import build_contours
+from .pages import index_page
+from .types import ContourRequest, ContourResponse, MachineType, Point, Prediction, Scenario
 
 app = FastAPI(title="Sound-Model", docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -43,56 +45,45 @@ def health() -> dict[str, str]:
 
 @app.post("/api/predict", response_model=Prediction)
 def predict(scenario: Scenario) -> Prediction:
-    """Compute receiver sound pressure levels and an optional 48x48 heatmap grid.
-
-    Evaluates every receiver directly and, when both ``scenario.bounds`` and at
-    least one source are present, samples a 48x48 grid spaced uniformly in Web
-    Mercator projection space.
+    """Evaluate receivers directly without calculating map geometry.
 
     Args:
-        scenario: Validated acoustic scenario containing types, sources, receivers,
-            and optional viewport bounds.
+        scenario: Source catalogue, placed machines, receivers and cloud metadata.
 
     Returns:
-        A :class:`Prediction` containing receiver readings, optional grid values,
-        and scenario metadata.
+        Direct receiver readings with provenance and model metadata.
     """
     types: dict[str, MachineType] = {item.id: item for item in scenario.types}
     receivers: dict[str, Point] = {point.id: at_point(point, scenario.sources, types) for point in scenario.receivers}
-    grid: Grid | None = None
-    if scenario.bounds and scenario.sources:
-        bounds: Bounds = scenario.bounds
-        rows = columns = 48
-        top: float = mercator_y(bounds.north)
-        bottom: float = mercator_y(bounds.south)
-        values: list[float | None] = []
-        for row in range(rows):
-            lat = inverse_mercator(top + (bottom - top) * (row + 0.5) / rows)
-            for col in range(columns):
-                lng = bounds.west + (bounds.east - bounds.west) * (col + 0.5) / columns
-                point = Position(lat=lat, lng=lng)
-                values.append(
-                    combine(
-                        [
-                            source_level(types[source.type_id].lwa, distance_metres(source, point))
-                            for source in scenario.sources
-                        ]
-                    )
-                )
-        grid = Grid(
-            rows=rows,
-            columns=columns,
-            bounds=bounds.model_dump(),
-            values=values,
-        )
     return Prediction(
         receivers=receivers,
-        grid=grid,
         cloud_cover=scenario.cloud_cover,
         cloud_correction_db=None,
         example_data=any(types[source.type_id].provenance == "example" for source in scenario.sources),
         model="full-space-point-source-v1",
     )
 
+
+@app.post("/api/contours", response_model=ContourResponse)
+def contours(scenario: ContourRequest) -> ContourResponse:
+    """Calculate combined-source contour lines without camera-dependent bounds.
+
+    Args:
+        scenario: Validated sources and requested decibel thresholds.
+
+    Returns:
+        Connected geographic lines and the model identifier.
+
+    Raises:
+        HTTPException: If requested geometry exceeds numerical safety limits.
+    """
+    try:
+        return build_contours(scenario)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+app.add_api_route("/", index_page, methods=["GET"], response_class=HTMLResponse)
+app.add_api_route("/index.html", index_page, methods=["GET"], response_class=HTMLResponse)
 
 app.mount("/", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="frontend")

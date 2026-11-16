@@ -5,9 +5,9 @@ import math
 import pytest
 from pydantic import ValidationError
 
-from src.acoustics import combine, distance_metres, inverse_mercator, mercator_y, source_level
+from src.acoustics import combine, distance_metres, source_level
 from src.main import predict
-from src.types import Bounds, Grid, MachineType, Point, Position, Prediction, Receiver, Scenario, Source
+from src.types import MachineType, Point, Position, Prediction, Receiver, Scenario, Source
 
 
 def generate_scenario(
@@ -16,7 +16,6 @@ def generate_scenario(
     sources: list[Source] | None = None,
     receivers: list[Receiver] | None = None,
     cloud_cover: int = 0,
-    bounds: Bounds | None = None,
 ) -> Scenario:
     """Create a valid acoustic scenario with baseline defaults.
 
@@ -25,7 +24,6 @@ def generate_scenario(
         sources: Acoustic sources placed on the map. Defaults to one source at (0, 0).
         receivers: Evaluation receiver points. Defaults to one receiver at (0, 0.001).
         cloud_cover: Percentage of cloud cover from 0 to 100.
-        bounds: Optional geographic bounding box for grid evaluation.
 
     Returns:
         A validated :class:`Scenario` instance ready for prediction.
@@ -35,7 +33,6 @@ def generate_scenario(
         sources=[Source(id="s", type_id="t", lat=0, lng=0)] if sources is None else sources,
         receivers=[Receiver(id="r", lat=0, lng=0.001)] if receivers is None else receivers,
         cloud_cover=cloud_cover,
-        bounds=bounds,
     )
 
 
@@ -82,10 +79,10 @@ def test_combination_and_removal() -> None:
     assert two_level is not None
     assert two_level - one_level == pytest.approx(3.01029996)
 
-    # Removing all sources yields an empty prediction without generating a grid.
+    # Removing all sources yields an empty prediction without generating geometry.
     empty: Prediction = predict(generate_scenario(sources=[]))
     assert empty.receivers["r"].level_db is None
-    assert empty.grid is None
+    assert empty.receivers["r"].contributions == []
 
 
 def test_clouds_do_not_invent_correction() -> None:
@@ -105,23 +102,6 @@ def test_near_field_is_flagged() -> None:
     assert math.isfinite(result.level_db)
 
 
-def test_grid_centres_match_receiver() -> None:
-    """Verify that the 48x48 prediction grid aligns with Mercator cell-centre coordinates."""
-    bounds = Bounds(south=-0.01, north=0.01, west=-0.01, east=0.01)
-    result: Prediction = predict(generate_scenario(bounds=bounds))
-    grid: Grid | None = result.grid
-    assert grid is not None
-    assert len(grid.values) == 48 * 48
-    assert all(v is not None and math.isfinite(v) for v in grid.values)
-
-    # Cell (row=0, col=0) sits half a step (0.5 / 48 = 1 / 96) inside the north-west corner.
-    lat: float = inverse_mercator(mercator_y(0.01) + (mercator_y(-0.01) - mercator_y(0.01)) / 96)
-    expected: Prediction = predict(generate_scenario(receivers=[Receiver(id="r", lat=lat, lng=-0.01 + 0.02 / 96)]))
-    expected_level: float | None = expected.receivers["r"].level_db
-    assert expected_level is not None
-    assert grid.values[0] == pytest.approx(expected_level)
-
-
 @pytest.mark.parametrize(
     "case",
     [
@@ -130,7 +110,6 @@ def test_grid_centres_match_receiver() -> None:
         {"sources": [{"id": "s", "type_id": "missing", "lat": 0, "lng": 0}]},  # Unknown machine type ID
         {"receivers": [{"id": "r", "lat": float("nan"), "lng": 0}]},  # Non-finite coordinate
         {"receivers": [{"id": "r", "lat": 86, "lng": 0}]},  # Beyond Web Mercator latitude limit
-        {"bounds": {"south": 1, "north": 0, "east": 1, "west": 0}},  # Inverted north/south bounds
         {"types": [{"id": "t", "name": "   ", "lwa": 100}]},  # Whitespace-only name after stripping
         {"types": [{"id": "t", "name": "x", "lwa": float("inf")}]},  # Infinite sound power level
         {"sources": [{"id": "s", "type_id": "t", "lat": 0, "lng": 0}] * 2},  # Duplicate source IDs

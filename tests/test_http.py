@@ -56,8 +56,10 @@ def client() -> Iterator[TestClient]:
     ("path", "fragment"),
     [
         ("/", b"Sound-Model"),
-        ("/app.js", b"api/predict"),
-        ("/style.css", b".sidebar"),
+        ("/js/main.js", b"api/predict"),
+        ("/js/state.js", b"ScenarioStore"),
+        ("/css/sidebar.css", b".sidebar"),
+        ("/css/contours.css", b".contour-card"),
         ("/vendor/leaflet/leaflet.js", b"Leaflet"),
     ],
 )
@@ -115,7 +117,7 @@ def test_empty_scenario(client: TestClient) -> None:
     assert response.status_code == 200
 
     prediction: Prediction = Prediction.model_validate_json(response.text)
-    assert prediction.grid is None
+    assert prediction.cloud_correction_db is None
     assert prediction.receivers == {}
 
 
@@ -141,7 +143,10 @@ def test_nonfinite_input_is_validation_error(client: TestClient, literal: str) -
     assert len(error.detail) > 0
 
 
-@pytest.mark.parametrize("path", ["/requirements.txt", "/.git/config", "/run.py", "/pyproject.toml"])
+@pytest.mark.parametrize(
+    "path",
+    ["/requirements.txt", "/.git/config", "/run.py", "/pyproject.toml", "/templates/index.html", "/src/types.py"],
+)
 def test_private_repository_files_not_served(client: TestClient, path: str) -> None:
     """Verify that repository metadata and source files outside src/static are not exposed.
 
@@ -151,3 +156,17 @@ def test_private_repository_files_not_served(client: TestClient, path: str) -> N
     """
     response = client.get(path)
     assert response.status_code == 404
+
+
+def test_page_contains_assembled_controls(client: TestClient) -> None:
+    """Serve complete markup before JavaScript starts, not unresolved partial slots.
+
+    Args:
+        client: In-process FastAPI test client.
+    """
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "{{" not in response.text
+    for control in ('id="type-form"', 'id="contours"', 'id="map"', 'id="retry"'):
+        assert control in response.text
+    assert 'type="module" src="/js/main.js"' in response.text

@@ -39,7 +39,7 @@ select = [
 ]
 
 [tool.pyright]
-include = ["src", "tests", "main.py"]
+include = ["src", "tests"]
 pythonVersion = "3.13"
 typeCheckingMode = "strict"
 venvPath = "."

@@ -1,0 +1,21 @@
+<section>
+  <div class="section-heading">
+    <h2><span>01</span> Machine catalogue</h2>
+    <button id="demo" class="text-button" type="button">Try example</button>
+  </div>
+  <p class="hint">Enter sound <strong>power</strong> (LwA), not a sound pressure reading.</p>
+  <div id="types"></div>
+  <form id="type-form" class="type-form">
+    <label>Machine type<input id="type-name" maxlength="80" required placeholder="e.g. Haul truck"></label>
+    <div class="two-columns">
+      <label>Sound power · dB(A)<input id="type-level" type="number" min="0" max="180" step="0.1" value="100" required></label>
+      <label>Data source
+        <select id="type-provenance">
+          <option value="example">Example value</option>
+          <option value="measured">Measured data</option>
+        </select>
+      </label>
+    </div>
+    <button class="secondary" type="submit">＋ Add machine type</button>
+  </form>
+</section>
