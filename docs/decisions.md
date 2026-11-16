@@ -20,3 +20,15 @@ Do not mark a proposal approved merely because setup was authorised. Record actu
 approval, date, rationale, and any scope changes here.
 
 D011 — Approved, 2026-11-16, project owner: dependency installation and running the app must require no administrator permissions. Use project-local npm dependencies, an existing or user-local Node installation, and an unprivileged port.
+
+## Superseding stack decisions — 2026-11-16
+
+The project owner explicitly selected Python with FastAPI for the backend and HTML, CSS,
+and JavaScript for the frontend, and approved Uvicorn in response to the server proposal.
+This supersedes D007's TypeScript/Vite/Vitest choice and the intermediate standalone-file
+and compiled-backend proposals. Do not use Node.js. The owner has Python on Windows.
+Leaflet remains the previously approved map library. Ask before choosing any additional
+third-party technology. FastAPI's required transitive dependencies are installed with it.
+Use Python unittest and the existing Chromium browser for validation; no test framework is added.
+The owner relaxed the strict no-admin constraint, but project-local installation is still preferred.
+The frontend calls a local FastAPI backend for acoustic calculations. Uvicorn binds to loopback.
