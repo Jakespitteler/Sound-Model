@@ -24,7 +24,8 @@ A separate agent reviewed b9e08b15e21c32efd58402355fe636e6b2231f6a, including ce
 It found an incorrect Python minimum, non-finite-input HTTP 500s, and stale stack documentation.
 These have been corrected: require Python 3.11+, sanitize validation responses and cover them
 with HTTP regression tests, and document the actual FastAPI/plain-JavaScript architecture.
-A follow-up review of the fixes is recorded in the task when complete. Human review is still required.
+The reviewer re-reviewed 8e21648d93a33b05ff3dc512aca45f7cf68a0b56, independently reran
+all 15 tests, and reported no remaining code-review blockers. Human review is still required.
 
 ## Limits and unrun checks
 
@@ -37,7 +38,7 @@ A follow-up review of the fixes is recorded in the task when complete. Human rev
 - Acoustic tests validate arithmetic against documented assumptions, not actual mine noise.
   Cloud cover has no numerical correction; measured machine data has not been supplied.
 - Scenarios are in-memory and are lost on reload; save/export is deferred.
-- GitHub API access returned Forbidden, preventing PR inspection/creation. Work is local on
+- GitHub API access returned Forbidden, preventing PR inspection/creation. The implementation branch is
   `agent/002-sound-prototype`. No PR has been opened or merged.
 - Cloud install/start instructions and a `tile.openstreetmap.org` rule were saved to the draft;
   they have not been published or shown to change runtime networking.
