@@ -1,6 +1,6 @@
 # Product specification
 
-Status: confirmed product scope with proposed implementation details clearly identified.
+Status: indicative prototype implemented; satellite imagery and validated audibility assessment remain open.
 
 ## First prototype
 
@@ -20,10 +20,10 @@ has no modelled source contribution; do not display it as a measured 0 dB enviro
 
 Provide a cloud-cover input with an explicit indication that it currently records a scenario
 condition and has no validated acoustic correction. Defer numerical meteorological effects.
-Satellite imagery remains requested; a street-map prototype fallback awaits owner approval.
+Satellite imagery remains requested; the owner approved a temporary street-map prototype fallback.
 Map attribution must remain visible and the provider must be replaceable.
 
-## Proposed interaction decisions awaiting implementation approval
+## Implemented interaction decisions
 
 - Source input is A-weighted sound power level (LwA), with example/measured provenance.
 - Show example values only after explicit selection; never imply they describe actual mine equipment.
@@ -31,7 +31,7 @@ Map attribution must remain visible and the provider must be replaceable.
 - Keep scenarios in browser memory initially; offer JSON import/export in a subsequent task.
 - Use an adjustable display range and legend; values outside the range remain numerically available.
 
-## Excluded from version one
+## Excluded from this prototype
 
 Time simulation, accounts, offline map downloads, automatic equipment-data retrieval,
 terrain diffraction, buildings, barriers, weather forecasting, and compliance certification.

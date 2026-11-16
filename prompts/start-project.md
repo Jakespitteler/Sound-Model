@@ -9,7 +9,8 @@ users, first working version, data availability, environmental factors, deployme
 needs, and budget/provider constraints. Do not install dependencies or write application code
 before required approvals. For Sound-Model those product questions have already been answered.
 
-The next decision is approval of the concrete implementation proposal and map service.
+The owner has approved the stack in decisions.md. Do not ask again for those technologies.
+The next provider decision concerns satellite imagery.
 Present files to change, test evidence, alternatives, costs, and material limitations. Record
 explicit approval in decisions.md; silence is not approval. Then follow the task workflow.
 

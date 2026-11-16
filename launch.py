@@ -8,8 +8,8 @@ import venv
 
 
 def main():
-    if sys.version_info < (3, 10):
-        raise RuntimeError('Sound-Model needs Python 3.10 or newer.')
+    if sys.version_info < (3, 11):
+        raise RuntimeError('Sound-Model needs Python 3.11 or newer.')
     root = Path(__file__).resolve().parent
     environment = root / '.venv'
     executable = environment / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')

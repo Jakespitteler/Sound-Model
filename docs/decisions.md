@@ -11,7 +11,7 @@ in chat on 2026-11-16; proposals are not approvals.
 | D004 | Approved | Cloud cover initially; wind, temperature, terrain, barriers deferred | Project owner explicitly requested this scope |
 | D005 | Approved | Free maps; Apple optional | Project owner has no Apple account and requires no payment |
 | D006 | Approved | Begin setup with indicative-model limitations | Project owner accepted the stated limitations and said to get started |
-| D007 | Approved | TypeScript, Vite, Leaflet, Vitest | Project owner, 2026-11-16: approved provided installation and running need no admin permissions |
+| D007 | Superseded | TypeScript, Vite, Leaflet, Vitest | Project owner, 2026-11-16: approved provided installation and running need no admin permissions |
 | D008 | Approved | OpenStreetMap standard street tiles as an initial fallback | Project owner, 2026-11-16: approved proposal; satellite remains required and terms must be checked |
 | D009 | Approved | Baseline geometric spreading and energetic summation | Project owner, 2026-11-16: approved the documented prototype proposal with no-admin condition |
 | D010 | Approved | Cloud cover metadata without numerical correction | Project owner, 2026-11-16: approved prototype proposal |
@@ -32,3 +32,5 @@ third-party technology. FastAPI's required transitive dependencies are installed
 Use Python unittest and the existing Chromium browser for validation; no test framework is added.
 The owner relaxed the strict no-admin constraint, but project-local installation is still preferred.
 The frontend calls a local FastAPI backend for acoustic calculations. Uvicorn binds to loopback.
+
+D012 — Approved, 2026-11-16, project owner: Python/FastAPI backend and HTML/CSS/JavaScript frontend; Uvicorn explicitly approved in the follow-up choice. Leaflet remains approved. Ask before any additional third-party technology. This is the active stack decision.

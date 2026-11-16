@@ -29,6 +29,6 @@ appropriate propagation method. Do not turn the owner's desired conclusion into 
 
 ## Outstanding decisions
 
-Approve the implementation dependencies and any external map service. Verify a genuinely
+Python/FastAPI/Uvicorn, HTML/CSS/JavaScript, Leaflet and interim OSM street tiles are now approved. Verify a genuinely
 free satellite imagery option. Determine the method for representing meteorology before
 cloud cover changes numerical results. Saving and exporting scenarios are proposed additions.

@@ -1,12 +1,12 @@
 # Acoustic model proposal and limitations
 
-Status: calculation design for review, not an implemented or validated mine model.
+Status: baseline implemented and analytically tested; not a validated mine assessment.
 
 ## Baseline
 
 Represent each machine as an independent, steady, omnidirectional point source with a
 specified A-weighted sound power level LwA (dB re 1 pW). For separation r in metres,
-propose full-space geometric spreading:
+use full-space geometric spreading:
 
 `LpA = LwA - 20 log10(r) - 10 log10(4 pi)`.
 
@@ -36,7 +36,7 @@ frequency spectra where relevant, background noise at representative town recept
 suitable weather/terrain data. Validate predictions against measurements and an appropriate
 acoustic method. Distinguish audibility from compliance with any applicable limit.
 
-## Numerical validation planned
+## Numerical validation
 
 - Doubling distance reduces the baseline by approximately 6.0206 dB.
 - Two equal independent contributions add approximately 3.0103 dB.

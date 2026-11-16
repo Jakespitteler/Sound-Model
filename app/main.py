@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -66,6 +68,13 @@ class Scenario(StrictModel):
 
 
 app = FastAPI(title='Sound-Model', docs_url=None, redoc_url=None, openapi_url=None)
+
+
+@app.exception_handler(RequestValidationError)
+async def invalid_request(request, exception):
+    # Do not echo non-finite input values or validator context into JSON errors.
+    details = [{key: error[key] for key in ('loc', 'msg', 'type')} for error in exception.errors()]
+    return JSONResponse(status_code=422, content={'detail': details})
 
 
 @app.get('/api/health')

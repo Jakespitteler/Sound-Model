@@ -1,35 +1,39 @@
 # Map provider evaluation
 
-## Requirements
+## Current prototype
 
-Zero payment for the intended mine-related use, satellite imagery where available, visible
-attribution, draggable sources, and support for locations outside Greenbushes. Distinguish
-an open-source map renderer from permission to use a hosted imagery service.
+Leaflet 1.9.4 is bundled locally (BSD-2-Clause). Its npm registry archive SHA-512 was verified
+before extracting the runtime and stylesheet; see its PROVENANCE.md and LICENSE.
+The owner approved OpenStreetMap standard street tiles as a temporary fallback on 2026-11-16.
+This is a free, best-effort service with usage conditions, not a guaranteed hosted map product.
 
-## Proposed first step
+The official policy was read from the OSM Operations Working Group's source repository:
+https://raw.githubusercontent.com/openstreetmap/owg-website/master/policies/tiles.md
+Published policy: https://operations.osmfoundation.org/policies/tiles/
+Verified 2026-11-16. It permits ordinary interactive viewing subject to attribution, identification,
+caching and request limits; availability may be withdrawn. It explicitly prohibits offline tile
+archives, bulk downloads and automated headless panning to force tile rendering.
 
-Leaflet is an open-source renderer. OpenStreetMap standard tiles provide street mapping,
-not satellite imagery. They are a proposed prototype fallback only, pending approval and
-verification of the current tile usage policy. Do not bulk download or promise offline access.
+The app uses `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, visible OSM attribution, normal
+browser User-Agent and Referer behaviour, and normal HTTP caching. It does not proxy, prefetch
+whole regions, suppress referrers, or offer offline map downloads. For automated UI checks,
+block external tile requests and test the explicit unavailable-map state.
 
-Free high-resolution satellite imagery suitable for mine-scale analysis is unresolved.
-Do not assume that a publicly reachable Esri, Google, Apple, or Landgate endpoint is licensed
-for this use, or that a provider's free tier permits commercial use without an account.
-Investigate Western Australian public imagery and global alternatives before selecting one.
+## Network validation
 
-## Verification status, 2026-11-16
+Cloud requests to the policy website and live tile domain were blocked by the environment
+network policy; official policy text was accessible on GitHub. Browser checks verified the
+failure message and continued coordinate/model operation, not successful live tile rendering.
+Cloud tile access requires `tile.openstreetmap.org` in environment network settings. A saved
+network draft does not prove runtime access. The user's Windows network is separate.
 
-Attempts to read Leaflet, OSM tile-policy, Landgate imagery, and ArcGIS metadata through the
-current network proxy returned HTTP 403 tunnel errors. This establishes a network access
-limitation, not the providers' current pricing, licensing, or service availability.
-No map service has been connected and no free satellite licence has been verified.
+## Satellite requirement, still open
 
-References to check when accessible:
+Satellite imagery remains a requested future layer. No free high-resolution imagery service
+has yet been licensed or integrated for this mine-related use. Public reachability alone does
+not establish usage permission. Investigate WA imagery and global alternatives, checking
+commercial use, coverage, resolution, attribution, credentials and cost before proposing one.
+Ask the owner before choosing another external provider or SDK.
 
-- https://leafletjs.com/
-- https://operations.osmfoundation.org/policies/tiles/
-- https://www.landgate.wa.gov.au/location-data-and-services/imagery/
-
-Only request network additions for the provider actually selected, preserving existing rules.
-Save terms references, attribution, allowed usage, resolution, coverage, costs, and verification
-date before approval. An imagery outage must not silently invalidate calculated receptor values.
+The renderer's provider definition is centralised in `app/static/app.js`; calculations are
+independent of that provider. Apple or Google can require different adapters and approvals.

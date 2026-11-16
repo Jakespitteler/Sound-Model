@@ -1,7 +1,8 @@
 # 001 — Project foundation
 
 State: review. Owner: Codex. Branch: work, inherited from the environment. Date: 2026-11-16.
-No commit or PR has been created. This task adds documents, not application code.
+Foundation committed as 803bdb2 on agent/002-sound-prototype. No PR has been created.
+This foundation task added documents, not application code.
 
 ## Scope and evidence
 
