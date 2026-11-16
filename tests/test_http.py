@@ -188,3 +188,22 @@ def test_script_media_type_ignores_windows_registry(client: TestClient, monkeypa
         assert response.status_code == 200
         assert response.headers["content-type"].startswith("text/javascript")
     assert client.get("/css/map.css").headers["content-type"].startswith("text/css")
+
+
+def test_sound_power_ceiling(client: TestClient) -> None:
+    """Accept 300 dB sound power, reject larger values and preserve receiver arithmetic.
+
+    Args:
+        client: In-process application client.
+    """
+    payload: dict[str, object] = {
+        "types": [{"id": "t", "name": "Numerical limit test", "lwa": 300}],
+        "sources": [{"id": "s", "type_id": "t", "lat": 0, "lng": 0}],
+        "receivers": [{"id": "r", "lat": 0, "lng": 0.001}],
+    }
+    response = client.post("/api/predict", json=payload)
+    assert response.status_code == 200
+    prediction = Prediction.model_validate_json(response.text)
+    assert prediction.receivers["r"].level_db == pytest.approx(248.086, abs=0.01)
+    payload["types"] = [{"id": "t", "name": "Above limit", "lwa": 300.1}]
+    assert client.post("/api/predict", json=payload).status_code == 422

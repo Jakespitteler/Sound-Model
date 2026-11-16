@@ -37,13 +37,13 @@ class MachineType(StrictModel):
     Attributes:
         id: Unique client-supplied identifier for the machine type.
         name: Human-readable equipment label displayed in the UI and outputs.
-        lwa: A-weighted sound power level ($L_{wA}$) in dB(A) within ``[0, 180]``.
+        lwa: A-weighted sound power level ($L_{wA}$) in dB(A) within ``[0, 300]``.
         provenance: Indicates whether ``lwa`` is an illustrative example or measured data.
     """
 
     id: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=80)
-    lwa: float = Field(ge=0, le=180)
+    lwa: float = Field(ge=0, le=300)
     provenance: Literal["example", "measured"] = "example"
 
 
@@ -178,10 +178,10 @@ class ContourRequest(Scenario):
             Validated contour request.
 
         Raises:
-            ValueError: If thresholds are repeated or outside 0–180 dB(A).
+            ValueError: If thresholds are repeated or outside 0–300 dB(A).
         """
-        if len(set(self.levels)) != len(self.levels) or any(not 0 <= level <= 180 for level in self.levels):
-            raise ValueError("Contour levels must be unique finite values from 0 to 180 dB(A)")
+        if len(set(self.levels)) != len(self.levels) or any(not 0 <= level <= 300 for level in self.levels):
+            raise ValueError("Contour levels must be unique finite values from 0 to 300 dB(A)")
         return self
 
 

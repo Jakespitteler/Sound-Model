@@ -102,7 +102,7 @@ def test_antimeridian_sources_remain_neighbours() -> None:
     assert max(longitudes) - min(longitudes) < 0.1
 
 
-@pytest.mark.parametrize("levels", [[45, 45], [-1], [181], [float("nan")], [float("inf")], list(range(26))])
+@pytest.mark.parametrize("levels", [[45, 45], [-1], [301], [float("nan")], [float("inf")], list(range(26))])
 def test_contour_input_limits(levels: list[float]) -> None:
     """Reject ambiguous or unbounded requests before computing any geometry.
 
@@ -180,3 +180,98 @@ def test_contour_field_matches_direct_physics_and_bounds() -> None:
             assert field.value(xy) == pytest.approx(expected, abs=1e-8)
             assert at_point(receiver, sources, types).level_db == pytest.approx(expected, abs=1e-8)
             assert lo <= expected <= hi
+
+
+def test_300_db_source_and_contour_are_supported() -> None:
+    """Accept the new numeric ceiling without changing spreading or energy physics."""
+    scenario = request_for([280], power=300)
+    contour = build_contours(scenario).contours[0]
+    assert contour.level_db == 280
+    assert len(contour.lines) == 1
+    radius = math.sqrt(100 / (4 * math.pi))
+    for lng, lat in contour.lines[0]:
+        distance = distance_metres(scenario.sources[0], Receiver(id="r", lat=lat, lng=lng))
+        assert distance == pytest.approx(radius, rel=0.003)
+    # A threshold at the accepted ceiling can be unreachable, which is an empty result.
+    assert build_contours(request_for([300], power=300)).contours[0].lines == []
+
+
+def test_complexity_error_identifies_level_and_budget(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Report computational exhaustion clearly without changing or dropping sources.
+
+    Args:
+        monkeypatch: Fixture temporarily lowering the budget to reproduce exhaustion.
+    """
+    import src.contours as contour_module
+
+    monkeypatch.setattr(contour_module, "MAX_CELLS", 1)
+    with TestClient(app) as client:
+        response = client.post("/api/contours", json=request_for([55]).model_dump())
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert "55 dB(A)" in detail
+    assert "1-cell" in detail
+    assert "Receiver predictions remain available" in detail
+
+
+def test_vectorised_field_matches_scalar_across_batch_boundary() -> None:
+    """Keep compiled sampling/bounds identical to the scalar physical reference."""
+    import numpy as np
+
+    from src.contour_engine import BATCH_SIZE, ArrayField
+    from src.contours import ContourField
+
+    scenario = request_for([55])
+    field = ContourField(scenario)
+    array_field = ArrayField(field)
+    centre = np.asarray(field.sources[0][:2])
+    offsets = np.linspace(-100, 100, BATCH_SIZE + 3)
+    points = centre + np.column_stack((offsets, offsets / 2))
+    values, _ = array_field.levels(points)
+    lower, upper = array_field.levels(points, np.full(len(points), 5.0))
+    for index in (0, BATCH_SIZE // 2, BATCH_SIZE - 1, BATCH_SIZE, BATCH_SIZE + 2):
+        point = (float(points[index, 0]), float(points[index, 1]))
+        assert values[index] == pytest.approx(field.value(point), abs=1e-8)
+        lo, hi = field.range_at(point, 5)
+        assert lower[index] == pytest.approx(lo, abs=1e-8)
+        assert upper[index] == pytest.approx(hi, abs=1e-8)
+
+
+def test_mixed_power_contour_exceeds_old_budget_but_completes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise the measured fourfold budget increase without lowering spatial accuracy.
+
+    Args:
+        monkeypatch: Fixture restoring the production complexity guard after comparison.
+    """
+    import src.contours as contour_module
+
+    scenario = ContourRequest(
+        types=[MachineType(id="a", name="Loud", lwa=150), MachineType(id="b", name="Quieter", lwa=105)],
+        sources=[Source(id="a", type_id="a", lat=0, lng=0), Source(id="b", type_id="b", lat=0, lng=0.001)],
+        levels=[55],
+    )
+    with monkeypatch.context() as patch:
+        patch.setattr(contour_module, "MAX_CELLS", 160_000)
+        with pytest.raises(ValueError, match="160,000-cell"):
+            build_contours(scenario)
+    result = build_contours(scenario).contours[0]
+    assert len(result.lines) == 1
+    assert result.lines[0][0] == result.lines[0][-1]
+    types = {t.id: t for t in scenario.types}
+    for lng, lat in result.lines[0][::100]:
+        reading = at_point(Receiver(id="r", lat=lat, lng=lng), scenario.sources, types)
+        assert reading.level_db == pytest.approx(55, abs=0.021)
+
+
+def test_colocated_300_db_sources_keep_attainable_maximum() -> None:
+    """Avoid floating-point bound pruning at a combined clamped plateau maximum."""
+    from src.acoustics import combine, source_level
+
+    maximum = combine([source_level(300, 1)] * 2)
+    assert maximum is not None
+    scenario = request_for(
+        [maximum], power=300, sources=[Source(id=str(i), type_id="t", lat=0, lng=0) for i in range(2)]
+    )
+    result = build_contours(scenario).contours[0]
+    assert len(result.lines) == 1
+    assert result.lines[0][0] == result.lines[0][-1]

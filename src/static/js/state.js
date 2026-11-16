@@ -91,9 +91,9 @@ export class ScenarioStore {
   /** Add a distinct contour threshold up to the API limit. */
   addContour() {
     if (this.contours.length >= 25) return;
-    let level = Math.max(0, Math.min(180, Math.min(...this.contours.map(c=>c.level_db), 50) - 5));
+    let level = Math.max(0, Math.min(300, Math.min(...this.contours.map(c=>c.level_db), 50) - 5));
     while (this.contours.some(c=>c.level_db===level)) level++;
-    if (level > 180) return;
+    if (level > 300) return;
     this.contours.push({id:uuid(),level_db:level,color:'#af85ed',weight:2,style:'solid',visible:true});
     this.notify('thresholds');
   }
@@ -102,7 +102,7 @@ export class ScenarioStore {
   updateContour(id, patch) {
     const contour = this.contours.find(c => c.id === id);
     if (!contour) return false;
-    if ('level_db' in patch && (!Number.isFinite(patch.level_db) || patch.level_db < 0 || patch.level_db > 180 ||
+    if ('level_db' in patch && (!Number.isFinite(patch.level_db) || patch.level_db < 0 || patch.level_db > 300 ||
       this.contours.some(c=>c.id!==id && c.level_db===patch.level_db))) return false;
     Object.assign(contour, patch);
     this.notify('level_db' in patch ? 'thresholds' : 'styles'); return true;

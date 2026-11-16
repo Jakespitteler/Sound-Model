@@ -95,7 +95,7 @@ manager.contourLayer.onThresholdDrop = async (contourId, point) => {
     const level = Math.round(reading.level_db*10)/10;
     if (!store.updateContour(contourId,{level_db:level})) {
       manager.contourLayer.render(geometry,store.contours);
-      return say('That drop would duplicate another level or be outside 0–180 dB(A).');
+      return say('That drop would duplicate another level or be outside 0–300 dB(A).');
     }
     contours.render(); say(`Contour set to ${level.toFixed(1)} dB(A) from the combined level at the drop point.`);
   } catch (error) {

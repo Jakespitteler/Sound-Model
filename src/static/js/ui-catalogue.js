@@ -61,7 +61,7 @@ export class CatalogueUI {
           `<p>${t.lwa.toFixed(1)} dB(A) LwA — ${t.provenance === 'example' ? 'EXAMPLE' : 'Measured data'}</p>` +
           `<details><summary>Edit type</summary><form data-edit-type="${t.id}">` +
           `<label>Name<input name="name" value="${escapeHtml(t.name)}" maxlength="80" required></label>` +
-          `<div class="two-columns"><label>LwA dB(A)<input name="lwa" type="number" min="0" max="180" step="0.1" value="${t.lwa}" required></label>` +
+          `<div class="two-columns"><label>LwA dB(A)<input name="lwa" type="number" min="0" max="300" step="0.1" value="${t.lwa}" required></label>` +
           `<label>Data source<select name="provenance"><option value="example" ${t.provenance === 'example' ? 'selected' : ''}>Example</option>` +
           `<option value="measured" ${t.provenance === 'measured' ? 'selected' : ''}>Measured</option></select></label></div>` +
           `<button class="secondary" type="submit">Save type</button></form></details></div>`,

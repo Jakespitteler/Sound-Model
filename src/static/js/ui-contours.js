@@ -21,7 +21,7 @@ export class ContoursUI {
       const field = input.dataset.field;
       const value = input.type === 'checkbox' ? input.checked : input.type === 'number' ? input.valueAsNumber : input.value;
       const accepted = this.store.updateContour(input.closest('[data-contour-id]').dataset.contourId, {[field]:value});
-      if (!accepted) this.say('Use a unique contour threshold between 0 and 180 dB(A).');
+      if (!accepted) this.say('Use a unique contour threshold between 0 and 300 dB(A).');
       this.render();
     });
     $('contours').addEventListener('click', event => {
@@ -35,7 +35,7 @@ export class ContoursUI {
     $('contour-count').textContent = String(this.store.contours.length);
     $('contours').innerHTML = this.store.contours.map(c => `<fieldset class="contour-card" data-contour-id="${c.id}">
       <legend>${c.level_db.toFixed(1)} dB(A)</legend><div class="contour-fields">
-      <label>Level · dB(A)<input type="number" data-field="level_db" min="0" max="180" step="0.1" value="${c.level_db}" required></label>
+      <label>Level · dB(A)<input type="number" data-field="level_db" min="0" max="300" step="0.1" value="${c.level_db}" required></label>
       <label>Colour<input type="color" data-field="color" value="${escapeHtml(c.color)}"></label>
       <label>Width · px<input type="number" data-field="weight" min="0.5" max="8" step="0.5" value="${c.weight}" required></label>
       <label>Line style<select data-field="style"><option value="solid" ${c.style==='solid'?'selected':''}>Solid</option><option value="dashed" ${c.style==='dashed'?'selected':''}>Dashed</option><option value="dotted" ${c.style==='dotted'?'selected':''}>Dotted</option></select></label>

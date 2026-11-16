@@ -1,60 +1,23 @@
 """Adaptive source-anchored level lines for the existing incoherent noise model.
 
-A distance-bound quadtree prunes cells wholly above/below each threshold. Crossing
-cells reach a common depth before marching squares, so neighbouring edges share
-endpoints. This avoids losing compact high-level rings on a coarse viewport grid.
-No new numerical or geographic dependency is required.
+A distance-bound quadtree prunes cells wholly above/below each threshold. NumPy
+evaluates source energy in bounded batches, and ContourPy extracts fine-grid lines
+inside sparse tiles. Exact lattice identities join neighbouring tile endpoints.
+The scalar field remains a reference for numerical validation.
 """
 
 import math
-from collections import defaultdict
-from collections.abc import Callable
 
 from .acoustics import combine, inverse_mercator, mercator_y, source_level
+from .contour_engine import trace_tiles
 from .types import Contour, ContourRequest, ContourResponse
 
 EARTH_RADIUS = 6_371_008.8
-MAX_CELLS = 160_000
+MAX_CELLS = 640_000
 MAX_RADIUS_M = 200_000
 VERTEX_TOLERANCE_DB = 0.02
 
 type XY = tuple[float, float]
-type Edge = tuple[tuple[int, int], tuple[int, int]]
-
-
-def _segments_to_lines(segments: list[tuple[Edge, Edge]], points: dict[Edge, XY]) -> list[list[XY]]:
-    """Stitch segments by exact grid-edge identity, without coordinate rounding.
-
-    Args:
-        segments: Pairs of crossing grid-edge identifiers.
-        points: Refined geographic coordinates for each edge.
-
-    Returns:
-        Connected open lines or explicitly closed rings.
-    """
-    adjacent: dict[Edge, list[int]] = defaultdict(list)
-    for index, (a, b) in enumerate(segments):
-        adjacent[a].append(index)
-        adjacent[b].append(index)
-    unused = set(range(len(segments)))
-    lines: list[list[XY]] = []
-    starts = sorted(adjacent, key=lambda edge: len(adjacent[edge]) != 1)
-    for start in starts:
-        while any(index in unused for index in adjacent[start]):
-            current = start
-            line = [points[current]]
-            while True:
-                index = next((i for i in adjacent[current] if i in unused), None)
-                if index is None:
-                    break
-                unused.remove(index)
-                a, b = segments[index]
-                current = b if a == current else a
-                line.append(points[current])
-                if current == start:
-                    break
-            lines.append(line)
-    return lines
 
 
 class ContourField:
@@ -189,32 +152,6 @@ class ContourField:
         return west, south, max(width, height)
 
 
-def _edge_crossing(a: XY, b: XY, level: float, value: Callable[[XY], float]) -> XY:
-    """Refine a bracketed crossing to the documented vertex dB tolerance.
-
-    Args:
-        a: First projected edge endpoint.
-        b: Second projected edge endpoint.
-        level: Requested threshold.
-        value: Combined-field evaluator.
-
-    Returns:
-        Projected contour vertex found by bounded bisection.
-    """
-    above = value(a) >= level
-    point = a
-    for _ in range(40):
-        point = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
-        result = value(point)
-        if abs(result - level) <= VERTEX_TOLERANCE_DB:
-            break
-        if (result >= level) == above:
-            a = point
-        else:
-            b = point
-    return point
-
-
 def trace_level(field: ContourField, level: float) -> Contour:
     """Extract a closed combined-field level set with adaptive marching squares.
 
@@ -230,85 +167,7 @@ def trace_level(field: ContourField, level: float) -> Contour:
     """
     if level > sum_level_at_max(field):
         return Contour(level_db=level, lines=[])
-    west, south, size = field.domain(level)
-    # Resolve compact rings, not just the largest domain. No viewport input.
-    radii = [10 ** ((s[4] - 10 * math.log10(4 * math.pi) - level) / 20) for s in field.sources]
-    positive = [r for r in radii if r >= 1]
-    target = max(0.05, min(positive, default=1) / 20)
-    depth = max(6, math.ceil(math.log2(size / target)))
-    count = 2**depth
-    step = size / count
-    values: dict[tuple[int, int], float] = {}
-    points: dict[Edge, XY] = {}
-    segments: list[tuple[Edge, Edge]] = []
-    budget = 0
-
-    def xy(ix: int, iy: int) -> XY:
-        """Map integer grid coordinates to projected metres.
-
-        Args:
-            ix: Horizontal lattice coordinate.
-            iy: Vertical lattice coordinate.
-
-        Returns:
-            Projected x/y pair.
-        """
-        return west + ix * step, south + iy * step
-
-    def visit(ix: int, iy: int, width: int) -> None:
-        """Prune or subdivide one cell; march all retained cells at equal depth.
-
-        Args:
-            ix: Cell's western lattice index.
-            iy: Cell's southern lattice index.
-            width: Cell width in final-lattice steps.
-
-        Raises:
-            ValueError: If the bounded cell budget is exhausted.
-        """
-        nonlocal budget
-        budget += 1
-        if budget > MAX_CELLS:
-            raise ValueError(
-                "Contour is too complex at this accuracy. Reduce the source spread or simplify the scenario."
-            )
-        lo, hi = field.range_at(xy(ix + width // 2, iy + width // 2), width * step / math.sqrt(2))
-        # At the final odd-width cell use its actual centre, not the integer origin.
-        if width == 1:
-            lo, hi = field.range_at((west + (ix + 0.5) * step, south + (iy + 0.5) * step), step / math.sqrt(2))
-        if lo > level or hi < level:
-            return
-        if width > 1:
-            half = width // 2
-            for dx, dy in ((0, 0), (half, 0), (half, half), (0, half)):
-                visit(ix + dx, iy + dy, half)
-            return
-        corners = [(ix, iy), (ix + 1, iy), (ix + 1, iy + 1), (ix, iy + 1)]
-        for corner in corners:
-            if corner not in values:
-                values[corner] = field.value(xy(*corner))
-        signs = [values[c] >= level for c in corners]
-        crossings: list[Edge] = []
-        for i, a in enumerate(corners):
-            b = corners[(i + 1) % 4]
-            if signs[i] == signs[(i + 1) % 4]:
-                continue
-            edge: Edge = (a, b) if a < b else (b, a)
-            if edge not in points:
-                points[edge] = field.geographic(_edge_crossing(xy(*a), xy(*b), level, field.value))
-            crossings.append(edge)
-        if len(crossings) == 2:
-            segments.append((crossings[0], crossings[1]))
-        elif len(crossings) == 4:
-            # Resolve saddle topology using the actual field at the centre.
-            centre_above = field.value((west + (ix + 0.5) * step, south + (iy + 0.5) * step)) >= level
-            if centre_above == signs[0]:
-                segments.extend([(crossings[0], crossings[1]), (crossings[2], crossings[3])])
-            else:
-                segments.extend([(crossings[3], crossings[0]), (crossings[1], crossings[2])])
-
-    visit(0, 0, count)
-    return Contour(level_db=level, lines=_segments_to_lines(segments, points))
+    return trace_tiles(field, level, MAX_CELLS, VERTEX_TOLERANCE_DB)
 
 
 def sum_level_at_max(field: ContourField) -> float:
@@ -326,7 +185,7 @@ def sum_level_at_max(field: ContourField) -> float:
 
 
 def build_contours(scenario: ContourRequest) -> ContourResponse:
-    """Generate source-centred threshold lines using only the standard library.
+    """Generate source-centred lines with the approved NumPy/ContourPy engine.
 
     Args:
         scenario: Validated sources and thresholds; presentation settings stay client-side.
