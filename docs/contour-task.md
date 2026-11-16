@@ -55,3 +55,10 @@ Screenshots are artifacts outside Git. GitHub GraphQL/API access still returns F
 so PR creation is unavailable here. Publish the implementation branch through Git push and
 provide a main-targeting comparison link. The source branch is based on walk-back, as requested.
 Numerical safety limits and unchanged model limitations are documented in ARCHITECURE.md.
+
+## Follow-up: physics and blank-map audit
+
+See physics-audit.md. Reproduced missing-randomUUID and wrong-JavaScript-MIME startup
+failures matching the reported symptoms; deterministic asset MIME types, a secure-context-free
+ID helper and visible ordered bootstrap now address them. Physics helpers are shared, the
+exact-maximum contour boundary bug is fixed, and 56 numerical/HTTP tests pass.

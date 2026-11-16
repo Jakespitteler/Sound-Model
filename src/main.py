@@ -5,9 +5,9 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 
 from .acoustics import at_point
+from .assets import FrontendFiles
 from .contours import build_contours
 from .pages import index_page
 from .types import ContourRequest, ContourResponse, MachineType, Point, Prediction, Scenario
@@ -86,4 +86,4 @@ def contours(scenario: ContourRequest) -> ContourResponse:
 app.add_api_route("/", index_page, methods=["GET"], response_class=HTMLResponse)
 app.add_api_route("/index.html", index_page, methods=["GET"], response_class=HTMLResponse)
 
-app.mount("/", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="frontend")
+app.mount("/", FrontendFiles(directory=Path(__file__).parent / "static", html=True), name="frontend")

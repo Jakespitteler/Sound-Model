@@ -131,3 +131,52 @@ def test_camera_and_style_fields_are_not_acoustic_inputs() -> None:
         for field in ("bounds", "color"):
             response = client.post("/api/contours", json={**payload, field: {}})
             assert response.status_code == 422
+
+
+def test_exact_near_field_maximum_keeps_boundary() -> None:
+    """An exactly attainable clamped maximum has a 1 m boundary, not no contour."""
+    from src.acoustics import source_level
+
+    scenario = request_for([source_level(110, 1)])
+    contour = build_contours(scenario).contours[0]
+    assert len(contour.lines) == 1
+    for lng, lat in contour.lines[0]:
+        assert distance_metres(scenario.sources[0], Receiver(id="r", lat=lat, lng=lng)) == pytest.approx(1, abs=0.06)
+
+
+def test_contour_field_matches_direct_physics_and_bounds() -> None:
+    """Check independent energy arithmetic and conservative pruning across latitudes.
+
+    This exercises mixed powers, projected coordinates and sub-cell distance bounds,
+    rather than merely checking two implementations against each other.
+    """
+    from src.acoustics import mercator_y
+    from src.contours import EARTH_RADIUS, ContourField
+
+    for latitude in (0, -33.86, 70):
+        sources = [
+            Source(id="a", type_id="t", lat=latitude, lng=116.05),
+            Source(id="b", type_id="weak", lat=latitude + 0.001, lng=116.052),
+        ]
+        scenario = ContourRequest(
+            types=[MachineType(id="t", name="Loud", lwa=110), MachineType(id="weak", name="Quiet", lwa=70)],
+            sources=sources,
+            levels=[55],
+        )
+        field = ContourField(scenario)
+        types = {t.id: t for t in scenario.types}
+        centre = (EARTH_RADIUS * math.radians(116.053), EARTH_RADIUS * mercator_y(latitude + 0.002))
+        lo, hi = field.range_at(centre, 50)
+        for dx, dy in ((0, 0), (30, 30), (-30, -30), (50, 0), (0, -50)):
+            xy = (centre[0] + dx, centre[1] + dy)
+            lng, lat = field.geographic(xy)
+            receiver = Receiver(id="r", lat=lat, lng=lng)
+            distances = [distance_metres(s, receiver) for s in sources]
+            energy = sum(
+                10 ** (types[s.type_id].lwa / 10) / (4 * math.pi * max(1, d) ** 2)
+                for s, d in zip(sources, distances, strict=True)
+            )
+            expected = 10 * math.log10(energy)
+            assert field.value(xy) == pytest.approx(expected, abs=1e-8)
+            assert at_point(receiver, sources, types).level_db == pytest.approx(expected, abs=1e-8)
+            assert lo <= expected <= hi

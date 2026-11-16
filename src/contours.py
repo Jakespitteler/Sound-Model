@@ -10,7 +10,7 @@ import math
 from collections import defaultdict
 from collections.abc import Callable
 
-from .acoustics import combine, inverse_mercator, mercator_y
+from .acoustics import combine, inverse_mercator, mercator_y, source_level
 from .types import Contour, ContourRequest, ContourResponse
 
 EARTH_RADIUS = 6_371_008.8
@@ -132,12 +132,10 @@ class ContourField:
         Returns:
             Combined dB(A) at the sample, with the existing 1 m near-field clamp.
         """
-        levels = [
-            s[4] - 10 * math.log10(4 * math.pi) - 20 * math.log10(max(1, d))
-            for s, d in zip(self.sources, self.distances(point), strict=True)
-        ]
-        highest = max(levels)
-        return highest + 10 * math.log10(sum(10 ** ((v - highest) / 10) for v in levels))
+        levels = [source_level(s[4], d) for s, d in zip(self.sources, self.distances(point), strict=True)]
+        result = combine(levels)
+        assert result is not None
+        return result
 
     def range_at(self, centre: XY, radius: float) -> tuple[float, float]:
         """Bound every level within a cell using the spherical triangle inequality.
@@ -153,15 +151,11 @@ class ContourField:
             Conservative lower and upper combined dB(A) limits for pruning.
         """
         distances = self.distances(centre)
-        lower = [
-            s[4] - 10 * math.log10(4 * math.pi) - 20 * math.log10(max(1, d + radius))
-            for s, d in zip(self.sources, distances, strict=True)
-        ]
-        upper = [
-            s[4] - 10 * math.log10(4 * math.pi) - 20 * math.log10(max(1, d - radius))
-            for s, d in zip(self.sources, distances, strict=True)
-        ]
-        return float(combine(lower) or 0), float(combine(upper) or 0)
+        lower = [source_level(s[4], d + radius) for s, d in zip(self.sources, distances, strict=True)]
+        upper = [source_level(s[4], d - radius) for s, d in zip(self.sources, distances, strict=True)]
+        low, high = combine(lower), combine(upper)
+        assert low is not None and high is not None
+        return low, high
 
     def domain(self, level: float) -> tuple[float, float, float]:
         """Choose a source-based square guaranteed to enclose the requested level.
@@ -234,7 +228,7 @@ def trace_level(field: ContourField, level: float) -> Contour:
     Raises:
         ValueError: If the safe adaptive cell budget is exhausted.
     """
-    if level >= sum_level_at_max(field):
+    if level > sum_level_at_max(field):
         return Contour(level_db=level, lines=[])
     west, south, size = field.domain(level)
     # Resolve compact rings, not just the largest domain. No viewport input.

@@ -40,8 +40,15 @@ export class MapManager {
     );
 
     let tileErrors = 0;
+    let timeout;
+    const unavailable = () => {
+      $('tile-status').hidden = false;
+      $('tile-status').textContent = 'Satellite imagery is unavailable or slow. Check access to server.arcgisonline.com. Source placement and calculations still work.';
+    };
     tiles.on('loading', () => {
       tileErrors = 0;
+      clearTimeout(timeout);
+      timeout = setTimeout(unavailable, 10000);
     });
     tiles.on('tileerror', () => {
       tileErrors++;
@@ -50,6 +57,7 @@ export class MapManager {
         'Satellite imagery unavailable or incomplete. Check internet access. Coordinates and calculations still work.';
     });
     tiles.on('load', () => {
+      clearTimeout(timeout);
       if (!tileErrors) $('tile-status').hidden = true;
     });
     tiles.addTo(this.map);

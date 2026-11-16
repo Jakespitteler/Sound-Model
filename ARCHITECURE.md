@@ -15,12 +15,14 @@ Sound-Model/
 │   ├── types.py                   typed request/domain/response models
 │   ├── acoustics.py               existing great-circle distance and energetic addition
 │   ├── contours.py                adaptive level-line calculation and stitching
+│   ├── assets.py                  deterministic JS/CSS media types across platforms
 │   ├── pages.py                   HTML shell + partial assembly (standard library)
 │   ├── templates/
 │   │   ├── index.html             page layout, assets and model explanation
 │   │   └── partials/              header, catalogue, sources, contours, receivers, map
 │   └── static/
 │       ├── js/
+│       │   ├── bootstrap.js       ordered Leaflet/module loading and visible startup errors
 │       │   ├── main.js            event orchestration, receiver/geometry request lanes
 │       │   ├── state.js           scenario mutations and explicit change reasons
 │       │   ├── api.js             JSON requests, cancellation and geometry cache
@@ -178,3 +180,9 @@ refraction or validated cloud effect. This prototype does not establish machiner
 or compliance. Existing provider attribution and satellite URLs are preserved; no new provider
 has been selected. Browser regression checks block external imagery, testing geometry and
 interaction independently of remote service/network availability.
+
+## Physics and browser startup audit
+
+See [the audit](docs/physics-audit.md) for equations, physical limits, contour regression
+checks and the reported VS Code blank-map investigation. Bootstrap failures are visible;
+script/style media types do not depend on Windows registry settings.

@@ -169,4 +169,22 @@ def test_page_contains_assembled_controls(client: TestClient) -> None:
     assert "{{" not in response.text
     for control in ('id="type-form"', 'id="contours"', 'id="map"', 'id="retry"'):
         assert control in response.text
-    assert 'type="module" src="/js/main.js"' in response.text
+    assert 'defer src="/js/bootstrap.js"' in response.text
+
+
+def test_script_media_type_ignores_windows_registry(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep ES modules executable even if host MIME configuration labels JS as plain text.
+
+    Args:
+        client: In-process application client.
+        monkeypatch: Fixture restoring simulated host media-type settings.
+    """
+    import mimetypes
+
+    monkeypatch.setitem(mimetypes.types_map, ".js", "text/plain")
+    monkeypatch.setitem(mimetypes.types_map, ".css", "application/octet-stream")
+    for path in ("/js/bootstrap.js", "/js/main.js", "/js/state.js", "/vendor/leaflet/leaflet.js"):
+        response = client.get(path)
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/javascript")
+    assert client.get("/css/map.css").headers["content-type"].startswith("text/css")

@@ -39,3 +39,13 @@ uv run pyright
 ```
 
 No new runtime or development dependencies were added relative to `walk-back`.
+
+## Blank map / VS Code preview
+
+Open the local address in an external Edge, Chrome or Firefox browser if the VS Code preview
+has trouble loading it. Startup failures now show a message instead of a perpetual loading
+indicator. Restart the backend after updating this branch and refresh the browser page.
+If only imagery fails, check access to `server.arcgisonline.com`; calculations remain local.
+
+See [the physics and startup audit](docs/physics-audit.md) for what was checked and the limits
+of the model. Correct free-field arithmetic does not establish actual machinery inaudibility.
