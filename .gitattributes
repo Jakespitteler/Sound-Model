@@ -1,5 +1,0 @@
-# Auto detect text files and perform LF normalization
-* text=auto
-
-# Windows launch scripts retain CRLF in checkouts.
-*.bat text eol=crlf
