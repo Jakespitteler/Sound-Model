@@ -73,36 +73,6 @@ class Receiver(Position):
     id: str = Field(min_length=1, max_length=80)
 
 
-class Bounds(StrictModel):
-    """Axis-aligned geographic bounding box for heatmap grid evaluation.
-
-    Attributes:
-        south: Southern latitude boundary in decimal degrees within ``[-85, 85]``.
-        north: Northern latitude boundary in decimal degrees within ``[-85, 85]``.
-        west: Western longitude boundary in decimal degrees within ``[-180, 180]``.
-        east: Eastern longitude boundary in decimal degrees within ``[-180, 180]``.
-    """
-
-    south: float = Field(ge=-85, le=85)
-    north: float = Field(ge=-85, le=85)
-    west: float = Field(ge=-180, le=180)
-    east: float = Field(ge=-180, le=180)
-
-    @model_validator(mode="after")
-    def ordered(self) -> Self:
-        """Validate that the bounding box has strictly positive width and height.
-
-        Returns:
-            The validated :class:`Bounds` instance.
-
-        Raises:
-            ValueError: If ``south >= north`` or ``west >= east``.
-        """
-        if self.south >= self.north or self.west >= self.east:
-            raise ValueError("Map bounds must have positive width and height")
-        return self
-
-
 class Scenario(StrictModel):
     """Complete acoustic prediction request payload.
 
@@ -111,14 +81,12 @@ class Scenario(StrictModel):
         sources: Active noise sources placed on the map (up to 100 entries).
         receivers: Discrete receiver points to evaluate (up to 20 entries).
         cloud_cover: Recorded sky cloud cover percentage within ``[0, 100]``.
-        bounds: Optional map viewport bounding box for 48x48 grid evaluation.
     """
 
     types: list[MachineType] = Field(default_factory=list[MachineType], max_length=50)
     sources: list[Source] = Field(default_factory=list[Source], max_length=100)
     receivers: list[Receiver] = Field(default_factory=list[Receiver], max_length=20)
     cloud_cover: int = Field(default=0, ge=0, le=100, strict=True)
-    bounds: Bounds | None = None
 
     @model_validator(mode="after")
     def references(self) -> Self:
@@ -175,37 +143,69 @@ class Point(BaseModel):
     contributions: list[Contribution]
 
 
-class Grid(BaseModel):
-    """Row-major 48x48 spatial grid of predicted sound pressure levels.
-
-    Attributes:
-        rows: Fixed vertical cell count (``48``).
-        columns: Fixed horizontal cell count (``48``).
-        bounds: Geographic extent dictionary with ``south``, ``north``, ``west``, and ``east``.
-        values: Flattened row-major list of 2,304 cell-centre levels in dB(A).
-    """
-
-    rows: Literal[48]
-    columns: Literal[48]
-    bounds: dict[str, float]
-    values: list[float | None]
-
-
 class Prediction(BaseModel):
-    """Top-level acoustic prediction response returned by ``POST /api/predict``.
+    """Direct receiver results, independent of viewport and contour rendering.
 
     Attributes:
-        receivers: Mapping of receiver IDs to their evaluated :class:`Point` results.
-        grid: Optional 48x48 :class:`Grid` overlay when bounds and sources are provided.
-        cloud_cover: Echoed scenario cloud cover percentage.
-        cloud_correction_db: Always ``None`` in v1 because no meteorological offset is applied.
-        example_data: ``True`` if any active source uses a machine type marked ``"example"``.
-        model: Identifier string of the acoustic propagation model version.
+        receivers: Results keyed by receiver ID.
+        cloud_cover: Recorded cloud percentage; no numerical correction applies.
+        cloud_correction_db: Always None until a meteorological model is validated.
+        example_data: Whether an active source uses example sound power data.
+        model: Identifier of the unchanged full-space acoustic model.
     """
 
     receivers: dict[str, Point]
-    grid: Grid | None
     cloud_cover: int
     cloud_correction_db: None
     example_data: bool
     model: str
+
+
+class ContourRequest(Scenario):
+    """Source-based request for level lines, without camera or visual styling.
+
+    Attributes:
+        levels: Unique dB(A) thresholds, limited to 25 for bounded computation.
+    """
+
+    levels: list[float] = Field(max_length=25)
+
+    @model_validator(mode="after")
+    def valid_levels(self) -> Self:
+        """Reject repeated or out-of-range contour thresholds.
+
+        Returns:
+            Validated contour request.
+
+        Raises:
+            ValueError: If thresholds are repeated or outside 0–180 dB(A).
+        """
+        if len(set(self.levels)) != len(self.levels) or any(not 0 <= level <= 180 for level in self.levels):
+            raise ValueError("Contour levels must be unique finite values from 0 to 180 dB(A)")
+        return self
+
+
+class Contour(BaseModel):
+    """One threshold's connected contour polylines.
+
+    Attributes:
+        level_db: Combined A-weighted noise threshold.
+        lines: Polylines as [longitude, latitude] pairs; longitudes may unwrap at 180°.
+    """
+
+    level_db: float
+    lines: list[list[tuple[float, float]]]
+
+
+class ContourResponse(BaseModel):
+    """Viewport-independent geometry and numerical accuracy metadata.
+
+    Attributes:
+        contours: One result per requested level, including empty levels.
+        tolerance_db: Maximum target vertex error for bisection refinement.
+        model: Acoustic model used to evaluate all thresholds.
+    """
+
+    contours: list[Contour]
+    tolerance_db: float = 0.02
+    model: str = "full-space-point-source-v1"
