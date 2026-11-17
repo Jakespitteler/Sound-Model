@@ -50,6 +50,7 @@ function refreshReceivers() {
 /** @param {import('./types.js').ContourGeometry[]} results Current results in threshold order. */
 function displayGeometry(results) {
   geometry=results;
+  if ($('message').textContent==='Retrying…') say('');
   const failures=geometry.filter(c=>c.status==='failed');
   geometryFailed=!!failures.length; updateRetry(); contours.setResults(geometry);
   manager.contourLayer.render(geometry,store.contours); manager.contourLayer.setPending(false);
