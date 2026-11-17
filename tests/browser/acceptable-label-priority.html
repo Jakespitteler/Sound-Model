@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>Acceptable label priority</title>
+<link rel="stylesheet" href="../../src/static/vendor/leaflet/leaflet.css"><link rel="stylesheet" href="../../src/static/css/contours.css">
+<style>#map{height:550px;width:900px;background:#e7ece3}.contour-label{pointer-events:auto!important}</style>
+<div id="map"></div><pre id="result">Running…</pre>
+<script src="../../src/static/vendor/leaflet/leaflet.js"></script>
+<script type="module">
+import {ContourLayer} from '../../src/static/js/contour-layer.js';
+const map=L.map('map',{fadeAnimation:false,zoomAnimation:false}).setView([-33.86,116.07],15);
+const layer=new ContourLayer(map), checks=[];
+// Deliberately coincident labels isolate paint order, not acoustic geometry.
+const ring=[[116.065,-33.86],[116.07,-33.855],[116.075,-33.86],[116.07,-33.865],[116.065,-33.86]];
+/** @param {boolean} claim Outcome. @param {string} name Behaviour. */
+function check(claim,name){if(!claim)throw new Error(name);checks.push(name);}
+/** Verify the foreground element at the exact shared-label anchor. */
+function front(){
+ const special=document.querySelector('.acceptable-label'),r=special.getBoundingClientRect();
+ const top=document.elementsFromPoint(r.x+r.width/2,r.y+r.height/2).map(e=>e.closest('.contour-label')).find(Boolean);
+ check(top===special,'acceptable label paints above ordinary overlapping label');
+}
+try {
+ for(const level of [50,60]) {
+  layer.render([{level_db:51,status:'ok',lines:[ring]},{level_db:level,status:'ok',lines:[ring]}],
+   [{id:'special',level_db:level,acceptable:true},{id:'normal',level_db:51}]);front();
+  layer.setHighContrast(true);front();map.setZoom(16);front();
+  layer.setVisible(false);check(!map.hasLayer(layer.group),'visibility toggle still hides lines and labels');
+  layer.setVisible(true);front();map.setZoom(15);
+ }
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks`;document.querySelector('#result').dataset.passed='true';
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>

@@ -17,6 +17,9 @@ export class ContourLayer {
     if (!this.map.getPane('contour-labels')) {
       const pane = this.map.createPane('contour-labels'); pane.style.zIndex='450'; pane.style.pointerEvents='none';
     }
+    if (!this.map.getPane('acceptable-labels')) {
+      const pane=this.map.createPane('acceptable-labels'); pane.style.zIndex='460'; pane.style.pointerEvents='none';
+    }
     this.labels = [];
     this.map.on('zoomend',()=>this.updateLabelVisibility());
   }
@@ -76,7 +79,7 @@ export class ContourLayer {
       const label = document.createElement('span');
       label.textContent = `${contour.acceptable ? 'Acceptable level — user-set · ' : ''}${contour.level_db.toFixed(1)} dB(A)`;
       label.style.color = color;
-      const tooltip = L.tooltip({pane:'contour-labels',permanent:true,direction:'center',className:contour.acceptable ? 'contour-label acceptable-label' : 'contour-label',opacity:1,interactive:false})
+      const tooltip = L.tooltip({pane:contour.acceptable ? 'acceptable-labels' : 'contour-labels',permanent:true,direction:'center',className:contour.acceptable ? 'contour-label acceptable-label' : 'contour-label',opacity:1,interactive:false})
         .setLatLng([anchor[1],anchor[0]]).setContent(label).addTo(this.group);
       this.labels.push({tooltip,acceptable:contour.acceptable,bounds:L.latLngBounds(lines[0].map(([lng,lat])=>[lat,lng]))});
     }
