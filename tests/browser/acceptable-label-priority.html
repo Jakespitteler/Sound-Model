@@ -11,10 +11,11 @@ const layer=new ContourLayer(map), checks=[];
 const ring=[[116.068,-33.86],[116.07,-33.858],[116.072,-33.86],[116.07,-33.862],[116.068,-33.86]];
 /** @param {boolean} claim Outcome. @param {string} name Behaviour. */
 function check(claim,name){if(!claim)throw new Error(name);checks.push(name);}
-/** Verify the foreground element at the exact shared-label anchor. */
+L.marker([-33.858,116.07],{icon:L.divIcon({className:'test-machine',html:'Machine',iconSize:[60,30],iconAnchor:[30,15]})}).addTo(map);
+/** Verify foreground paint order against coincident ordinary labels and machine markers. */
 function front(){
  const special=document.querySelector('.acceptable-label'),r=special.getBoundingClientRect();
- const top=document.elementsFromPoint(r.x+r.width/2,r.y+r.height/2).map(e=>e.closest('.contour-label')).find(Boolean);
+ const top=document.elementsFromPoint(r.x+r.width/2,r.y+r.height/2).map(e=>e.closest('.contour-label,.test-machine')).find(Boolean);
  check(top===special,'acceptable label paints above ordinary overlapping label');
 }
 try {
