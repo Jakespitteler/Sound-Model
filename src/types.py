@@ -133,14 +133,20 @@ class Point(BaseModel):
     """Aggregated acoustic prediction result at a single receiver location.
 
     Attributes:
-        level_db: Energetic sum of all source levels in dB(A), or ``None`` if no sources exist.
+        level_db: Energetic sum in dB(A), or ``None`` for no sources or suppressed scope.
         near_field: ``True`` if at least one contributing source is within 1 m.
-        contributions: Per-source breakdown ordered identically to ``Scenario.sources``.
+        contributions: Per-source breakdown, suppressed outside the receiver screening scope.
+        status: Whether a reading is present, empty, or deliberately out of scope.
+        nearest_source_m: Distance to the closest source, where sources exist.
+        includes_distant_sources: Whether an in-scope total includes paths beyond 10 km.
     """
 
     level_db: float | None
     near_field: bool
     contributions: list[Contribution]
+    status: Literal["ok", "no_sources", "out_of_scope"] = "ok"
+    nearest_source_m: float | None = None
+    includes_distant_sources: bool = False
 
 
 class Prediction(BaseModel):
@@ -191,10 +197,14 @@ class Contour(BaseModel):
     Attributes:
         level_db: Combined A-weighted noise threshold.
         lines: Polylines as [longitude, latitude] pairs; longitudes may unwrap at 180°.
+        status: Calculated, no crossing, or failed; failures are isolated by level.
+        error: Explanation of a calculation/scope failure, without suppressing other levels.
     """
 
     level_db: float
     lines: list[list[tuple[float, float]]]
+    status: Literal["ok", "empty", "failed"] = "ok"
+    error: str | None = None
 
 
 class ContourResponse(BaseModel):

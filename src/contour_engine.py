@@ -249,3 +249,31 @@ def trace_tiles(field: ContourField, level: float, budget_limit: int, tolerance:
         lats = np.degrees(2 * np.arctan(np.exp(middle[:, 1] / EARTH_RADIUS)) - math.pi / 2)
         geographic.append([(float(lng), float(lat)) for lng, lat in zip(lngs, lats, strict=True)])
     return Contour(level_db=level, lines=geographic)
+
+
+def lines_within_scope(field: ContourField, lines: list[list[tuple[float, float]]], radius: float) -> bool:
+    """Check contour vertices and segment midpoints against the display screening scope.
+
+    Args:
+        field: Prepared source coefficients.
+        lines: Unwrapped geographic paths.
+        radius: Maximum allowed nearest-source distance in metres.
+
+    Returns:
+        Whether every sampled path point remains within scope; no line is clipped.
+    """
+    coefficients = np.asarray(field.sources, dtype=np.float64)
+    for line in lines:
+        points = np.asarray(line, dtype=np.float64)
+        samples = np.concatenate((points, (points[:-1] + points[1:]) / 2))
+        for start in range(0, len(samples), BATCH_SIZE):
+            chunk = np.radians(samples[start : start + BATCH_SIZE])
+            lng, lat = chunk[:, 0, None], chunk[:, 1, None]
+            h = (
+                np.sin((lat - coefficients[:, 2]) / 2) ** 2
+                + np.cos(lat) * np.cos(coefficients[:, 2]) * np.sin((lng - coefficients[:, 3]) / 2) ** 2
+            )
+            distances = 2 * EARTH_RADIUS * np.arcsin(np.sqrt(np.clip(h, 0, 1)))
+            if np.any(np.min(distances, axis=1) > radius):
+                return False
+    return True

@@ -15,6 +15,9 @@ Sound-Model/
 │   ├── main.py                    HTTP routes, validation errors, static serving
 │   ├── types.py                   typed request/domain/response models
 │   ├── acoustics.py               existing great-circle distance and energetic addition
+│   ├── scope.py                   owner-approved 10 km display screening policy
+│   ├── scenario_files.py          versioned documents and atomic local JSON files
+│   ├── scenario_routes.py         named save/open/update endpoints
 │   ├── contours.py                scalar reference field, domain and contour entry point
 │   ├── contour_engine.py          batched NumPy evaluation, sparse tiles, ContourPy and stitching
 │   ├── assets.py                  deterministic JS/CSS media types across platforms
@@ -26,13 +29,20 @@ Sound-Model/
 │       ├── js/
 │       │   ├── bootstrap.js       ordered Leaflet/module loading and visible startup errors
 │       │   ├── main.js            event orchestration, receiver/geometry request lanes
+│       │   ├── scenario-files.js  explicit saves, reopen and saved-URL restore
+│       │   ├── illustrations.js   original equipment/guide SVGs
+│       │   ├── sound-reference.js shared guide/default contour levels
+│       │   ├── sidebar.js         keyboard-accessible Scenario/Contours tabs
 │       │   ├── state.js           scenario mutations and explicit change reasons
 │       │   ├── api.js             JSON requests, cancellation and geometry cache
 │       │   ├── map-manager.js     existing imagery provider, entity markers, placement
-│       │   ├── contour-layer.js   geographic polylines and threshold dragging
+│       │   ├── contour-layer.js   read-only geographic lines and static labels
 │       │   ├── ui-catalogue.js    machine type forms and cloud metadata
 │       │   ├── ui-entities.js     source/receiver cards and coordinate forms
-│       │   ├── ui-contours.js     threshold/style/count controls and legend
+│       │   ├── ui-contours.js     descending paired slider/number rows and per-level status
+│       │   ├── sound-style.js     shared automatic level colours
+│       │   ├── sound-guide.js     illustrative, collapsible local-flavour reference key
+│       │   ├── machine-presets.js eight provisional equipment guesses with origin notes
 │       │   ├── types.js           shared JSDoc domain definitions
 │       │   └── utils.js           DOM lookup, escaping, IDs and formatting
 │       ├── css/                   tokens, base, layout, sidebar, map, contours, responsive
@@ -60,13 +70,28 @@ flowchart TD
     State -->|source / type / receiver edit| ReceiverLane[api.js: separate receiver lane]
     ReceiverLane -->|POST /api/predict| Physics[acoustics.py: direct receiver levels]
     Physics --> Readings[ui-entities.js: readings and source breakdown]
-    State -->|colour / width / dash / visibility| Lines
+    Scale[sound-style.js: automatic colours] --> Lines
+    Scale --> Readings
     Camera[Map pan / zoom] --> Leaflet[Leaflet reprojects existing geographic lines]
     Leaflet -->|ordinary imagery requests only| Tiles[Existing Esri satellite service]
 ```
 
 Source changes update lines and receiver values. Receiver changes only update readings.
-Colour, width, line style, per-level visibility and the global display toggle are local.
+Colours are derived automatically from absolute sound-pressure level, with one fixed 2.5 px
+solid line weight. The display toggle controls visibility and High contrast adds white halos
+behind the colours without requesting predictions. Contour labels sit beneath object badges.
+There are no manual
+colour/width/style settings or contour drag handlers.
+Machine markers contain only a category glyph and a number matching the sidebar, avoiding
+permanent overlapping name/power cards. Leaflet's transient tooltip shows name and LwA on
+hover or keyboard focus; click/Enter opens the source evidence popup and closes the tooltip.
+Receiver badges are 84 × 34 px for numeric readings and 112 × 34 px for explicit status text.
+Their colours and units remain visible. Hover raises a marker over nearby markers, without
+moving its geographic anchor or starting an acoustic request.
+Object tooltips use intrinsic content width with a 260 px cap, avoiding shrink-to-fit inside
+Leaflet's zero-width pane. `fitObjectTooltip` measures the opened card, chooses above/below
+and a small horizontal shift to keep it within the map and minimise overlap with visible
+controls. Its arrow stays aligned to the object. Panning dismisses transient cards.
 Cloud cover remains recorded metadata without an invented correction. No camera bounds are
 sent to either endpoint, and no camera handler starts predictions. New satellite tiles may
 still load when browsing another area: that is separate from acoustic computation.
@@ -76,7 +101,8 @@ out-of-date responses by version. Returning to cached geometry also invalidates 
 request, preventing the A→B→A race found in the reference attempt. Source/threshold updates
 hide old contours until current results are available. Failures clear stale geometry, report
 the server message and offer Retry. Receiver failures do not destroy valid contours.
-The geometry cache is session-local and limited to 12 results; reload discards the scenario.
+The geometry cache is session-local and limited to 12 results. Reloading a saved scenario URL
+restores its last saved inputs; unsaved edits are discarded.
 
 ## Combined noise and contour calculation
 
@@ -111,47 +137,61 @@ For each threshold:
 The vertex tolerance is numerical, **not an environmental prediction accuracy claim**. Straight
 segments between vertices approximate the continuous field. Cells target at most 1/20 of the
 smallest relevant source radius (minimum target 0.05 m). Fields that exceed the safe 640,000-cell
-budget **per threshold** return an explicit 422 error instead of truncating results. Levels whose
+budget **per threshold** return a failed result for that level instead of truncating it. Levels whose
 combined-power propagation radius exceeds 200 km, or whose domain reaches ±85° latitude, also
 return an explanation. Increase the threshold or narrow the scenario to reduce complexity.
 A level above the possible maximum, no sources, or no levels produces empty geometry, not an error.
 Up to 100 sources, 50 machine types, 20 receivers and 25 unique levels are supported by validation;
 complex combinations can hit numerical safety limits before those counts.
 
-## Editing and dragging
+## Simple editing and receiver feedback
 
 ```mermaid
 sequenceDiagram
     actor User
+    participant UI as ui-contours.js
+    participant State as state.js
+    participant API as /api/contours
     participant Map as contour-layer.js
-    participant UI as main.js / state.js
-    participant API as /api/predict
-    participant Contours as /api/contours
-    User->>Map: Drag a line or its labelled handle
-    Map->>UI: Contour ID and drop coordinates
-    UI->>API: Current sources + one temporary receiver at the drop
-    API-->>UI: Combined level at that location
-    UI->>UI: Round to 0.1 dB, validate unique threshold
-    UI->>Contours: New thresholds with current sources
-    Contours-->>Map: Recomputed geographic level lines
+    User->>UI: Move slider or type a level
+    UI->>UI: Preview paired number during slider input
+    User->>UI: Release / commit change
+    UI->>State: Validate unique 0–300 dB threshold
+    State->>State: Sort descending
+    State->>API: Debounced geometry request
+    API-->>Map: Geographic lines
+    Map->>Map: Apply shared level colour and fixed line weight
 ```
 
-Dragging chooses a **decibel threshold**, not an arbitrary hand-drawn shape. The level's colour,
-width, style and ID survive. Source edits or another drag invalidate a pending drop response.
-Near-field drops (within 1 m), duplicate thresholds and out-of-range values are rejected clearly.
-Desktop users can drag the line itself; its labelled draggable marker also supports touch.
-Numeric controls provide the keyboard alternative. Contours cannot be used to delete or move
-machine sources accidentally; source/receiver markers retain their separate interactions.
+The map's contour paths and labels are noninteractive: gestures pan the map, not edit a
+threshold. Source/receiver location markers remain draggable. Receivers show a numeric
+pressure level in a colour from the same absolute palette as contours and the guide. Pending,
+failed and empty results use neutral states instead of stale numbers or a misleading 0 dB.
+Updating a reading does not replace source markers or move the camera.
+
+Machine data starts with eight explicitly guessed equipment categories in machine-presets.js.
+The local `/machine-estimates` page records the origin, limits and unavailable public references;
+it does not claim manufacturer/site evidence. Users can replace both a value and its note.
+The compact equipment editor is closed initially so selecting/placing a machine stays prominent.
+
+Greenbushes navigation uses `fitBounds` with a wider approximate mine-area overview and padding
+for overlays, rather than a fixed point/zoom. The rectangle is a navigation aid, not a surveyed
+lease or pit boundary. The top-right sound guide is collapsible and labels its comparisons as
+illustrative pressure levels, separate from the machine sound-power inputs.
 
 ## HTTP boundaries
 
 | Endpoint | Request | Response / responsibility |
 | --- | --- | --- |
 | GET `/` or `/index.html` | none | Assembled HTML; partials aren't fetched asynchronously |
+| GET `/machine-estimates` | none | Explicit origin and limits of guessed catalogue values |
 | GET `/js/*`, `/css/*`, `/vendor/*` | static path | Local frontend assets only |
 | GET `/api/health` | none | Server readiness and model ID |
 | POST `/api/predict` | `Scenario` | Receiver results keyed by ID, provenance and cloud metadata |
-| POST `/api/contours` | `ContourRequest` (`Scenario` plus `levels`) | Connected geographic lines per threshold, tolerance and model ID |
+| POST `/api/contours` | `ContourRequest` (`Scenario` plus `levels`) | Independent ok/empty/failed result per level; valid requests use HTTP 200 even with level failures |
+| GET/POST `/api/scenarios` | optional named versioned document | List metadata / create a local saved record |
+| GET/PUT `/api/scenarios/{UUID}` | optional replacement document | Restore / explicitly update selected save |
+| GET `/about` | none | Plain-language physics and scope explanation |
 
 The previous `bounds`/heatmap `grid` API is removed; both endpoints reject unknown fields.
 Styles never enter acoustic input. Pydantic rejects duplicate IDs, broken source references,
@@ -199,3 +239,45 @@ engine selection, validation/uncertainty, audit reports, mitigation and operatio
 optimisation notes and evaluated library candidates are in [library options](docs/library-options.md).
 The allowed input range is 0–300 dB(A) for source powers and contour thresholds; longitude
 remains limited to ±180°. Numeric range is separate from equipment plausibility or model validity.
+
+## Desktop workspaces
+
+The sidebar defaults to Scenario (machine placement and compact receiver results). Contours
+is a second tab. Switching tabs hides panels without destroying form state and has no acoustic
+side effects. Equipment data, coordinate forms, source breakdowns and model/cloud settings
+are disclosed on demand. Tabs support standard arrow/Home/End keyboard navigation.
+
+## Independent results and screening scope
+
+Calculation errors are caught per level, not around the entire list. A failed level carries
+`status=failed`, an explanatory `error`, and no lines. Unreachable/empty levels are distinct
+from failures. The frontend renders successes, marks failed rows, offers retry and displays
+an alert while Scenario is selected. Failed responses are not cached as successful geometry.
+
+`scope.py` applies the owner's 10 km screening policy after direct scalar evaluation:
+receivers beyond 10 km from **every** source expose no numeric level or numeric contributions;
+status is `out_of_scope` and nearest-source distance is retained. Nearer totals keep all sources
+and warn if any source path exceeds 10 km. Contour vertices/midpoints are tested with batched
+nearest-source distances; a level extending outside scope is rejected whole, not clipped.
+This is a presentation safeguard for an unvalidated model, not new attenuation physics.
+
+Raw scalar equations remain testable: Greenbushes-to-Perth is about 213.57 km, yielding 2.42 dB(A)
+for one 120 dB(A) LwA source or 5.43 for two, under geometric spreading alone. The API suppresses
+such extrapolations. Valid local negative pressure levels are preserved; they are below a
+reference, not negative energy. `/about` explains this without implying audibility/compliance.
+
+## Local scenario persistence
+
+`ScenarioDocument` is a versioned input record, separate from acoustic request schemas. It
+preserves notes, type illustrations, sources, receivers, contour thresholds, cloud metadata,
+camera, contrast and visibility. Core acoustic validators check references, ranges and IDs.
+Names never become paths; filenames use server-generated UUIDs. Writes use a same-directory
+temporary file, flush/fsync, and atomic replacement. Failed replacements preserve the prior
+save; unreadable files are reported without preventing access to other valid scenarios.
+
+Save/Open are explicit actions. A revision counter preserves dirty state if edits occur during
+an in-flight save. Restoring uses validated server data and refreshes model requests. The saved
+URL restores the last saved document on reload; there is no autosave or cloud synchronisation.
+Default files are in ignored `local-data/scenarios`; `SOUND_MODEL_DATA_DIR` can override that.
+Keep the local backend bound to loopback as documented. Shared deployment/authentication and
+portable import/export remain separate tasks.

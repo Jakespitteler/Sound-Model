@@ -2,14 +2,16 @@
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from .acoustics import at_point
 from .assets import FrontendFiles
 from .contours import build_contours
-from .pages import index_page
+from .pages import about_page, index_page, machine_estimates_page
+from .scenario_routes import router as scenario_router
+from .scope import screen_receiver
 from .types import ContourRequest, ContourResponse, MachineType, Point, Prediction, Scenario
 
 app = FastAPI(title="Sound-Model", docs_url=None, redoc_url=None, openapi_url=None)
@@ -54,7 +56,9 @@ def predict(scenario: Scenario) -> Prediction:
         Direct receiver readings with provenance and model metadata.
     """
     types: dict[str, MachineType] = {item.id: item for item in scenario.types}
-    receivers: dict[str, Point] = {point.id: at_point(point, scenario.sources, types) for point in scenario.receivers}
+    receivers: dict[str, Point] = {
+        point.id: screen_receiver(at_point(point, scenario.sources, types)) for point in scenario.receivers
+    }
     return Prediction(
         receivers=receivers,
         cloud_cover=scenario.cloud_cover,
@@ -74,15 +78,14 @@ def contours(scenario: ContourRequest) -> ContourResponse:
     Returns:
         Connected geographic lines and the model identifier.
 
-    Raises:
-        HTTPException: If requested geometry exceeds numerical safety limits.
     """
-    try:
-        return build_contours(scenario)
-    except ValueError as error:
-        raise HTTPException(status_code=422, detail=str(error)) from error
+    return build_contours(scenario)
 
 
+app.include_router(scenario_router)
+
+app.add_api_route("/about", about_page, methods=["GET"], response_class=HTMLResponse)
+app.add_api_route("/machine-estimates", machine_estimates_page, methods=["GET"], response_class=HTMLResponse)
 app.add_api_route("/", index_page, methods=["GET"], response_class=HTMLResponse)
 app.add_api_route("/index.html", index_page, methods=["GET"], response_class=HTMLResponse)
 

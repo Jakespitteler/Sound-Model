@@ -1,15 +1,84 @@
-/* Contour controls and geographic line labels. */
-.contour-card { border:1px solid #dde5de; border-radius:7px; margin:12px 0; padding:10px; }
-.contour-card legend { font-size:12px; font-weight:600; color:var(--teal); padding:0 5px; }
-.contour-fields { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; }
-.contour-card input[type=color] { display:block; width:100%; margin-top:5px; padding:3px; height:35px; }
-.contour-card .row { display:flex; align-items:center; justify-content:space-between; }
-.contour-card label.inline { margin:0; }
-.contour-legend { display:flex; flex-wrap:wrap; gap:9px 14px; }
+/* Only level and count are editable; a shared scale supplies all styling. */
+.contour-row { display:flex; gap:9px; align-items:center; margin:9px 0; padding:8px 0; border-bottom:1px solid var(--line); }
+.level-swatch { width:17px; flex-shrink:0; border-top:3px solid var(--level-color); }
+.contour-row input[type=range] { flex:1; width:0; min-width:35px; margin:0; accent-color:var(--level-color); }
+.level-number { display:flex; align-items:center; gap:4px; margin:0; font-size:9px; white-space:nowrap; }
+.level-number input[type=number] { width:64px; padding:7px 4px; margin:0; font-size:12px; }
+.remove-level { font-size:19px; line-height:1; padding:4px; }
+.contour-legend { display:flex; flex-wrap:wrap; gap:8px 12px; }
 .legend-chip { display:flex; align-items:center; gap:6px; font-size:10px; }
-.legend-swatch { width:24px; display:inline-block; }
-.contour-handle span { display:block; background:#fff; color:#263c3a; font-size:10px; font-weight:650; line-height:19px; text-align:center; border:2px solid; border-radius:12px; cursor:grab; box-shadow:0 1px 5px #0003; }
-.contour-handle:focus-visible { outline:3px solid #da953a; }
-.leaflet-interactive { cursor:grab; }
-.retry { margin-top:8px; }
+.legend-swatch { width:20px; display:inline-block; }
+.contour-label { border:0; border-radius:5px; padding:2px 5px; background:#ffffffec; box-shadow:0 1px 4px #0002; font-size:10px; font-weight:600; pointer-events:none; }
+.contour-label::before { display:none; }
 .calculation-status { pointer-events:auto; }
+.retry { margin-top:8px; }
+.receiver-marker { display:flex; align-items:center; justify-content:center; gap:6px; width:84px; height:34px; border:1.5px solid var(--level-color); border-radius:7px; background:#fffffff5; box-shadow:0 1px 5px #233b4b25; color:var(--level-color); font:600 12px/1.1 Segoe UI,Arial,sans-serif; }
+.receiver-id { font-size:9px; color:#52645e; padding-right:5px; border-right:1px solid #d9e0db; }
+.receiver-number { font-size:16px; font-weight:650; }
+.receiver-number small { display:block; font-size:8px; font-weight:400; margin-top:1px; }
+.sound-key { position:absolute; z-index:700; top:90px; right:18px; width:230px; padding:12px 14px; border:1px solid #dce3d8; border-radius:9px; background:#fffffff5; box-shadow:0 3px 16px #30453610; }
+.sound-key summary { cursor:pointer; font-size:12px; font-weight:650; color:#314a40; }
+.sound-key ol { list-style:none; padding:0; margin:13px 0 7px; }
+.sound-key li { display:flex; gap:9px; align-items:baseline; margin:11px 0; font-size:11px; line-height:1.4; }
+.sound-key .sound-key-number { min-width:47px; white-space:nowrap; font-size:14px; font-weight:650; }
+.sound-key p { font-size:9px; color:var(--muted); line-height:1.5; margin:5px 0 0; }
+.sound-key[open] summary { margin-bottom:4px; }
+.location-bar summary { font-size:11px; font-weight:600; cursor:pointer; }
+.location-bar form { display:flex; align-items:end; gap:9px; margin-top:12px; }
+.catalogue-library { margin-top:12px; }
+.catalogue-library > summary { cursor:pointer; font-size:12px; font-weight:600; color:var(--teal); }
+.catalogue-library[open] > summary { margin-bottom:14px; }
+textarea { display:block; width:100%; margin-top:5px; padding:8px; border:1px solid #dce3dd; border-radius:5px; font:inherit; color:#30453e; resize:vertical; }
+.estimate-note { white-space:pre-wrap; }
+@media(max-width:900px) { .sound-key { top:84px; right:12px; width:205px; } }
+@media(max-width:650px) {
+  .sound-key { top:77px; right:12px; width:204px; padding:9px 12px; }
+  .location-bar { top:122px; }
+  .location-bar[open] { z-index:710; }
+  .tile-status { top:196px; }
+  .map-panel-host { min-height:580px; }
+}
+.location-bar { display:block; }
+
+.receiver-marker.is-status { width:112px; }
+.receiver-marker.is-status .receiver-number { font-size:11px; font-weight:500; }
+/* One shared contrast option; halos sit under level colours in a separate Leaflet pane. */
+.contour-display { display:flex; gap:18px; margin:14px 0; }
+.contour-display label { margin:0; font-size:11px; }
+.contour-row { flex-wrap:wrap; }
+.contour-level-status { width:100%; font-size:10px; color:#805b25; margin:0 0 0 26px; }
+.contour-failed { border-left:3px solid #a65332; padding-left:7px; }
+#contour-errors p { background:#fff7e8; border:1px solid #ead9b4; padding:10px; border-radius:6px; font-size:11px; line-height:1.5; }
+.toolbar-status { display:block; font-size:10px; color:#66786e; margin-top:5px; max-width:550px; }
+.about-link { color:#176b61; margin-left:auto; font-size:12px; white-space:nowrap; }
+.contour-alert { position:absolute; z-index:700; bottom:25px; left:22px; background:#fff4dc; color:#88472f; border:1px solid #d9b97e; padding:10px 15px; border-radius:7px; font-size:12px; box-shadow:0 2px 8px #0001; }
+.machine-marker.source-badge { position:relative; display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:3px; border:2px solid #2d6654; border-radius:8px; background:#fff; color:#28594b; font:12px/1.2 Segoe UI,Arial,sans-serif; box-shadow:0 2px 7px #14372d30; text-align:left; }
+.source-symbol { display:flex; align-items:center; justify-content:center; flex:0 0 24px; }
+.source-symbol svg { width:24px; height:24px; }
+.source-number { position:absolute; top:-8px; right:-8px; min-width:17px; height:17px; padding:0 3px; display:grid; place-items:center; border:1px solid #fff; border-radius:9px; background:#28594b; color:#fff; font-size:10px; font-weight:650; }
+.machine-location:focus-visible .source-badge,.receiver-location:focus-visible .receiver-marker { outline:3px solid #fff; box-shadow:0 0 0 5px #1d6559; }
+/* Leaflet's zero-width pane otherwise makes wrapping tooltips shrink to one word. */
+.object-tooltip { width:max-content; max-width:min(260px,calc(100vw - 32px)); padding:9px 12px; border:1px solid #bfd2c5; border-radius:8px; color:#28594b; font:12px/1.4 Segoe UI,Arial,sans-serif; white-space:normal; }
+.object-tooltip strong { display:block; overflow-wrap:anywhere; }
+.object-tooltip small { display:block; color:#536a5c; font-size:10px; margin-top:3px; }
+.object-tooltip.leaflet-tooltip-top::before,.object-tooltip.leaflet-tooltip-bottom::before { left:var(--tooltip-arrow-x,50%); }
+.source-popup { font-size:12px; max-width:260px; }
+.source-power { font-size:10px !important; color:#4e6a5c !important; }
+.sound-key { width:245px; padding:0; border-radius:13px; border:1px solid #d4dfd4; overflow:hidden; max-height:calc(100% - 125px); }
+.sound-key summary { display:flex; align-items:center; justify-content:space-between; padding:16px; background:#244f42; color:#fff; }
+.sound-key summary::after { content:'⌄'; font-size:15px; }
+.sound-key:not([open]) summary::after { content:'›'; }
+.guide-title { font-size:13px; font-weight:650; letter-spacing:-.1px; }
+.guide-unit { margin-left:auto; margin-right:13px; font-size:9px; opacity:.7; }
+.sound-key ol { margin:0; padding:9px; max-height:52vh; overflow-y:auto; }
+.sound-key li.sound-card { display:flex; align-items:center; gap:10px; margin:0 0 7px; padding:10px 9px; border-radius:8px; background:color-mix(in srgb,var(--guide-color) 7%,white); border-left:3px solid var(--guide-color); }
+.guide-illustration { flex:0 0 32px; color:var(--guide-color); }
+.guide-illustration svg { width:32px; height:32px; }
+.guide-copy { min-width:0; flex:1; }
+.guide-heading { display:flex; align-items:baseline; gap:7px; color:var(--guide-color); }
+.guide-heading strong { font-size:23px; font-weight:700; letter-spacing:-1px; white-space:nowrap; }
+.guide-heading strong small { font-size:8px; letter-spacing:0; margin-left:3px; font-weight:500; }
+.guide-heading>span { font-size:10px; font-weight:650; line-height:1.2; }
+.sound-key .guide-copy p { margin:3px 0 0; font-size:10px; color:#536a5c; line-height:1.3; }
+.sound-key>p { padding:0 13px 12px; margin:0; font-size:9px; }
+@media(max-width:650px) { .sound-key {width:220px;} .sound-key summary {padding:10px 12px;} .sound-key ol {max-height:35vh;} .about-link {font-size:11px;} .map-toolbar {gap:8px;} .toolbar-status {max-width:190px;} .contour-alert {left:12px;right:12px;bottom:40px;font-size:11px;} }

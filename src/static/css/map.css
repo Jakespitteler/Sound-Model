@@ -119,7 +119,7 @@
   font-size: 11px;
   line-height: 1.5;
 }
-.machine-marker, .receiver-marker {
+.machine-marker {
   border: 3px solid white;
   border-radius: 50%;
   background: #176b61;
@@ -130,10 +130,7 @@
   width: 32px;
   height: 32px;
 }
-.receiver-marker {
-  background: #c06c43;
-  border-radius: 8px;
-}
+
 .contour-tooltip {
   font-family: inherit;
   font-size: 11px;

@@ -120,8 +120,10 @@ def test_contour_api_and_domain_limit() -> None:
         assert response.status_code == 200
         assert response.json()["contours"][0]["lines"]
         response = client.post("/api/contours", json=request_for([0], power=180).model_dump())
-        assert response.status_code == 422
-        assert "200 km" in response.json()["detail"]
+        assert response.status_code == 200
+        failed = response.json()["contours"][0]
+        assert failed["status"] == "failed"
+        assert "200 km" in failed["error"]
 
 
 def test_camera_and_style_fields_are_not_acoustic_inputs() -> None:
@@ -207,8 +209,8 @@ def test_complexity_error_identifies_level_and_budget(monkeypatch: pytest.Monkey
     monkeypatch.setattr(contour_module, "MAX_CELLS", 1)
     with TestClient(app) as client:
         response = client.post("/api/contours", json=request_for([55]).model_dump())
-    assert response.status_code == 422
-    detail = response.json()["detail"]
+    assert response.status_code == 200
+    detail = response.json()["contours"][0]["error"]
     assert "55 dB(A)" in detail
     assert "1-cell" in detail
     assert "Receiver predictions remain available" in detail
@@ -248,19 +250,20 @@ def test_mixed_power_contour_exceeds_old_budget_but_completes(monkeypatch: pytes
     scenario = ContourRequest(
         types=[MachineType(id="a", name="Loud", lwa=150), MachineType(id="b", name="Quieter", lwa=105)],
         sources=[Source(id="a", type_id="a", lat=0, lng=0), Source(id="b", type_id="b", lat=0, lng=0.001)],
-        levels=[55],
+        levels=[65],
     )
     with monkeypatch.context() as patch:
         patch.setattr(contour_module, "MAX_CELLS", 160_000)
-        with pytest.raises(ValueError, match="160,000-cell"):
-            build_contours(scenario)
+        failed = build_contours(scenario).contours[0]
+        assert failed.status == "failed"
+        assert failed.error and "160,000-cell" in failed.error
     result = build_contours(scenario).contours[0]
     assert len(result.lines) == 1
     assert result.lines[0][0] == result.lines[0][-1]
     types = {t.id: t for t in scenario.types}
     for lng, lat in result.lines[0][::100]:
         reading = at_point(Receiver(id="r", lat=lat, lng=lng), scenario.sources, types)
-        assert reading.level_db == pytest.approx(55, abs=0.021)
+        assert reading.level_db == pytest.approx(65, abs=0.021)
 
 
 def test_colocated_300_db_sources_keep_attainable_maximum() -> None:
