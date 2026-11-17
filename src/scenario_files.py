@@ -55,6 +55,7 @@ class ScenarioDocument(StrictModel):
         receivers: Listening locations.
         levels: Unique contour thresholds.
         cloud_cover: Recorded cloud percentage.
+        acceptable_level_db: Optional user-set reference threshold; no regulatory default.
         view: Optional map camera.
         high_contrast: White contour halos enabled.
         show_contours: Global contour visibility.
@@ -66,6 +67,7 @@ class ScenarioDocument(StrictModel):
     receivers: list[Receiver] = Field(max_length=20)
     levels: list[float] = Field(max_length=25)
     cloud_cover: int = Field(ge=0, le=100, strict=True)
+    acceptable_level_db: float | None = Field(default=None, ge=0, le=300, strict=True)
     view: MapView | None = None
     high_contrast: bool = False
     show_contours: bool = True
@@ -77,6 +79,8 @@ class ScenarioDocument(StrictModel):
         Returns:
             Valid document with no silent repair or discarded source metadata.
         """
+        if len(set(self.levels) | ({self.acceptable_level_db} if self.acceptable_level_db is not None else set())) > 25:
+            raise ValueError("At most 25 unique levels including the acceptable level are supported.")
         ContourRequest(
             types=[
                 MachineType.model_validate(t.model_dump(include={"id", "name", "lwa", "provenance"}))
