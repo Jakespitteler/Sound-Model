@@ -26,6 +26,7 @@ export class ScenarioStore {
     this.undoStack=[];
     /** @type {Object[]} Commands available to replay. */
     this.redoStack=[];
+    this.acceptable_level_db = null;
     this.cloud_cover = 0;
     /** @type {?string} */
     this.mode = null;
@@ -50,7 +51,10 @@ export class ScenarioStore {
 
   /** @param {Object} document Validated versioned scenario, supplied by the local backend. */
   restore(document) {
-    this.clearHistory();
+    const acceptable=document.acceptable_level_db ?? null;
+    if (acceptable!==null && (typeof acceptable!=='number' || !Number.isFinite(acceptable) || acceptable<0 || acceptable>300) ||
+      !this.fitsContourBudget(document.levels,acceptable)) throw new Error('Invalid acceptable level or too many unique contours.');
+    this.clearHistory(); this.acceptable_level_db=acceptable;
     this.types = structuredClone(document.types);
     this.sources = structuredClone(document.sources);
     this.receivers = structuredClone(document.receivers);
@@ -183,15 +187,44 @@ export class ScenarioStore {
   /** @param {string} id Receiver to remove. */
   removeReceiver(id) {this.editPlacement('receivers',id,null);}
 
+  /** @param {number[]} levels Ordinary levels. @param {?number} [acceptable] Reference level.
+   * @return {boolean} Whether all unique levels fit the API budget. */
+  fitsContourBudget(levels,acceptable=this.acceptable_level_db) {
+    return new Set([...levels,...(acceptable===null ? [] : [acceptable])]).size<=25;
+  }
+
+  /** @param {?number} value User-set reference or null to clear. @return {boolean} Accepted. */
+  setAcceptableLevel(value) {
+    if (value!==null && (typeof value!=='number' || !Number.isFinite(value) || value<0 || value>300) ||
+      !this.fitsContourBudget(this.contours.map(c=>c.level_db),value)) return false;
+    if (this.acceptable_level_db!==value) {this.acceptable_level_db=value; this.notify('acceptable-level');}
+    return true;
+  }
+
+  /** @return {number[]} Distinct descending thresholds, including the optional reference. */
+  getContourLevels() {
+    return [...new Set([...this.contours.map(c=>c.level_db),...(this.acceptable_level_db===null ? [] : [this.acceptable_level_db])])].sort((a,b)=>b-a);
+  }
+
+  /** @return {import('./types.js').ContourLevel[]} One setting per geometry, flagged for the reference. */
+  lineSettings() {
+    return this.getContourLevels().map(level_db=>({id:this.contours.find(c=>c.level_db===level_db)?.id || 'acceptable-level',
+      level_db,acceptable:level_db===this.acceptable_level_db}));
+  }
+
   /** Add a distinct contour threshold up to the API limit. */
   addContour() {
-    if (this.contours.length >= 25) return;
+    if (this.contours.length >= 25) return false;
     let level = Math.max(0, Math.min(300, Math.min(...this.contours.map(c=>c.level_db), 50) - 5));
     while (this.contours.some(c=>c.level_db===level)) level++;
-    if (level > 300) return;
+    if (level > 300) return false;
+    if (!this.fitsContourBudget([...this.contours.map(c=>c.level_db),level])) {
+      if (this.acceptable_level_db===null || this.contours.some(c=>c.level_db===this.acceptable_level_db)) return false;
+      level=this.acceptable_level_db;
+    }
     this.contours.push({id:uuid(),level_db:level});
     this.contours.sort((a,b)=>b.level_db-a.level_db);
-    this.notify('thresholds');
+    this.notify('thresholds'); return true;
   }
 
   /** @param {string} id Contour ID. @param {Object} patch Decibel threshold patch. @return {boolean} Accepted. */
@@ -200,6 +233,7 @@ export class ScenarioStore {
     if (!contour || !('level_db' in patch)) return false;
     if ('level_db' in patch && (!Number.isFinite(patch.level_db) || patch.level_db < 0 || patch.level_db > 300 ||
       this.contours.some(c=>c.id!==id && c.level_db===patch.level_db))) return false;
+    if (!this.fitsContourBudget(this.contours.map(c=>c.id===id ? patch.level_db : c.level_db))) return false;
     contour.level_db = patch.level_db;
     this.contours.sort((a,b)=>b.level_db-a.level_db);
     this.notify('thresholds'); return true;
