@@ -72,7 +72,8 @@ export class MapManager {
     const reading = this.receiverReadings?.[id];
     const value = this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.status === 'out_of_scope' ? 'Outside scope' : reading.level_db === null ? 'No sources' : reading.level_db.toFixed(1);
     const color = soundColor(reading?.level_db ?? null);
-    return L.divIcon({className:'receiver-location',iconSize:[112,44],iconAnchor:[56,22],
+    const width = reading?.level_db != null && !this.receiverFailed ? 84 : 112;
+    return L.divIcon({className:'receiver-location',iconSize:[width,34],iconAnchor:[width/2,17],
       html:`<div class="receiver-marker${reading?.level_db != null && !this.receiverFailed ? '' : ' is-status'}" data-receiver-id="${escapeHtml(id)}" style="--level-color:${color}"><span class="receiver-id">R${index+1}</span><strong class="receiver-number">${value}${reading?.level_db != null && !this.receiverFailed ? '<small>dB(A)</small>':''}</strong></div>`});
   }
 
@@ -150,19 +151,25 @@ export class MapManager {
         const machine = isSource ? this.store.typeFor(item) : null;
         const icon = !isSource ? this.receiverIcon(item.id,i) : L.divIcon({
           className:'machine-location',iconSize:[32,32],iconAnchor:[16,16],
-          html:`<div class="machine-marker source-badge${i%2 ? ' source-reversed' : ''}" data-source-id="${escapeHtml(item.id)}"><span class="source-symbol">${illustration(machine.kind)}</span><span class="source-label"><strong>${i+1}. ${escapeHtml(machine.name)}</strong><small>Power · ${machine.lwa.toFixed(1)} dB(A) LwA</small></span></div>`,
+          html:`<div class="machine-marker source-badge" data-source-id="${escapeHtml(item.id)}"><span class="source-symbol">${illustration(machine.kind)}</span><span class="source-number" aria-hidden="true">${i+1}</span></div>`,
         });
         const marker = L.marker([item.lat, item.lng], {
           icon,
           draggable: true,
-          title: label,
           alt: label,
+          riseOnHover: true,
         }).addTo(this.markers);
 
         if (!isSource) this.receiverMarkers.set(item.id, marker);
         const tooltip = document.createElement('span');
-        tooltip.textContent = label;
-        marker.bindTooltip(tooltip);
+        const tooltipTitle = document.createElement('strong'); tooltipTitle.textContent = label;
+        tooltip.append(tooltipTitle);
+        if (isSource) {
+          const emission = document.createElement('small'); emission.textContent = `Sound power · ${machine.lwa.toFixed(1)} dB(A) LwA`;
+          tooltip.append(emission);
+        }
+        marker.getElement()?.setAttribute('aria-label', isSource ? `${label}. Sound power ${machine.lwa.toFixed(1)} dB(A) LwA. Select for details.` : label);
+        marker.bindTooltip(tooltip,{direction:'top',offset:[0,-18],className:'object-tooltip',opacity:1});
         if (isSource) {
           const popup = document.createElement('div');
           popup.className = 'source-popup';
@@ -170,6 +177,9 @@ export class MapManager {
           const power = document.createElement('p'); power.textContent = `Sound power: ${machine.lwa.toFixed(1)} dB(A) LwA. This is the machine emission, not what a receiver hears.`;
           const evidence = document.createElement('p'); evidence.textContent = machine.note || 'No source note recorded.';
           popup.append(title,power,evidence); marker.bindPopup(popup);
+          // Selection shows one detail card, rather than a tooltip over the same popup.
+          marker.on('popupopen',()=>marker.closeTooltip());
+          marker.on('tooltipopen',()=> {if(marker.isPopupOpen()) marker.closeTooltip();});
         }
 
         marker.on('dragend', () => {

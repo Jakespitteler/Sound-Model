@@ -52,7 +52,11 @@ Default contours match the sound guide: **30, 40, 60, 80 and 100 dB(A)**. Failed
 individual status/reasons; successful lines remain visible. A lower-map alert opens details.
 The duplicate lower legend is removed. **High contrast** adds white halos locally.
 
-Machine badges show their type/icon and **sound power (LwA)**. Receiver badges show predicted
+Machines use compact equipment icons numbered to match the sidebar. Hover or focus one to
+see its name and **sound power (LwA)**; click/Enter opens its evidence note. Full names and power
+remain in the sidebar. Receiver badges keep their coloured prediction and units visible in
+a smaller footprint; hovering raises a badge above nearby markers. Icons stay at their actual
+coordinates, and inspecting them does not recalculate the model. Receiver badges show predicted
 **pressure (LpA)**. Receivers more than 10 km from every source show **Outside scope**, not a
 numerical extrapolation. Levels extending outside that screening scope fail independently.
 This is an owner-selected presentation guard, not a validated range or a physical sound cutoff.

@@ -42,3 +42,8 @@ The owner then prioritised desktop use and fewer sidebar items. Implemented two 
 Scenario/Contours tabs, compact entity cards and progressively disclosed equipment/model
 settings. Follow-up usability testing should assess tab discoverability and how well users
 find the equipment evidence notes without reintroducing a crowded sidebar.
+
+After feedback on overlapping labels, machines now show only numbered category icons.
+Hover/focus reveals their name and sound power, while click/Enter shows the evidence note.
+Receiver badges are smaller and rise above neighbours on hover. Full machine names and
+power remain in the sidebar, with no added map-display setting. Coordinates remain exact.

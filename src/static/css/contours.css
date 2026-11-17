@@ -12,10 +12,10 @@
 .contour-label::before { display:none; }
 .calculation-status { pointer-events:auto; }
 .retry { margin-top:8px; }
-.receiver-marker { display:flex; align-items:center; justify-content:center; gap:7px; width:112px; height:44px; border:2px solid var(--level-color); border-radius:9px; background:#fffffff5; box-shadow:0 2px 8px #233b4b35; color:var(--level-color); font:600 12px/1.1 Segoe UI,Arial,sans-serif; }
-.receiver-id { font-size:10px; color:#52645e; padding-right:6px; border-right:1px solid #d9e0db; }
-.receiver-number { font-size:18px; font-weight:650; }
-.receiver-number small { display:block; font-size:9px; font-weight:400; margin-top:3px; }
+.receiver-marker { display:flex; align-items:center; justify-content:center; gap:6px; width:84px; height:34px; border:1.5px solid var(--level-color); border-radius:7px; background:#fffffff5; box-shadow:0 1px 5px #233b4b25; color:var(--level-color); font:600 12px/1.1 Segoe UI,Arial,sans-serif; }
+.receiver-id { font-size:9px; color:#52645e; padding-right:5px; border-right:1px solid #d9e0db; }
+.receiver-number { font-size:16px; font-weight:650; }
+.receiver-number small { display:block; font-size:8px; font-weight:400; margin-top:1px; }
 .sound-key { position:absolute; z-index:700; top:90px; right:18px; width:230px; padding:12px 14px; border:1px solid #dce3d8; border-radius:9px; background:#fffffff5; box-shadow:0 3px 16px #30453610; }
 .sound-key summary { cursor:pointer; font-size:12px; font-weight:650; color:#314a40; }
 .sound-key ol { list-style:none; padding:0; margin:13px 0 7px; }
@@ -40,6 +40,7 @@ textarea { display:block; width:100%; margin-top:5px; padding:8px; border:1px so
 }
 .location-bar { display:block; }
 
+.receiver-marker.is-status { width:112px; }
 .receiver-marker.is-status .receiver-number { font-size:11px; font-weight:500; }
 /* One shared contrast option; halos sit under level colours in a separate Leaflet pane. */
 .contour-display { display:flex; gap:18px; margin:14px 0; }
@@ -54,10 +55,11 @@ textarea { display:block; width:100%; margin-top:5px; padding:8px; border:1px so
 .machine-marker.source-badge { position:relative; display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:3px; border:2px solid #2d6654; border-radius:8px; background:#fff; color:#28594b; font:12px/1.2 Segoe UI,Arial,sans-serif; box-shadow:0 2px 7px #14372d30; text-align:left; }
 .source-symbol { display:flex; align-items:center; justify-content:center; flex:0 0 24px; }
 .source-symbol svg { width:24px; height:24px; }
-.source-label { position:absolute; width:173px; left:37px; top:30px; background:#fffffff5; border:1px solid #bfd2c5; border-radius:7px; padding:7px 9px; box-shadow:0 2px 7px #14372d30; }
-.source-reversed .source-label { left:auto; right:37px; top:-48px; text-align:right; }
-.source-label strong { display:block; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.source-label small { display:block; font-size:9px; color:#5d7468; margin-top:4px; white-space:nowrap; }
+.source-number { position:absolute; top:-8px; right:-8px; min-width:17px; height:17px; padding:0 3px; display:grid; place-items:center; border:1px solid #fff; border-radius:9px; background:#28594b; color:#fff; font-size:10px; font-weight:650; }
+.machine-location:focus-visible .source-badge,.receiver-location:focus-visible .receiver-marker { outline:3px solid #fff; box-shadow:0 0 0 5px #1d6559; }
+.object-tooltip { padding:9px 12px; border:1px solid #bfd2c5; border-radius:8px; color:#28594b; font:12px/1.4 Segoe UI,Arial,sans-serif; max-width:260px; white-space:normal; }
+.object-tooltip strong { display:block; overflow-wrap:anywhere; }
+.object-tooltip small { display:block; color:#536a5c; font-size:10px; margin-top:3px; }
 .source-popup { font-size:12px; max-width:260px; }
 .source-power { font-size:10px !important; color:#4e6a5c !important; }
 .sound-key { width:245px; padding:0; border-radius:13px; border:1px solid #d4dfd4; overflow:hidden; max-height:calc(100% - 125px); }
