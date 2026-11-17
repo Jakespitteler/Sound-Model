@@ -3,6 +3,11 @@ import {$} from './utils.js';
 
 /** Bind accessible Scenario/Contours tabs; switching views never changes acoustic inputs. */
 export function setupSidebar() {
+  // Share the limited advanced-settings space without discarding either form's drafts.
+  const settings=[document.querySelector('.catalogue-library'),document.querySelector('.model-settings')];
+  settings.forEach(panel=>panel.addEventListener('toggle',()=> {
+    if (panel.open) settings.filter(other=>other!==panel).forEach(other=> {other.open=false;});
+  }));
   const tabs = [$('scenario-tab'),$('contours-tab')];
   const panels = [$('scenario-panel'),$('contours-panel')];
   /** @param {number} index Selected tab index. @param {boolean} [focus] Move keyboard focus. */

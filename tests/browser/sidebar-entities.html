@@ -1,0 +1,53 @@
+<!doctype html><meta charset="utf-8"><title>Compact entity editor checks</title>
+<button id="place-source">Place machine</button><button id="place-receiver">Place receiver</button>
+<span id="source-count"></span><span id="receiver-count"></span>
+<div id="sources"></div><div id="receivers"></div><pre id="result" role="status">Running…</pre>
+<div role="tablist"><button id="scenario-tab">Scenario</button><button id="contours-tab">Contours</button></div>
+<div id="scenario-panel"></div><div id="contours-panel" hidden></div>
+<details class="catalogue-library"><summary>Machine data</summary><input id="note-draft" value="Draft equipment note"></details>
+<details class="model-settings"><summary>Model info</summary></details>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {setupSidebar} from '../../src/static/js/sidebar.js';
+import {EntitiesUI} from '../../src/static/js/ui-entities.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour under test. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+try {
+ const store=new ScenarioStore();store.addSource(store.types[0].id,-33.86,116.07);store.addReceiver(-33.85,116.08);
+ const receiver=store.receivers[0];store.renameReceiver(receiver.id,'Town boundary — 北 🌳 <img>');
+ const ui=new EntitiesUI(store,()=>{});ui.bind();ui.renderSources();ui.renderReceivers();
+ const source=document.querySelector('#sources details'),card=document.querySelector('[data-receiver-card]');
+ check(!source.open && source.querySelector('summary').textContent.includes('120.0'),'collapsed machine retains visible sound power');
+ check(!card.querySelector('details').open && card.querySelector('summary').textContent.includes('Calculating…'),'collapsed receiver shows pending result');
+ check(!card.querySelector('img') && card.querySelector('[data-receiver-title]').textContent.endsWith('<img>'),'long Unicode names are literal text');
+ const events=[];store.subscribe(reason=>events.push(reason));
+ card.querySelector('summary').click();
+ const name=card.querySelector('[data-receiver-name]'),lat=card.querySelector('[name=lat]');
+ name.value='House 1';name.dispatchEvent(new Event('input',{bubbles:true}));ui.updateReceiverNames();
+ check(document.querySelector('[data-receiver-name]')===name && name.value==='House 1','renaming does not replace editor');
+ lat.value='-33.85123';card.querySelector('summary').click();card.querySelector('summary').click();
+ check(lat.value==='-33.85123','collapse/reopen preserves unsubmitted coordinates');
+ check(events.length===1 && events[0]==='receiver-name','presentation-only disclosure produces no state/calculation event');
+ const readings={[receiver.id]:{status:'ok',level_db:46.2,near_field:true,includes_distant_sources:true,contributions:[]}};
+ ui.renderReceivers(readings);
+ check(document.querySelector('[data-receiver-card] > details').open,'calculation refresh preserves open receiver editor');
+ const summary=document.querySelector('[data-receiver-card] summary');
+ check(summary.querySelector('.result').textContent.includes('46.2'),'compact summary shows computed number');
+ check(summary.querySelector('.entity-warning').textContent.includes('Within 1 m') && summary.querySelector('.entity-warning').textContent.includes('distant'),'important flags remain in collapsed summary');
+ ui.renderReceivers({[receiver.id]:{status:'out_of_scope',level_db:null,nearest_source_m:20000,contributions:[]}});
+ check(document.querySelector('[data-receiver-card] summary').textContent.includes('Outside model scope'),'outside-scope status remains visible');
+ check(document.querySelector('[data-remove-source]') && document.querySelector('[data-remove-receiver]'),'removal remains available in editors');
+ setupSidebar();
+ document.querySelector('.catalogue-library summary').click();await new Promise(resolve=>setTimeout(resolve,10));
+ document.querySelector('.model-settings summary').click();await new Promise(resolve=>setTimeout(resolve,10));
+ check(!document.querySelector('.catalogue-library').open && document.querySelector('.model-settings').open,'advanced panels share space');
+ document.querySelector('.catalogue-library summary').click();await new Promise(resolve=>setTimeout(resolve,10));
+ check(!document.querySelector('.model-settings').open && document.querySelector('#note-draft').value==='Draft equipment note','switching advanced panels preserves drafts');
+ document.querySelector('#scenario-tab').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight'}));
+ check(document.querySelector('#scenario-panel').hidden && !document.querySelector('#contours-panel').hidden && document.activeElement.id==='contours-tab','keyboard tab selection focuses selected workspace');
+ document.querySelector('#scenario-tab').click();
+ check(!document.querySelector('#scenario-panel').hidden && document.querySelector('#note-draft').value==='Draft equipment note','workspace navigation preserves existing forms');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');document.querySelector('#result').dataset.passed='true';
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>
