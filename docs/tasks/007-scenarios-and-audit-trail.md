@@ -1,5 +1,8 @@
 # 007 — Save reproducible scenarios and evidence reports
 
+> **Existing theme brief.** See the [backlog](README.md) for current status and approvals.
+> Select a small remaining scope with the owner before treating this as an agent task.
+
 Status: todo. Priority: P1. Owner: unassigned.
 Dependencies: 001, 002; environmental claims require 004 and 005.
 

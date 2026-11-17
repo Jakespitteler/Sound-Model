@@ -1,26 +1,112 @@
-# Due-diligence work order
+# Work backlog
 
-Goal: assess and manage the risk that machinery operating in a new area disrupts nearby town receptors, with traceable evidence and appropriate review. The app should support an honest assessment, not seek a predetermined inaudibility conclusion.
+[Documentation index](../README.md) · [Current model](../model.md) · [Project rules](../../AGENTS.md)
 
-Tasks are proposals, not approval of new dependencies, datasets, thresholds or regulatory claims.
-P0 establishes assessment credibility; P1 improves delivery/operating decisions; P2 improves usability.
+The goal is to assess and manage the risk of machinery disturbing nearby town receivers.
+The app should support an honest assessment, not work towards a predetermined inaudibility result.
 
-| Task | Priority | State |
+## POC work queue
+
+The owner confirmed that this is a **proof of concept** on 17 November 2026. Keep the app
+small. These task ideas were individually reviewed; this change writes the tasks, not their
+implementations. Start with one ready task when instructed, verify it, then hand it back.
+Do not treat approval to create tasks as a request to implement the whole queue now.
+
+| Order | Agent task | State / dependency |
 | --- | --- | --- |
-| [001 — Agree the assessment basis and town receptors](001-assessment-basis.md) | P0 | todo |
-| [002 — Collect traceable equipment sound-power data](002-equipment-evidence.md) | P0 | todo |
-| [003 — Measure background noise and relevant weather](003-background-and-weather.md) | P0 | todo |
-| [004 — Select and validate a suitable propagation engine](004-propagation-engine.md) | P0 | todo |
-| [005 — Validate predictions and report uncertainty](005-validation-and-uncertainty.md) | P0 | todo |
-| [006 — Make contour calculation faster and more robust](006-contour-performance.md) | P1 | in progress: first compiled optimisation complete |
-| [007 — Save reproducible scenarios and evidence reports](007-scenarios-and-audit-trail.md) | P1 | todo |
-| [008 — Compare practical mitigation and operating controls](008-mitigation-and-operations.md) | P1 | todo |
-| [009 — Improve map reliability and scenario editing](009-map-and-editor-usability.md) | P2 | todo |
-| [010 — Scenario autosave and recovery](010-scenario-autosave.md) | P1 | in progress: explicit Save/Open complete |
-| [011 — Simple scenario workflow](011-simple-workflow.md) | P2 | todo |
+| 1 | [012 Recover unsaved edits](012-unsaved-recovery.md) | Ready to plan implementation |
+| 2 | [013 Optional receiver-name contract](013-receiver-name-contract.md) | Ready; small compatibility slice |
+| 3 | [014 Receiver-name editor](014-receiver-name-editor.md) | After 013 |
+| 4 | [015 Fit a local cluster](015-local-cluster-zoom.md) | Ready; maximum pairwise distance 10 km |
+| 5 | [017 Reuse unchanged contours](017-per-level-contour-cache.md) | Ready; accuracy must remain unchanged |
+| 6 | [018 Placement undo/redo](018-placement-undo-redo.md) | Ready; coordinate with recovery |
+| 7 | [019 Optional equipment metadata](019-equipment-metadata-contract.md) | Ready; compatible saved-data slice |
+| 8 | [020 Equipment metadata editor](020-equipment-metadata-editor.md) | After 019 |
+| 9 | [021 Optional acceptable-level data](021-acceptable-level-contract.md) | Ready; no default limit invented |
+| 10 | [025 Acceptable-level browser state](025-acceptable-level-browser-state.md) | After 021; before 022 |
+| 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | After 025 |
+| 12 | [023 Ctrl-click repeat placement](023-control-repeat-placement.md) | Ready |
+| Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Agree a defensible policy before code |
+| Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Owner decision before any report implementation |
 
-Start assessment scoping and equipment/measurement planning alongside software work. Faster contour calculations do not compensate for missing propagation physics or evidence.
+See the [implementation plan](../../tasks/plan.md) for order, checkpoints and branch bases.
+Tasks have bounded scope, exclusions, acceptance criteria, likely files and concrete checks.
+No new dependencies, services or regulatory criteria are approved by these briefs.
 
+### Explicit scope decisions
 
-Explicit Save/Open is implemented. Saved URLs restore the last saved state on reload;
-unsaved edits are not autosaved. Task 010 tracks the remaining autosave/recovery work.
+- **JSON export/import:** declined as unnecessary for the POC; no new task.
+- **Equipment evidence:** only optional source-reference and operating-mode text fields were
+  approved (019–020). No attachments, uncertainty framework or evidence-management platform.
+- **Printable summary:** tentative only; task 016 records the keep/remove decision. No full
+  report, PDF generator or report implementation task is authorised yet.
+- **Latest additions:** an optional user-set acceptable contour and Ctrl-click repeat
+  placement are requested. Replacing distance-only scope needs a defensible policy (024),
+  not a claim that the present model can establish audibility.
+- **Accuracy:** contour reuse may avoid repeated work, but must not simplify geometry,
+  omit sources or change the physical/numerical model.
+
+```mermaid
+flowchart TD
+    Recovery[012 Recover unsaved edits] --> CheckA[Check save and recovery behaviour]
+    Names[013 Optional name contract] --> Editor[014 Name editor]
+    Editor --> CheckA
+    Zoom[015 Local cluster fit] --> CheckB[Check camera isolation and accuracy]
+    Cache[017 Per-level reuse] --> CheckB
+    CheckA --> Undo[018 Placement undo and redo]
+    Summary[016 Owner decision on printing] --> Choice{Keep in POC?}
+    Choice -->|No| Drop[Defer without app changes]
+    Choice -->|Yes| Scope[Agree a minimal implementation task]
+```
+
+Checkpoints are verification points, not automatic merge approval. The owner reviews new
+ideas before task creation; work stays on its branch until explicitly reviewed for merge.
+
+## Parked wider themes
+
+These pre-existing themes are retained as long-term context, **not POC deliverables**.
+P0 means assessment credibility, P1 means reliability/operating decisions, and P2 means usability.
+Priority is not readiness: collecting measurements needs site work, while a software slice may
+be independently actionable once its idea and boundaries are approved.
+
+| Theme | Priority | Current position | Input needed |
+| --- | --- | --- | --- |
+| [001 Assessment basis and town receivers](001-assessment-basis.md) | P0 | Not established | Owner/site team and qualified review of criteria |
+| [002 Equipment evidence](002-equipment-evidence.md) | P0 | Free-text notes exist; verified dataset absent | Equipment documents and operating conditions |
+| [003 Background and weather](003-background-and-weather.md) | P0 | No measurement dataset | Measurement plan, site access and quality review |
+| [004 Propagation engine](004-propagation-engine.md) | P0 | Baseline only; candidates are unapproved | Method/data/licence review and owner approval |
+| [005 Validation and uncertainty](005-validation-and-uncertainty.md) | P0 | Numerical tests exist; site validation absent | Independent measurements and suitable method |
+| [006 Contour performance](006-contour-performance.md) | P1 | Compiled engine and per-level errors implemented | Approved cache slice: 017; other work parked |
+| [007 Reproducible reports](007-scenarios-and-audit-trail.md) | P1 | Local saved inputs exist; report/audit features absent | Scope approval; criteria/validation for assessment claims |
+| [008 Mitigation and controls](008-mitigation-and-operations.md) | P1 | Not implemented | Validated method, evidence and site responsibilities |
+| [009 Map/editor usability](009-map-and-editor-usability.md) | P2 | Startup messages and numeric editing implemented | Approved local-fit slice: 015; approve any new provider |
+| [010 Recovery and portable saves](010-scenario-autosave.md) | P1 | Explicit Save/Open implemented; unsaved edits not recovered | Approved recovery slice: 012; export/import declined |
+| [011 Simple workflow](011-simple-workflow.md) | P2 | Desktop tabs and compact markers implemented | Approved name/zoom/undo slices: 013–015, 018 |
+
+## Assessment dependencies
+
+This diagram describes the evidence process, not approved software tasks or an assertion that
+any stage is complete. Equipment/background planning can start after the assessment basis is agreed.
+
+```mermaid
+flowchart TD
+    Basis[001 Agree criteria, operation and receivers] --> Equipment[002 Equipment evidence]
+    Basis --> Background[003 Background and weather measurements]
+    Equipment --> Method[004 Select suitable propagation method]
+    Background --> Method
+    Method --> Validation[005 Independent validation and uncertainty]
+    Validation --> Report[007 Reviewed assessment report]
+    Validation --> Controls[008 Evidence-based operating controls]
+    Report --> Controls
+```
+
+## Standard for the next approved task
+
+Keep it small enough for a focused session. Record the problem, existing baseline, exact scope,
+explicit exclusions, dependencies, likely files, no more than three measurable acceptance criteria,
+and concrete verification commands/browser steps. Name missing human inputs and approvals.
+If it needs two independent features or much more than five implementation files, split it.
+
+Use the actual existing stack and save schema. Finish with a handoff recording the commit,
+checks, screenshots when relevant, remaining issues and the next dependency. Never mark a task
+complete solely because tests passed if its stated behaviour or required evidence was not checked.

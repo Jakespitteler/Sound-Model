@@ -1,5 +1,8 @@
 # 001 — Agree the assessment basis and town receptors
 
+> **Existing theme brief.** See the [backlog](README.md) for current status and approvals.
+> Select a small remaining scope with the owner before treating this as an agent task.
+
 Status: todo. Priority: P0. Owner: unassigned.
 Dependencies: none.
 

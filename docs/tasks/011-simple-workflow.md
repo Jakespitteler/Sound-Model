@@ -1,6 +1,9 @@
 # 011 — A simple, confident scenario workflow
 
-Status: todo. Priority: P2. Owner: unassigned.
+> **Existing theme brief.** See the [backlog](README.md) for current status and approvals.
+> Select a small remaining scope with the owner before treating this as an agent task.
+
+Status: theme — simplified desktop baseline implemented; follow-ups await owner selection. Priority: P2. Owner: unassigned.
 Depends on: feedback on the simplified editor; coordinate task 010 for persistence.
 
 ## Principles
