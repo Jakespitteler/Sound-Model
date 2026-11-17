@@ -39,7 +39,7 @@ flowchart LR
 3. Hover or focus a numbered equipment icon to see its type and sound power. Click/Enter
    opens its evidence note. Drag machine or receiver markers to move them.
 4. Open **Contours** to add/remove levels or edit them with a slider or number. Levels
-   sort automatically. **High contrast** adds white outlines for busy backgrounds.
+   sort automatically. **Add contour** focuses a number field; Enter adds that exact level. **High contrast** adds white outlines for busy backgrounds.
 5. Choose **Save**, name the scenario, and save again after edits. **Open** lists saved work.
 
 **Undo / Redo** beneath the map zoom controls reverses machine and receiver placement, moves and removals.
@@ -63,6 +63,8 @@ and editable estimate notes. Advanced settings stay collapsed to keep the sideba
 
 Default contours match the guide: **30, 40, 60, 80 and 100 dB(A)**. A failed contour reports
 its level/reason while successful levels remain visible. Colours describe levels, not compliance.
+Under **Contours**, set an optional **Acceptable level** to draw a dashed reference labelled
+“user-set”. It starts blank, shares matching thresholds, and is saved with the scenario.
 Cloud cover is recorded only. Negative decibels are possible because zero dB is a reference,
 not zero sound. Read [how the model works](docs/model.md) or open **About** in the app.
 

@@ -14,13 +14,14 @@ import {DraftRecovery} from './draft-recovery.js';
 const store = new ScenarioStore();
 const manager = new MapManager(store);
 const cache = new GeometryCache();
-const geometryLane = new RequestLane(), receiverLane = new RequestLane();
+const geometryLane = new RequestLane(), receiverLane = new RequestLane(), rangeLane=new RequestLane();
+const sliderRanges=new Map();
 /** @type {import('./types.js').ContourGeometry[]} Last valid current geometry. */
 let geometry = [];
 let receiverResults = {};
-let receiverFailed = false, geometryFailed = false;
+let receiverFailed = false, geometryFailed = false, rangeFailed=false;
 /** Keep independent request errors visible regardless of which lane finishes first. */
-function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed); }
+function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed || rangeFailed); }
 /** @param {string} message Human-readable feedback. */
 const say = message => { $('message').textContent = message; };
 const catalogue = new CatalogueUI(store,say), entities = new EntitiesUI(store,say), contours = new ContoursUI(store,say);
@@ -53,7 +54,7 @@ function displayGeometry(results) {
   if ($('message').textContent==='Retrying…') say('');
   const failures=geometry.filter(c=>c.status==='failed');
   geometryFailed=!!failures.length; updateRetry(); contours.setResults(geometry);
-  manager.contourLayer.render(geometry,store.contours); manager.contourLayer.setPending(false);
+  manager.contourLayer.render(geometry,store.lineSettings()); manager.contourLayer.setPending(false);
   const empty=geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
   const examples=store.sources.some(s=>store.typeFor(s).provenance==='example');
   $('calculation-status').textContent=store.sources.length ?
@@ -63,7 +64,7 @@ function displayGeometry(results) {
 /** Reuse exact current-source levels and request only missing ones; every edit still versions the lane. */
 function refreshGeometry() {
   const payload=store.toPayload(); payload.receivers=[];
-  payload.levels=store.contours.map(c=>c.level_db);
+  payload.levels=store.getContourLevels();
   const cached=payload.levels.map(level=>cache.get(cache.key(payload,level))).filter(Boolean);
   const missing=payload.levels.filter(level=>!cached.some(c=>c.level_db===level));
   /** @param {Object[]} fresh New per-level results. @param {string} [error] Missing-result reason.
@@ -74,7 +75,7 @@ function refreshGeometry() {
     start:()=> {
       geometryFailed=false; updateRetry(); contours.setResults(cached);
       // Keep valid unaffected levels; discard old-source/removed-level lines immediately.
-      manager.contourLayer.render(cached,store.contours); manager.contourLayer.setPending(false);
+      manager.contourLayer.render(cached,store.lineSettings()); manager.contourLayer.setPending(false);
       $('calculation-status').textContent='Updating contours…';
     },
     success:data=> {
@@ -96,6 +97,23 @@ function refreshGeometry() {
   },(!payload.sources.length || !payload.levels.length || !missing.length) ?
     {model:cache.model,tolerance_db:cache.toleranceDb,contours:!payload.sources.length ?
       payload.levels.map(level_db=>({level_db,lines:[],status:'empty'})) : cached} : null);
+}
+
+/** Fetch checked slider limits only after a source signature changes, never on camera/threshold edits. */
+function refreshSliderRange() {
+  const payload=store.toPayload();payload.receivers=[];
+  if (!payload.sources.length) {rangeLane.cancel(); rangeFailed=false; updateRetry(); contours.setSliderRange({status:'unavailable',reason:'Place a machine to enable the slider.'}); return;}
+  const key=cache.key(payload,0);
+  rangeLane.schedule('/api/contour-range',payload,{
+    start:()=> {rangeFailed=false;updateRetry();contours.setSliderRange(null);},
+    success:range=> {
+      rangeFailed=false; updateRetry();
+      sliderRanges.set(key,range);
+      if (sliderRanges.size>8) sliderRanges.delete(sliderRanges.keys().next().value);
+      contours.setSliderRange(range);
+    },
+    error:error=> {rangeFailed=true;updateRetry();contours.setSliderRange({status:'unavailable',reason:'Slider unavailable; retry or enter a number.',error:error.message});},
+  },sliderRanges.get(key));
 }
 
 /** Refresh bounded history controls without a state notification or sound request. */
@@ -126,12 +144,14 @@ store.subscribe(reason=> {
   renderHistory();
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
+  if (['geometry','catalogue','restore'].includes(reason)) refreshSliderRange();
+  if (reason==='acceptable-level') contours.syncAcceptable();
   if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
   if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
   if (['geometry','catalogue','receivers','restore'].includes(reason)) { manager.renderMarkers(); refreshReceivers(); }
-  if (['geometry','catalogue','thresholds','restore'].includes(reason)) {
+  if (['geometry','catalogue','thresholds','acceptable-level','restore'].includes(reason)) {
     refreshGeometry();
   }
 });
@@ -172,7 +192,7 @@ $('demo').onclick=()=> {
   manager.fitMine();
   say('Demonstration positions and guessed machine levels; not actual company operations.');
 };
-$('retry').onclick=()=> { $('retry').hidden=true; say('Retrying…'); refreshGeometry(); refreshReceivers(); };
+$('retry').onclick=()=> { $('retry').hidden=true; say('Retrying…'); refreshGeometry(); refreshReceivers(); refreshSliderRange(); };
 
 renderHistory(); catalogue.render(); entities.renderSources(); entities.renderReceivers({}); contours.render(); manager.syncModeUI();
 // No request is needed until equipment or receivers are added.

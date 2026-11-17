@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from .acoustics import at_point
 from .assets import FrontendFiles
+from .contour_range import ContourRange, calculate_contour_range
 from .contours import build_contours
 from .pages import about_page, index_page, machine_estimates_page
 from .scenario_routes import router as scenario_router
@@ -66,6 +67,19 @@ def predict(scenario: Scenario) -> Prediction:
         example_data=any(types[source.type_id].provenance == "example" for source in scenario.sources),
         model="full-space-point-source-v1",
     )
+
+
+@app.post("/api/contour-range", response_model=ContourRange)
+def contour_range(scenario: Scenario) -> ContourRange:
+    """Return useful slider bounds for the current source layout and model.
+
+    Args:
+        scenario: Current acoustic inputs, without camera or selected criterion.
+
+    Returns:
+        Checked contour-producing bounds or an unavailable explanation.
+    """
+    return calculate_contour_range(scenario)
 
 
 @app.post("/api/contours", response_model=ContourResponse)

@@ -70,6 +70,7 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
     record = response.json()
     identifier = record["id"]
     expected = {
+        "acceptable_level_db": None,
         **cast(dict[str, object], original["document"]),
         "receivers": [{"id": "r", "lat": -33.85, "lng": 116.05, "name": ""}],
     }
@@ -215,6 +216,7 @@ def test_legacy_receiver_names_are_defaulted_without_rewriting_files(saved_clien
     response = saved_client.get(f"/api/scenarios/{identifier}")
     assert response.status_code == 200
     document = response.json()["document"]
+    assert document["acceptable_level_db"] is None
     assert document["version"] == 1
     assert document["receivers"] == [{"id": "r", "lat": -33.85, "lng": 116.05, "name": ""}]
     assert path.read_bytes() == previous
@@ -309,3 +311,59 @@ def test_equipment_metadata_is_plain_text_and_not_acoustic(saved_client: TestCli
     for endpoint in ("/api/predict", "/api/contours"):
         bodies = [{**body, "levels": [60]} if endpoint.endswith("contours") else body for body in acoustic]
         assert saved_client.post(endpoint, json=bodies[0]).json() == saved_client.post(endpoint, json=bodies[1]).json()
+
+
+@pytest.mark.parametrize("level", [None, 0, 45.5, 300])
+def test_acceptable_level_round_trip(saved_client: TestClient, level: float | None) -> None:
+    """Keep an optional reference through Save/Open and draft validation.
+
+    Args:
+        saved_client: Isolated scenario API.
+        level: Unset or valid boundary/reference value.
+    """
+    original = saved_client.post("/api/scenarios", json=payload()).json()
+    assert original["document"]["acceptable_level_db"] is None
+    document = original["document"]
+    document["acceptable_level_db"] = level
+    response = saved_client.put(
+        f"/api/scenarios/{original['id']}", json={"name": original["name"], "document": document}
+    )
+    assert response.status_code == 200
+    assert response.json()["document"] == document
+    assert saved_client.get(f"/api/scenarios/{original['id']}").json()["document"] == document
+    assert saved_client.post("/api/scenarios/validate", json=document).json() == document
+
+
+@pytest.mark.parametrize("level", [-0.1, 300.1, float("nan"), float("inf"), -float("inf"), "40", True])
+def test_invalid_acceptable_level_preserves_save(saved_client: TestClient, level: object) -> None:
+    """Reject nonnumeric/nonfinite references without changing a saved scenario.
+
+    Args:
+        saved_client: Isolated scenario API.
+        level: Invalid reference to reject.
+    """
+    record = saved_client.post("/api/scenarios", json=payload()).json()
+    document = {**record["document"], "acceptable_level_db": level}
+    response = saved_client.put(
+        f"/api/scenarios/{record['id']}",
+        content=json.dumps({"name": record["name"], "document": document}),
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code == 422
+    assert saved_client.get(f"/api/scenarios/{record['id']}").json() == record
+
+
+def test_acceptable_level_unique_budget(saved_client: TestClient) -> None:
+    """A matching reference shares a slot; an extra unique threshold cannot displace another.
+
+    Args:
+        saved_client: Isolated scenario API.
+    """
+    document = cast(dict[str, object], payload()["document"])
+    document["levels"] = list(range(25))
+    document["acceptable_level_db"] = 10
+    assert saved_client.post("/api/scenarios/validate", json=document).status_code == 200
+    document["acceptable_level_db"] = 25
+    assert saved_client.post("/api/scenarios/validate", json=document).status_code == 422
+    document["levels"] = list(range(24))
+    assert saved_client.post("/api/scenarios/validate", json=document).status_code == 200
