@@ -6,6 +6,10 @@ import {SOUND_REFERENCE} from './sound-reference.js';
 // Fresh-scenario camera: mine-wide view from the owner's reference image.
 export const DEFAULT_VIEW = {lat:-33.8675,lng:116.07647,zoom:14};
 
+/** @param {import('./types.js').Receiver} receiver Listening location.
+ * @param {number} index Zero-based list position. @return {string} Name or numbered fallback. */
+export function receiverLabel(receiver, index) { return receiver.name || `Receiver ${index+1}`; }
+
 /** Observable scenario. Camera movement is deliberately not part of this state. */
 export class ScenarioStore {
   /** Initialise provisional equipment and five descending decibel thresholds. */
@@ -89,11 +93,22 @@ export class ScenarioStore {
   /** @param {number} lat Latitude. @param {number} lng Longitude. */
   addReceiver(lat, lng) {
     if (this.receivers.length >= 20) return;
-    this.receivers.push({id:uuid(),lat,lng}); this.mode = null; this.notify('receivers');
+    this.receivers.push({id:uuid(),lat,lng,name:""}); this.mode = null; this.notify('receivers');
   }
 
   /** @param {string} id Receiver ID. @param {Object} patch Coordinates to apply. */
   updateReceiver(id, patch) { Object.assign(this.receivers.find(r => r.id === id), patch); this.notify('receivers'); }
+
+  /** Rename metadata without scheduling sound requests. Reject invalid input without losing the old name.
+   * @param {string} id Receiver ID. @param {string} name Optional display label.
+   * @return {boolean} Whether the edit is valid. */
+  renameReceiver(id, name) {
+    const receiver = this.receivers.find(r=>r.id===id);
+    if (!receiver || typeof name!=='string' || [...name.trim()].length>80) return false;
+    const trimmed=name.trim();
+    if ((receiver.name || '')!==trimmed) {receiver.name=trimmed; this.notify('receiver-name');}
+    return true;
+  }
 
   /** @param {string} id Receiver to remove. */
   removeReceiver(id) { this.receivers = this.receivers.filter(r => r.id !== id); this.notify('receivers'); }
