@@ -45,7 +45,21 @@ If a task grows into multiple independent features, split it and get approval fo
 A good starting instruction is: “Work on task 012 within its scope, verify it, and prepare the
 change for review. Do not merge or start another task automatically.”
 
-## PR stack
+## Current implementation review stack
+
+Merge and review from the bottom of the dependency chain upward. Each PR targets the branch
+immediately below it; the complete product is `agent/equipment-metadata-editor`.
+
+| PR | Scope | Base |
+| --- | --- | --- |
+| [#18](https://github.com/Jakespitteler/Sound-Model/pull/18) | Task 018: placement undo/redo | `main` |
+| [#19](https://github.com/Jakespitteler/Sound-Model/pull/19) | Persistent map Undo/Redo controls | `agent/placement-undo-redo` |
+| [#20](https://github.com/Jakespitteler/Sound-Model/pull/20) | Task 019: equipment metadata contract | `agent/persistent-history-controls` |
+| [#21](https://github.com/Jakespitteler/Sound-Model/pull/21) | Task 020: collapsed metadata editor | `agent/equipment-metadata-contract` |
+
+Retarget the next PR to `main` after its dependency merges. No automatic merge is authorised.
+
+## Earlier setup PR stack
 
 ```mermaid
 flowchart TD

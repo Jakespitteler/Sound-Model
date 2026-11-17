@@ -40,6 +40,8 @@ adding unrelated work. Record the resulting commit, checks and limitations in th
 
 ## Evidence
 
+Implementation commit: `eb0ce8e`. Review: [PR #21](https://github.com/Jakespitteler/Sound-Model/pull/21).
+
 Four JavaScript modules change: collapsed equipment forms, state notification, orchestration
 and shared JSDoc types. New optional fields use examples and Unicode-aware 500/200 limits.
 Metadata-only saves update local catalogue/map details and recovery without sound requests;
