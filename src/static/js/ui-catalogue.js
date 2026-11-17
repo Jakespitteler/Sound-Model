@@ -24,7 +24,8 @@ export class CatalogueUI {
       }
       const name = $('type-name').value.trim();
       if (!name) return this.say('Enter a machine name.');
-      this.store.addMachineType(name, Number($('type-level').value), $('type-provenance').value);
+      this.store.addMachineType(name, Number($('type-level').value), $('type-provenance').value, $('type-note').value.trim());
+      $('type-note').value = '';
       $('type-name').value = '';
       this.say('Machine type added. Choose "Place a machine on map" next.');
     });
@@ -40,6 +41,7 @@ export class CatalogueUI {
         name,
         lwa: Number(data.get('lwa')),
         provenance: String(data.get('provenance')),
+        note: String(data.get('note')).trim(),
       });
       this.say('Type updated for all its machines.');
     });
@@ -58,16 +60,17 @@ export class CatalogueUI {
         (t) =>
           `<div class="type-card"><div class="row"><strong>${escapeHtml(t.name)}</strong>` +
           `<button class="danger" type="button" data-remove-type="${t.id}" aria-label="Remove ${escapeHtml(t.name)} type">Remove</button></div>` +
-          `<p>${t.lwa.toFixed(1)} dB(A) LwA — ${t.provenance === 'example' ? 'EXAMPLE' : 'Measured data'}</p>` +
-          `<details><summary>Edit type</summary><form data-edit-type="${t.id}">` +
+          `<p>${t.lwa.toFixed(1)} dB(A) LwA — ${t.provenance === 'example' ? 'Provisional estimate' : 'User-entered measured data'}</p>` +
+          `<details><summary>Estimate notes &amp; edit</summary><p class="estimate-note">${escapeHtml(t.note || "No source note recorded. Add one before assessment use.")}</p><form data-edit-type="${t.id}">` +
           `<label>Name<input name="name" value="${escapeHtml(t.name)}" maxlength="80" required></label>` +
           `<div class="two-columns"><label>LwA dB(A)<input name="lwa" type="number" min="0" max="300" step="0.1" value="${t.lwa}" required></label>` +
           `<label>Data source<select name="provenance"><option value="example" ${t.provenance === 'example' ? 'selected' : ''}>Example</option>` +
           `<option value="measured" ${t.provenance === 'measured' ? 'selected' : ''}>Measured</option></select></label></div>` +
-          `<button class="secondary" type="submit">Save type</button></form></details></div>`,
+          `<label>Source / assumption note<textarea name="note" maxlength="2000" rows="3">${escapeHtml(t.note || "")}</textarea></label><button class="secondary" type="submit">Save type</button></form></details></div>`,
       )
       .join('');
 
+    $('catalogue-count').textContent = `${this.store.types.length} types`;
     const old = $('place-type').value;
     $('place-type').innerHTML = this.store.types.length
       ? this.store.types.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')
@@ -75,7 +78,7 @@ export class CatalogueUI {
     if (this.store.types.some((t) => t.id === old)) $('place-type').value = old;
     $('place-source').disabled = !this.store.types.length;
     $('demo').disabled = Boolean(
-      this.store.types.length || this.store.sources.length || this.store.receivers.length,
+      this.store.sources.length || this.store.receivers.length,
     );
   }
 }

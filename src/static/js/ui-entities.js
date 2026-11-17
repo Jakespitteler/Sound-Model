@@ -3,6 +3,7 @@
  */
 
 import { $, escapeHtml, formatDb } from './utils.js';
+import {soundColor} from './sound-style.js';
 
 /** Source and receiver cards with accessible numeric coordinate controls. */
 export class EntitiesUI {
@@ -31,11 +32,12 @@ export class EntitiesUI {
   /**
    * @param {Object} item Placed source or receiver.
    * @param {string} collection State collection name.
+   * @param {string} [extra] Safely constructed contribution markup for receiver details.
    * @return {string} Escaped coordinate-editing form markup.
    */
-  positionForm(item, collection) {
+  positionForm(item, collection, extra = '') {
     return (
-      `<details><summary>Edit coordinates</summary>` +
+      `<details><summary>${collection === 'sources' ? 'Edit position' : 'Details &amp; position'}</summary>${extra}` +
       `<form data-position="${item.id}" data-collection="${collection}" class="position-edit">` +
       `<div class="two-columns"><label>Latitude<input name="lat" type="number" min="-85" max="85" step="any" value="${item.lat}" required></label>` +
       `<label>Longitude<input name="lng" type="number" min="-180" max="180" step="any" value="${item.lng}" required></label></div>` +
@@ -52,7 +54,7 @@ export class EntitiesUI {
             (s, i) =>
               `<div class="item-card"><div class="row"><strong>${i + 1}. ${escapeHtml(this.store.typeFor(s).name)}</strong>` +
               `<button class="danger" type="button" data-remove-source="${s.id}" aria-label="Remove machine ${i + 1}">Remove</button></div>` +
-              `<p>${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}</p>${this.positionForm(s, 'sources')}</div>`,
+              `${this.positionForm(s, 'sources')}</div>`,
           )
           .join('')
       : '<p class="empty">No machines placed yet. Choose a type, then click the map.</p>';
@@ -70,20 +72,12 @@ export class EntitiesUI {
             return (
               `<div class="item-card"><div class="row"><strong>Receiver ${i + 1}</strong>` +
               `<button class="danger" type="button" data-remove-receiver="${r.id}" aria-label="Remove receiver ${i + 1}">Remove</button></div>` +
-              `<div class="result">${result ? formatDb(result.level_db) : 'Calculating…'}</div>` +
-              `<p>${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}</p>` +
-              `${result?.near_field ? '<p>Within 1 m of a source: near-field limit applies.</p>' : ''}` +
-              `${
-                result?.contributions.length
-                  ? `<ul class="contributions">${result.contributions
-                      .map(
-                        (c) =>
-                          `<li>${escapeHtml(c.name)} — ${c.distance_m.toFixed(0)} m — ${c.level_db.toFixed(1)} dB(A)` +
-                          `${c.provenance === 'example' ? ' — example' : ''}</li>`,
-                      )
-                      .join('')}</ul>`
-                  : ''
-              }${this.positionForm(r, 'receivers')}</div>`
+              `<div class="result" style="color:${soundColor(result?.level_db ?? null)}">${result ? formatDb(result.level_db) : 'Calculating…'}</div>` +
+              `${result?.near_field ? '<p>Within 1 m: numerical limit applies.</p>' : ''}` +
+              `${this.positionForm(r, 'receivers', result?.contributions.length
+                ? `<ul class="contributions">${result.contributions.map(c =>
+                  `<li>${escapeHtml(c.name)} · ${c.distance_m.toFixed(0)} m · ${c.level_db.toFixed(1)} dB(A)${c.provenance === 'example' ? ' · estimate' : ''}</li>`
+                ).join('')}</ul>` : '')}</div>`
             );
           })
           .join('')

@@ -2,9 +2,10 @@
  * Manages the Leaflet map, tile status feedback, draggable markers, and placement clicks.
  */
 
-import { HOME_COORDS } from './state.js';
+import { MINE_BOUNDS } from './state.js';
 import { ContourLayer } from './contour-layer.js';
-import { $ } from './utils.js';
+import { $, escapeHtml } from './utils.js';
+import {soundColor} from './sound-style.js';
 
 /** Leaflet map, imagery availability and separately draggable source/receiver markers. */
 export class MapManager {
@@ -12,20 +13,66 @@ export class MapManager {
   constructor(store) {
     this.store = store;
     this.markers = L.layerGroup();
+    this.receiverMarkers = new Map();
+    this.receiverReadings = null;
+    this.receiverFailed = false;
     this.map = L.map('map', {
       minZoom: 3,
+      zoomAnimation: false,
       maxZoom: 19,
       maxBounds: [
         [-85, -180],
         [85, 180],
       ],
       maxBoundsViscosity: 1,
-    }).setView(HOME_COORDS, 14);
+    });
+    this.fitMine();
     this.markers.addTo(this.map);
 
     this.contourLayer = new ContourLayer(this.map);
     this.initTiles();
     this.bindMapEvents();
+  }
+
+  /** Fit the wider Greenbushes mine area; this is an overview, not a survey boundary. */
+  fitMine() {
+    this.map.stop();
+    this.map.fitBounds(MINE_BOUNDS, {paddingTopLeft:[48,95],paddingBottomRight:[36,110],maxZoom:14,animate:false});
+    const centre = this.map.getCenter();
+    $('site-lat').value = centre.lat.toFixed(5);
+    $('site-lng').value = centre.lng.toFixed(5);
+  }
+
+  /**
+   * Update receiver badges without moving the map or replacing source markers.
+   * @param {?Object<string, import('./types.js').Reading>} results Fresh readings; null while pending.
+   * @param {boolean} failed Whether the request failed rather than remaining pending.
+   */
+  setReceiverReadings(results, failed = false) {
+    this.receiverReadings = results;
+    this.receiverFailed = failed;
+    for (const [id, marker] of this.receiverMarkers) {
+      const index = this.store.receivers.findIndex(receiver=>receiver.id===id);
+      marker.setIcon(this.receiverIcon(id,index));
+      const reading = results?.[id];
+      const description = failed ? 'unavailable' : !reading ? 'calculating' : reading.level_db === null
+        ? 'no source contribution' : `${reading.level_db.toFixed(1)} dB(A) predicted source contribution`;
+      marker.getElement()?.setAttribute('aria-label', `Receiver ${index+1}: ${description}`);
+    }
+  }
+
+  /**
+   * Build a draggable location badge with a coloured numeric sound-pressure reading.
+   * @param {string} id Receiver ID.
+   * @param {number} index Receiver position in the scenario list.
+   * @return {L.DivIcon} A clear unknown/empty/error or numeric badge, never a false 0 dB.
+   */
+  receiverIcon(id, index) {
+    const reading = this.receiverReadings?.[id];
+    const value = this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.level_db === null ? 'No sources' : reading.level_db.toFixed(1);
+    const color = soundColor(reading?.level_db ?? null);
+    return L.divIcon({className:'receiver-location',iconSize:[112,44],iconAnchor:[56,22],
+      html:`<div class="receiver-marker${reading?.level_db != null && !this.receiverFailed ? '' : ' is-status'}" data-receiver-id="${escapeHtml(id)}" style="--level-color:${color}"><span class="receiver-id">R${index+1}</span><strong class="receiver-number">${value}${reading?.level_db != null && !this.receiverFailed ? '<small>dB(A)</small>':''}</strong></div>`});
   }
 
   /** Initialise the existing Esri imagery provider and explicit loading failure state. */
@@ -94,11 +141,12 @@ export class MapManager {
   /** Rebuild entity markers only after catalogue/source/receiver mutations. */
   renderMarkers() {
     this.markers.clearLayers();
+    this.receiverMarkers.clear();
     for (const collection of ['sources', 'receivers']) {
       this.store[collection].forEach((item, i) => {
         const isSource = collection === 'sources';
         const label = isSource ? `${i + 1}. ${this.store.typeFor(item).name}` : `Receiver ${i + 1}`;
-        const icon = L.divIcon({
+        const icon = !isSource ? this.receiverIcon(item.id,i) : L.divIcon({
           className: '',
           html: `<div class="${isSource ? 'machine' : 'receiver'}-marker">${isSource ? i + 1 : 'R' + (i + 1)}</div>`,
           iconSize: [32, 32],
@@ -111,6 +159,7 @@ export class MapManager {
           alt: label,
         }).addTo(this.markers);
 
+        if (!isSource) this.receiverMarkers.set(item.id, marker);
         const tooltip = document.createElement('span');
         tooltip.textContent = label;
         marker.bindTooltip(tooltip);

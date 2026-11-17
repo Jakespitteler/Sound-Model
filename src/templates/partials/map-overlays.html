@@ -5,14 +5,21 @@
       <strong id="mode-label">Pan to explore · drag markers to move</strong>
     </div>
     <button id="cancel-mode" hidden class="text-button" type="button">Cancel placement</button>
-    <button id="home" class="secondary compact" type="button">Greenbushes</button>
+    <button id="home" class="secondary compact" type="button">Greenbushes mine</button>
   </div>
-  <form id="location-form" class="location-bar">
+  <details class="location-bar"><summary>Go to coordinates</summary>
+  <form id="location-form">
     <label>Latitude<input id="site-lat" type="number" min="-85" max="85" step="any" value="-33.858" required></label>
     <label>Longitude<input id="site-lng" type="number" min="-180" max="180" step="any" value="116.055" required></label>
     <button type="submit" class="secondary compact">Go to location</button>
   </form>
+  </details>
   <div id="map"></div>
+  <details id="sound-key" class="sound-key" open>
+    <summary>How loud is that?</summary>
+    <ol id="sound-key-levels"></ol>
+    <p>Light-hearted, approximate pressure-level comparisons. Distance matters. Not sound-power values or compliance limits.</p>
+  </details>
   <div id="tile-status" class="tile-status" role="status">Loading satellite imagery…</div>
   <div class="map-bottom">
     <div class="legend">
@@ -21,7 +28,7 @@
         <label><input id="show-overlay" type="checkbox" checked> Show contours</label>
       </div>
       <div id="contour-legend" class="contour-legend"></div>
-      <p>Sources only · excludes background noise</p>
+      <p>Sources only · colours show level, not compliance</p>
     </div>
     <div class="calculation-status"><span id="calculation-status" role="status">Add a source to begin</span><button id="retry" type="button" class="secondary compact retry" hidden>Retry calculation</button></div>
   </div>

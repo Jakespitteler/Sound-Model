@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from .acoustics import at_point
 from .assets import FrontendFiles
 from .contours import build_contours
-from .pages import index_page
+from .pages import index_page, machine_estimates_page
 from .types import ContourRequest, ContourResponse, MachineType, Point, Prediction, Scenario
 
 app = FastAPI(title="Sound-Model", docs_url=None, redoc_url=None, openapi_url=None)
@@ -83,6 +83,7 @@ def contours(scenario: ContourRequest) -> ContourResponse:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 
+app.add_api_route("/machine-estimates", machine_estimates_page, methods=["GET"], response_class=HTMLResponse)
 app.add_api_route("/", index_page, methods=["GET"], response_class=HTMLResponse)
 app.add_api_route("/index.html", index_page, methods=["GET"], response_class=HTMLResponse)
 

@@ -59,7 +59,7 @@ def client() -> Iterator[TestClient]:
         ("/js/main.js", b"api/predict"),
         ("/js/state.js", b"ScenarioStore"),
         ("/css/sidebar.css", b".sidebar"),
-        ("/css/contours.css", b".contour-card"),
+        ("/css/contours.css", b".contour-row"),
         ("/vendor/leaflet/leaflet.js", b"Leaflet"),
     ],
 )
@@ -207,3 +207,17 @@ def test_sound_power_ceiling(client: TestClient) -> None:
     assert prediction.receivers["r"].level_db == pytest.approx(248.086, abs=0.01)
     payload["types"] = [{"id": "t", "name": "Above limit", "lwa": 300.1}]
     assert client.post("/api/predict", json=payload).status_code == 422
+
+
+def test_equipment_estimate_notes_are_explicit(client: TestClient) -> None:
+    """Expose provisional origins without falsely attributing guesses to company data.
+
+    Args:
+        client: In-process application client.
+    """
+    response = client.get("/machine-estimates")
+    assert response.status_code == 200
+    assert "project-authored guesses" in response.text
+    assert "not manufacturer specifications" in response.text
+    assert "20 µPa" in response.text
+    assert "Charles Hull" in response.text

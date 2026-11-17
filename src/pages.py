@@ -17,3 +17,12 @@ def index_page() -> HTMLResponse:
     for partial in (TEMPLATES / "partials").glob("*.html"):
         page = page.replace("{{" + partial.stem + "}}", partial.read_text(encoding="utf-8"))
     return HTMLResponse(page)
+
+
+def machine_estimates_page() -> HTMLResponse:
+    """Expose the origin and limitations of the provisional catalogue in the app.
+
+    Returns:
+        Static source notes describing guesses, blocked research and acoustic units.
+    """
+    return HTMLResponse((TEMPLATES / "machine-estimates.html").read_text(encoding="utf-8"))
