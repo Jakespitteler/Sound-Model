@@ -52,13 +52,15 @@ flowchart TD
     R --> Predict[POST /api/predict]
     Predict --> Numbers[Update receiver readings]
     Camera[Pan or zoom] --> Reproject[Leaflet reprojects existing geometry]
-    Style[Contrast or visibility] --> Local[Update rendering locally]
+    Style[Contrast, visibility or receiver name] --> Local[Update rendering locally]
 ```
 
 `main.js` currently also refreshes the lanes for catalogue mutations and restores. Cloud
 cover is metadata and adds no acoustic correction. Camera movement can load tiles and mark
 a saved camera view dirty, but never starts acoustic requests. Changing a receiver leaves
-contour geometry alone. Stale readings/lines are hidden during relevant pending requests.
+contour geometry alone. Receiver names use a separate `receiver-name` notification: headings,
+tooltips and accessible descriptions update in place, with no acoustic request or marker replacement.
+Open receiver details and active name selection survive a pending reading response. Stale readings/lines are hidden during relevant pending requests.
 
 Each request lane debounces for 150 ms, aborts superseded browser fetches and uses a version
 counter to reject stale responses, including the A→B→A cache race. Aborting a fetch does
@@ -109,7 +111,7 @@ provides optional white halos. Contour labels sit below object badges. Contours 
 Machine icons show category and number; hover/focus exposes name and LwA, while selection
 opens the evidence note. Tooltip width is intrinsic with a 260 px cap. Measured placement
 chooses above/below and shifts sideways to minimise overlap with controls while respecting map
-edges. Panning dismisses transient cards. Receiver badges retain pressure and units: 84×34 px
+edges. Open tooltips are refitted after a map resize. Panning dismisses transient cards. Receiver badges retain pressure and units: 84×34 px
 for numbers, 112×34 px for status text. Both marker types remain anchored at their coordinates.
 
 The eight preset types are project-authored guesses. `/machine-estimates` documents their origin.
@@ -134,6 +136,14 @@ sequenceDiagram
     API-->>UI: UUID, name, timestamp and document
     UI->>UI: Update saved URL and saved revision
 ```
+
+Receivers accept optional `name` metadata (up to 80 characters, empty by default). Duplicate
+labels are allowed; receiver IDs still identify results. Existing version-1 files without names
+load without being rewritten. Explicitly saving normalises the default field. Naming has no
+effect on receiver calculations or contour geometry. The optional editor lives in receiver details;
+sidebar headings and hover/focus descriptions use the name, while map badges keep R-numbers.
+Accepted edits update locally as the user types; whitespace is trimmed when leaving the field.
+Overlong text is rejected explicitly, retaining the previous accepted label.
 
 Version-1 documents include catalogue notes/kinds, sources, receivers, levels, cloud metadata,
 view, contrast and visibility. They do not contain imagery or calculated results. Names are

@@ -2,7 +2,7 @@
  * Manages the Leaflet map, tile status feedback, draggable markers, and placement clicks.
  */
 
-import { DEFAULT_VIEW } from './state.js';
+import { DEFAULT_VIEW, receiverLabel } from './state.js';
 import { ContourLayer } from './contour-layer.js';
 import { $, escapeHtml } from './utils.js';
 import {soundColor} from './sound-style.js';
@@ -55,10 +55,21 @@ export class MapManager {
     for (const [id, marker] of this.receiverMarkers) {
       const index = this.store.receivers.findIndex(receiver=>receiver.id===id);
       marker.setIcon(this.receiverIcon(id,index));
-      const reading = results?.[id];
-      const description = failed ? 'unavailable' : !reading ? 'calculating' : reading.status === 'out_of_scope' ? 'outside the 10 km model scope' : reading.level_db === null
+    }
+    this.updateReceiverLabels();
+  }
+
+  /** Refresh hover/focus names and reading descriptions without replacing marker elements. */
+  updateReceiverLabels() {
+    for (const [id,marker] of this.receiverMarkers) {
+      const index=this.store.receivers.findIndex(receiver=>receiver.id===id);
+      const label=receiverLabel(this.store.receivers[index],index);
+      const reading=this.receiverReadings?.[id];
+      const description=this.receiverFailed ? 'unavailable' : !reading ? 'calculating' : reading.status==='out_of_scope' ? 'outside the 10 km model scope' : reading.level_db===null
         ? 'no source contribution' : `${reading.level_db.toFixed(1)} dB(A) predicted source contribution`;
-      marker.getElement()?.setAttribute('aria-label', `Receiver ${index+1}: ${description}`);
+      marker.getTooltip().getContent().querySelector('strong').textContent=label;
+      marker.getElement()?.setAttribute('aria-label',`${label} (R${index+1}): ${description}`);
+      if (marker.isTooltipOpen()) this.fitObjectTooltip(marker.getTooltip());
     }
   }
 
@@ -152,6 +163,9 @@ export class MapManager {
 
   /** Bind placement only: camera movement never triggers acoustic requests. */
   bindMapEvents() {
+    this.map.on('resize',()=>this.markers.eachLayer(marker=> {
+      if (marker.isTooltipOpen()) this.fitObjectTooltip(marker.getTooltip());
+    }));
     this.map.on('movestart',()=>this.markers.eachLayer(marker=>marker.closeTooltip()));
     this.map.on('click', (event) => {
       if (!this.store.mode) return;
@@ -185,7 +199,7 @@ export class MapManager {
     for (const collection of ['sources', 'receivers']) {
       this.store[collection].forEach((item, i) => {
         const isSource = collection === 'sources';
-        const label = isSource ? `${i + 1}. ${this.store.typeFor(item).name}` : `Receiver ${i + 1}`;
+        const label = isSource ? `${i + 1}. ${this.store.typeFor(item).name}` : receiverLabel(item,i);
         const machine = isSource ? this.store.typeFor(item) : null;
         const icon = !isSource ? this.receiverIcon(item.id,i) : L.divIcon({
           className:'machine-location',iconSize:[32,32],iconAnchor:[16,16],
@@ -233,5 +247,6 @@ export class MapManager {
         });
       });
     }
+    this.updateReceiverLabels();
   }
 }

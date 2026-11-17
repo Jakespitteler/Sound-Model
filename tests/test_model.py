@@ -6,8 +6,9 @@ import pytest
 from pydantic import ValidationError
 
 from src.acoustics import combine, distance_metres, source_level
+from src.contours import build_contours
 from src.main import predict
-from src.types import MachineType, Point, Position, Prediction, Receiver, Scenario, Source
+from src.types import ContourRequest, MachineType, Point, Position, Prediction, Receiver, Scenario, Source
 
 
 def generate_scenario(
@@ -129,3 +130,44 @@ def test_bad_inputs(case: dict[str, object]) -> None:
     }
     with pytest.raises(ValidationError):
         Scenario.model_validate(payload)
+
+
+@pytest.mark.parametrize("name", ["", "House 1", "住宅 🏠", "x" * 80, "  Town boundary  "])
+def test_receiver_name_is_optional_metadata(name: str) -> None:
+    """Accept bounded Unicode labels and retain the legacy empty default.
+
+    Args:
+        name: Optional display name supplied by the client.
+    """
+    assert Receiver(id="r", lat=0, lng=0).name == ""
+    receiver = Receiver.model_validate({"id": "r", "lat": 0, "lng": 0, "name": name})
+    assert receiver.name == name.strip()
+    assert receiver.id == "r"
+
+
+@pytest.mark.parametrize("name", ["x" * 81, None, 123, {"name": "House"}])
+def test_invalid_receiver_name_is_rejected(name: object) -> None:
+    """Reject unsupported label values rather than silently dropping them.
+
+    Args:
+        name: Invalid display-name input.
+    """
+    with pytest.raises(ValidationError):
+        Receiver.model_validate({"id": "r", "lat": 0, "lng": 0, "name": name})
+
+
+def test_receiver_names_do_not_change_sound_or_geometry() -> None:
+    """Keep ID-based results and physical predictions independent of display labels."""
+    plain = generate_scenario()
+    named = Scenario.model_validate(
+        {**plain.model_dump(), "receivers": [{"id": "r", "lat": 0, "lng": 0.001, "name": "House 1"}]}
+    )
+    prediction = predict(named)
+    radius = 6_371_008.8 * math.radians(0.001)
+    expected = 10 * math.log10(10 ** (100 / 10) / (4 * math.pi * radius**2))
+    assert prediction.receivers["r"].level_db == pytest.approx(expected, abs=1e-9)
+    assert prediction == predict(plain)
+    plain_contour = build_contours(ContourRequest(**plain.model_dump(), levels=[60]))
+    named_contour = build_contours(ContourRequest(**named.model_dump(), levels=[60]))
+    assert named_contour == plain_contour
+    assert named_contour.contours[0].lines

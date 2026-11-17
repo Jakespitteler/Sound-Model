@@ -23,7 +23,11 @@ changes all those instances. Removing a type is prevented while it is in use.
 2. Drag its icon to move it, or expand **Edit position** and enter coordinates.
 3. Choose **Place a receiver**, then click the listening location.
 4. Read its coloured pressure level on the map or in the sidebar. Expand **Details & position**
-   for its coordinates and source contributions.
+   to add an optional name, edit coordinates or see source contributions.
+
+Names appear in the sidebar and on map hover or keyboard focus. The map keeps its compact
+R-number and reading. Clear the name to restore **Receiver N**. Names can contain up to
+80 characters, may repeat, and are kept by Save/Open and recovery.
 
 The machine icon's number matches its sidebar entry. Hover or keyboard-focus the icon for
 its name and power; click/Enter for the evidence note. Moving a receiver updates readings,
