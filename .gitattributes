@@ -1,0 +1,2 @@
+# Preserve the pinned skill snapshot's bytes on Windows and other Git clients.
+/.agents/** text eol=lf

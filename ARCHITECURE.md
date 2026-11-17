@@ -9,6 +9,9 @@ operations; the frontend still needs no bundler or additional UI library.
 
 ```text
 Sound-Model/
+├── AGENTS.md                      project rules and on-demand skill guidance
+├── .agents/                       pinned Agent Skills, references, personas and licence
+├── scripts/check_agent_skills.py  standard-library snapshot/discovery integrity check
 ├── pyproject.toml                 dependency groups, lint and strict type configuration
 ├── uv.lock                        reproducible dependency versions (unchanged)
 ├── src/

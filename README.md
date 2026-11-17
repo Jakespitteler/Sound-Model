@@ -76,10 +76,19 @@ uv run pytest
 uv run ruff check .
 uv run ruff format --check src tests
 uv run pyright
+uv run python scripts/check_agent_skills.py
 ```
 
 The owner approved NumPy and ContourPy for compiled contour calculations. Run `uv sync --frozen`
 after updating this branch to install the locked dependencies.
+
+## Coding agent workflows
+
+The repository includes all 25 skills from [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
+under `.agents/skills/`, with shared references, review personas and a pinned source manifest.
+Start a new Codex session after pulling to discover them; ask for a skill by name when useful.
+[AGENTS.md](AGENTS.md) records project-specific rules. See [the integration guide](.agents/README.md)
+for usage, provenance and updates. No Node.js installation or global plugin setup is required.
 
 ## Blank map / VS Code preview
 
