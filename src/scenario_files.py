@@ -79,7 +79,10 @@ class ScenarioDocument(StrictModel):
         Returns:
             Valid document with no silent repair or discarded source metadata.
         """
-        if len(set(self.levels) | ({self.acceptable_level_db} if self.acceptable_level_db is not None else set())) > 25:
+        unique_levels = set(self.levels)
+        if self.acceptable_level_db is not None:
+            unique_levels.add(self.acceptable_level_db)
+        if len(unique_levels) > 25:
             raise ValueError("At most 25 unique levels including the acceptable level are supported.")
         ContourRequest(
             types=[
