@@ -31,7 +31,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Navigate locally | [015](../docs/tasks/015-local-cluster-zoom.md) | Implemented for review; maximum pairwise distance 10 km; no acoustic filtering |
 | Avoid repeated work | [017](../docs/tasks/017-per-level-contour-cache.md) | Implemented for review; preserve coordinates, accuracy and stale-response rejection |
 | Checkpoint B | Zoom and cache | No acoustic calls on navigation; unaffected contours reused; existing geometry tests pass |
-| Recover mistakes | [018](../docs/tasks/018-placement-undo-redo.md) | Integrate with recovery and scenario lifecycle |
+| Recover mistakes | [018](../docs/tasks/018-placement-undo-redo.md) | Implemented for review; integrate with recovery and scenario lifecycle |
 | Checkpoint C | Complete selected POC slice | Acceptance evidence, appropriate full checks, small UI and clear handoff |
 | Optional equipment metadata | [019](../docs/tasks/019-equipment-metadata-contract.md), then [020](../docs/tasks/020-equipment-metadata-editor.md) | Save compatibility before the collapsed editor |
 | Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | User-set reference, no default criterion; Ctrl repeat placement |
