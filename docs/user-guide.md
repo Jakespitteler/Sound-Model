@@ -50,6 +50,8 @@ A pressure measurement taken beside a machine is not automatically a sound-power
 
 Use the **Contours** tab. Each row has a slider and editable number; duplicate levels are
 rejected and rows sort from highest to lowest. Add/remove levels to change their count.
+Changing one level reuses unchanged contours; they remain visible while the new level loads.
+If it fails, Retry recalculates missing/failed contours while keeping successful ones.
 Contours cannot be dragged. Colours and line weight are automatic; **High contrast** adds
 white halos. **Show lines** hides/shows them without changing the calculation.
 
