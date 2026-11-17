@@ -44,7 +44,8 @@ intent alone. New dependencies and external data require separate owner approval
 ## Implementation and evidence
 
 The original implementation was `2d1bc3a`; the owner subsequently requested camera-centred
-fitting instead of selection/edit-history fitting. Current evidence is recorded below.
+fitting instead of selection/edit-history fitting. The correction is commit `c133a63`.
+Current evidence is recorded below.
 
 **Fit local area** uses the object nearest the current map centre as its anchor on every
 click. Stable ID/collection ties keep results deterministic. Selection state, focus handlers,
