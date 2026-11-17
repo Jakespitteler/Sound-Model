@@ -7,6 +7,7 @@ import { ContourLayer } from './contour-layer.js';
 import { $, escapeHtml } from './utils.js';
 import {soundColor} from './sound-style.js';
 import {illustration} from './illustrations.js';
+import {localGroup,nearestObject,freeMapRectangle} from './local-area.js';
 
 /** Leaflet map, imagery availability and separately draggable source/receiver markers. */
 export class MapManager {
@@ -42,6 +43,29 @@ export class MapManager {
     const centre = this.map.getCenter();
     $('site-lat').value = centre.lat.toFixed(5);
     $('site-lng').value = centre.lng.toFixed(5);
+  }
+
+  /** @return {import('./local-area.js').MapObject[]} All locations with collection-qualified identities. */
+  mapObjects() {
+    return ['sources','receivers'].flatMap(collection=>this.store[collection].map(item=>({...item,collection})));
+  }
+
+  /** Fit the 10 km pairwise group nearest the current map centre, keeping all sources in the acoustic scenario.
+   * @return {number} Number of objects fitted; zero leaves an empty scene's camera unchanged. */
+  fitLocalArea() {
+    const objects=this.mapObjects();
+    const anchor=nearestObject(objects,this.map.getCenter());
+    const group=localGroup(objects,anchor);
+    if (!group.length) return 0;
+    const bounds=this.map.getContainer().getBoundingClientRect();
+    const obstacles=[...this.map.getContainer().parentElement.querySelectorAll('.location-bar,.sound-key,.tile-status,.contour-alert,.map-fit-button,.leaflet-control')]
+      .map(element=>element.getBoundingClientRect()).filter(rect=>rect.width && rect.height)
+      .map(rect=>({left:rect.left-bounds.left,right:rect.right-bounds.left,top:rect.top-bounds.top,bottom:rect.bottom-bounds.top}));
+    const space=freeMapRectangle(bounds.width,bounds.height,obstacles);
+    this.map.stop(); this.map.closePopup();
+    this.map.fitBounds(group.map(item=>[item.lat,item.lng]),{animate:false,maxZoom:16,
+      paddingTopLeft:[space.left,space.top],paddingBottomRight:[bounds.width-space.right,bounds.height-space.bottom]});
+    return group.length;
   }
 
   /**
@@ -94,7 +118,7 @@ export class MapManager {
    */
   fitObjectTooltip(tooltip) {
     const bounds = this.map.getContainer().getBoundingClientRect();
-    const obstacles = [...this.map.getContainer().parentElement.querySelectorAll('.tile-status,.location-bar,.sound-key,.contour-alert,.leaflet-control')]
+    const obstacles = [...this.map.getContainer().parentElement.querySelectorAll('.tile-status,.location-bar,.sound-key,.contour-alert,.map-fit-button,.leaflet-control')]
       .map(element=>element.getBoundingClientRect()).filter(rect=>rect.width && rect.height);
     let best;
     for (const direction of ['top','bottom']) {
@@ -181,6 +205,7 @@ export class MapManager {
 
   /** Reflect the active placement mode without replacing forms or markers. */
   syncModeUI() {
+    $('fit-local-area').disabled=!(this.store.sources.length || this.store.receivers.length);
     const mode = this.store.mode;
     $('mode-label').textContent =
       mode === 'source'

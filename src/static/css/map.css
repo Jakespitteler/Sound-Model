@@ -145,3 +145,7 @@
 .map-panel input[type=checkbox] {
   accent-color: var(--teal);
 }
+
+/* Camera-only local fit action. */
+.map-fit-button { position:absolute; z-index:500; right:20px; bottom:40px; width:auto; }
+@media(max-width:650px) { .map-fit-button { right:12px; bottom:60px; } }
