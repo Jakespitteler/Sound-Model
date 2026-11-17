@@ -39,7 +39,7 @@ flowchart LR
 3. Hover or focus a numbered equipment icon to see its type and sound power. Click/Enter
    opens its evidence note. Drag machine or receiver markers to move them.
 4. Open **Contours** to add/remove levels or edit them with a slider or number. Levels
-   sort automatically. **High contrast** adds white outlines for busy backgrounds.
+   sort automatically. **Add contour** focuses a number field; Enter adds that exact level. **High contrast** adds white outlines for busy backgrounds.
 5. Choose **Save**, name the scenario, and save again after edits. **Open** lists saved work.
 
 **Undo / Redo** beneath the map zoom controls reverses machine and receiver placement, moves and removals.

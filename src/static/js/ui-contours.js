@@ -24,11 +24,25 @@ export class ContoursUI {
     $('acceptable-slider').oninput=()=> {$('acceptable-level').value=$('acceptable-slider').value;};
     $('acceptable-slider').onchange=()=>commitAcceptable($('acceptable-slider').valueAsNumber);
     $('clear-acceptable').onclick=()=>commitAcceptable(null);
-    $('add-contour').onclick = () => {
-      if (this.store.contours.length >= 25) return this.say('Maximum 25 contour levels.');
-      if (!this.store.addContour()) this.say('Maximum 25 unique levels, including the acceptable level.');
-      this.render();
+    const newForm=$('new-contour-form'), newLevel=$('new-contour-level');
+    const closeNewContour=()=> {newForm.hidden=true; newForm.reset(); newLevel.setCustomValidity(''); $('add-contour').hidden=false; $('add-contour').focus();};
+    $('add-contour').onclick=()=> {
+      if (this.store.contours.length>=25) return this.say('Maximum 25 ordinary contour levels. Remove one first.');
+      newForm.hidden=false; $('add-contour').hidden=true; newLevel.value=''; newLevel.setCustomValidity(''); newLevel.focus();
     };
+    newLevel.oninput=()=>newLevel.setCustomValidity('');
+    newForm.onsubmit=event=> {
+      event.preventDefault();
+      if (!newForm.checkValidity()) return newForm.reportValidity();
+      if (!this.store.addContour(newLevel.valueAsNumber)) {
+        newLevel.setCustomValidity(this.store.contours.some(c=>c.level_db===newLevel.valueAsNumber) ?
+          'That contour level already exists.' : 'Maximum 25 unique levels, including the acceptable level.');
+        newLevel.reportValidity(); return;
+      }
+      this.render(); closeNewContour(); this.say('Contour added.');
+    };
+    $('cancel-new-contour').onclick=closeNewContour;
+    newForm.onkeydown=event=> {if(event.key==='Escape') {event.preventDefault();event.stopPropagation();closeNewContour();}};
     $('contours').addEventListener('input', event => {
       const input = event.target;
       if (input.type !== 'range') return;

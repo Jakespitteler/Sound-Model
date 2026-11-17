@@ -95,3 +95,22 @@ no range requests, and a simulated range outage recovered through Retry. Session
 `/workspace/artifacts/check_scenario_slider.py`, `scenario-slider-desktop.png`,
 `scenario-slider-mobile.png`. Full suite: 110 tests; Ruff/format/Pyright/skills/lockfile checks pass.
 These are slider convenience bounds, not new physical attenuation or a validated audibility range.
+
+## Explicit ordinary-contour entry requested by the owner
+
+Add contour now opens a focused blank numeric form. Enter/Add creates the exact submitted
+level and returns focus to Add contour; Escape/Cancel closes it without a data edit. Duplicate,
+invalid and over-budget values are rejected without generating a substitute. Explicit zero
+and fractional values work. The programmatic no-argument helper remains compatible, but the
+user-facing action no longer guesses a threshold.
+
+The plain-browser `explicit-contour.html` fixture passes 13 checks for exact values, rejection,
+zero and shared-budget behaviour. The prior UI reproduced the problem: clicking Add created
+a sixth row and exposed no entry field. Actual Chromium checks pass click/focus/type/Enter,
+no premature row creation, duplicate correction, zero, Escape, Cancel and keyboard focus.
+With active sources, typing 47.5 sends exactly `[47.5]` to the contour endpoint and sorts the
+new row between 60 and 40. Desktop/narrow entry screenshots were inspected:
+`/workspace/artifacts/add-contour-entry-desktop.png`, `add-contour-entry-mobile.png`,
+`add-contour-result.png`; runner `check_add_contour.py`. Full stack: 110 Python tests and
+Ruff/format/Pyright/skills/lockfile checks pass, plus real mouse-drag slider and label-paint
+regressions. No JavaScript page errors or new dependencies.

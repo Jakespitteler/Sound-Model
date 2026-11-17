@@ -11,5 +11,9 @@
   </div>
   <div id="contour-errors" role="status"></div>
   <div id="contours"></div>
+  <form id="new-contour-form" class="new-contour-form" hidden>
+    <label>Level · dB(A)<input id="new-contour-level" name="level" type="number" min="0" max="300" step="0.1" placeholder="e.g. 45" required></label>
+    <button type="submit" class="secondary compact">Add</button><button id="cancel-new-contour" type="button" class="text-button">Cancel</button>
+  </form>
   <button id="add-contour" class="secondary" type="button">＋ Add contour</button>
 </section>

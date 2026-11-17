@@ -212,14 +212,18 @@ export class ScenarioStore {
       level_db,acceptable:level_db===this.acceptable_level_db}));
   }
 
-  /** Add a distinct contour threshold up to the API limit. */
-  addContour() {
+  /** Add a distinct threshold without substituting another value for explicit input.
+   * @param {number} [requestedLevel] Explicit dB(A), or omitted for programmatic fallback.
+   * @return {boolean} Whether the contour was added. */
+  addContour(requestedLevel) {
     if (this.contours.length >= 25) return false;
-    let level = Math.max(0, Math.min(300, Math.min(...this.contours.map(c=>c.level_db), 50) - 5));
-    while (this.contours.some(c=>c.level_db===level)) level++;
+    if (requestedLevel!==undefined && (typeof requestedLevel!=='number' || !Number.isFinite(requestedLevel) ||
+      requestedLevel<0 || requestedLevel>300 || this.contours.some(c=>c.level_db===requestedLevel))) return false;
+    let level=requestedLevel ?? Math.max(0, Math.min(300, Math.min(...this.contours.map(c=>c.level_db), 50) - 5));
+    if (requestedLevel===undefined) while (this.contours.some(c=>c.level_db===level)) level++;
     if (level > 300) return false;
     if (!this.fitsContourBudget([...this.contours.map(c=>c.level_db),level])) {
-      if (this.acceptable_level_db===null || this.contours.some(c=>c.level_db===this.acceptable_level_db)) return false;
+      if (requestedLevel!==undefined || this.acceptable_level_db===null || this.contours.some(c=>c.level_db===this.acceptable_level_db)) return false;
       level=this.acceptable_level_db;
     }
     this.contours.push({id:uuid(),level_db:level});

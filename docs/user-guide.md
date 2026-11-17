@@ -66,7 +66,9 @@ power and receiver names are retained when undoing coordinate moves.
 ## Adjust contours
 
 Use the **Contours** tab. Each row has a slider and editable number; duplicate levels are
-rejected and rows sort from highest to lowest. Add/remove levels to change their count.
+rejected and rows sort from highest to lowest. Choose **Add contour**, type a number and
+press **Enter** (or Add). **Escape/Cancel** dismisses the entry; no level is created until
+you confirm it. Remove levels with their × buttons.
 Changing one level reuses unchanged contours; they remain visible while the new level loads.
 If it fails, Retry recalculates missing/failed contours while keeping successful ones.
 Contours cannot be dragged. Colours and line weight are automatic; **High contrast** adds

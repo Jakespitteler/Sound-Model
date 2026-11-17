@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>Explicit contour values</title><pre id="result">Running…</pre>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} message Behaviour. */
+function check(claim,message){if(!claim)throw new Error(message);checks.push(message);}
+try {
+ const store=new ScenarioStore(), count=store.contours.length;
+ check(store.addContour(47.5) && store.contours.some(c=>c.level_db===47.5),'exact fractional input retained');
+ check(!store.addContour(47.5),'duplicate rejected');
+ for(const value of [-1,301,NaN,Infinity,'45',null,true]) check(!store.addContour(value),`invalid ${value} rejected`);
+ check(store.contours.length===count+1,'invalid input creates no substitute contour');
+ check(store.addContour(0) && store.contours.some(c=>c.level_db===0),'explicit zero retained');
+ store.contours=Array.from({length:24},(_,level_db)=>({id:String(level_db),level_db}));store.setAcceptableLevel(100);
+ check(!store.addContour(99) && !store.contours.some(c=>c.level_db===100),'explicit value never substituted to fit budget');
+ check(store.addContour(100) && store.getContourLevels().length===25,'explicit matching special threshold shares its slot');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks`;document.querySelector('#result').dataset.passed='true';
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>
