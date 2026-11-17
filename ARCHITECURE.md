@@ -29,7 +29,7 @@ they do not add missing propagation physics. Only imagery needs the external til
 | Persistence | `src/scenario_files.py`, `scenario_routes.py` | Versioned schema, safe UUID filenames, atomic saves and listing |
 | Frontend entry/state | `src/static/js/bootstrap.js`, `main.js`, `state.js` | Ordered startup, observable state and request orchestration |
 | Requests/cache | `src/static/js/api.js` | Debounce, abort/version protection and geometry cache |
-| Map/lines | `src/static/js/map-manager.js`, `contour-layer.js` | Imagery, markers, tooltip layout, geographic lines and halos |
+| Map/lines | `src/static/js/map-manager.js`, `contour-layer.js`, `local-area.js` | Imagery, markers, tooltip layout, geographic lines and halos |
 | Forms/files | `src/static/js/ui-*.js`, `scenario-files.js`, `sidebar.js` | Catalogue, entities, thresholds, tabs and Save/Open |
 | Shared appearance | `sound-style.js`, `sound-reference.js`, `sound-guide.js`, `illustrations.js` | Automatic colours, guide/default levels and original icons |
 | HTML/styles | `src/templates/`, `src/static/css/` | Assembled partials and styles split by responsibility |
@@ -52,7 +52,7 @@ flowchart TD
     Merge --> Lines
     R --> Predict[POST /api/predict]
     Predict --> Numbers[Update receiver readings]
-    Camera[Pan or zoom] --> Reproject[Leaflet reprojects existing geometry]
+    Camera[Pan, zoom or Fit local area] --> Reproject[Leaflet reprojects existing geometry]
     Style[Contrast, visibility or receiver name] --> Local[Update rendering locally]
 ```
 
@@ -133,6 +133,26 @@ opens the evidence note. Tooltip width is intrinsic with a 260 px cap. Measured 
 chooses above/below and shifts sideways to minimise overlap with controls while respecting map
 edges. Open tooltips are refitted after a map resize. Panning dismisses transient cards. Receiver badges retain pressure and units: 84×34 px
 for numbers, 112×34 px for status text. Both marker types remain anchored at their coordinates.
+
+### Local-area navigation
+
+`local-area.js` computes a camera group independently of acoustic state. Each Fit action
+chooses the object geographically nearest the current map centre, with stable ID/collection
+ties (a source and a receiver may share an ID). It reads the centre afresh on every click;
+selection, focus, placement and edit history do not determine the group. There is no saved
+or transient anchor state to restore.
+
+Candidates sort by anchor distance, then ID and collection using JavaScript string ordering.
+The greedy group accepts a candidate only when it is within 10,000 m of every existing member
+(mean Earth radius 6,371,008.8 m; 1 µm floating-point boundary allowance). It is deterministic,
+not a maximum-clique search. This camera rule does not filter acoustic sources or change the
+separate receiver display policy. It never fits automatically on edits or arriving predictions.
+
+The button is disabled without objects. `fitBounds` caps zoom at 16 and reserves a rectangle
+clear of currently visible overlays: candidate horizontal spans are tested against merged
+vertical obstacle intervals and the largest free rectangle is used, with a central fallback
+when the controls cover the map. Fit closes a selected popup, changes the camera and marks
+that view dirty for Save/recovery; it sends no acoustic request. Grouping is derived for the camera only, not stored as additional saved inputs.
 
 The eight preset types are project-authored guesses. `/machine-estimates` documents their origin.
 Fresh scenes and the Greenbushes button use `DEFAULT_VIEW` (−33.8675, 116.07647, zoom 14).

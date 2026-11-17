@@ -4,6 +4,7 @@
 
 Read `README.md`, the relevant section of `ARCHITECURE.md`, and the files/tests involved in
 the task. Assessment work and proposed improvements are tracked in `docs/tasks/README.md`.
+Before starting a task, tell the owner its number and title.
 Keep changes focused and preserve existing user work. The owner must approve unimplemented
 ideas before new task briefs are added. Existing broad backlog themes are not implementation
 approval; confirm the selected scope before starting a new feature.

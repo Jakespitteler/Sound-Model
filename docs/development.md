@@ -79,6 +79,22 @@ record requested thresholds, compare rendered coordinates with a fresh API respo
 check retries, source edits and panning. Model/accuracy mismatch must not combine incompatible
 cached/fresh results. Keep environment-only browser instrumentation out of production code.
 
+### Local-area algorithm regression page
+
+The grouping/overlay tests use plain JavaScript and the installed browser, with no test
+framework or additional dependency. From the repository root, run a temporary loopback server:
+
+```sh
+python -m http.server 8790 --bind 127.0.0.1
+```
+
+Open <http://127.0.0.1:8790/tests/browser/local-area.html>. It must report **PASS: 22 checks**;
+failures also appear in the browser console. Stop the temporary server after checking.
+These checks cover the inclusive boundary, chain prevention, deterministic ties, preserved
+inputs and overlay space. They complement `pytest`; they do not run as part of it.
+For the actual app, additionally check that the current camera overrides distant edits or
+placements, empty/single scenes, two distant areas and zero `/api/predict` or `/api/contours` calls on fitting.
+
 ## Making changes
 
 Read the selected task and relevant modules first. Keep type hints, Google-style Python

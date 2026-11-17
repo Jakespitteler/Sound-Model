@@ -131,6 +131,11 @@ document.querySelector('.sidebar').addEventListener('submit',event=> {
 });
 $('cancel-mode').onclick=()=>store.setMode(null);
 document.addEventListener('keydown',event=> {if(event.key==='Escape') store.setMode(null);});
+$('fit-local-area').onclick=()=> {
+  store.setMode(null);
+  const count=manager.fitLocalArea();
+  say(count ? `Showing ${count} of ${store.sources.length+store.receivers.length} objects in this local area.` : 'Place a machine or receiver first.');
+};
 $('home').onclick=()=> {store.setMode(null); manager.fitMine();};
 $('location-form').onsubmit=event=> {event.preventDefault(); store.setMode(null); manager.map.setView([Number($('site-lat').value),Number($('site-lng').value)],14);};
 $('contour-alert').onclick=()=> {document.getElementById('contours-tab').click(); $('contour-errors').scrollIntoView({block:'nearest'});};
