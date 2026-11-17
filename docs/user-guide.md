@@ -107,5 +107,6 @@ A second tab pauses draft writes when another tab owns the single draft, leaving
 Save available. If the draft changes during validation, review the latest version and retry.
 This is a single recovery slot, not collaborative version history. Storage failures are shown
 next to Save; previously stored draft data is retained when a write fails. Browser data can
-be cleared and edits made immediately before a crash may precede the debounce. Keep named
+be cleared, and edits made immediately before a crash may not have passed the debounce or
+the browser's own disk flush. Keep named
 saves and backups for important work.

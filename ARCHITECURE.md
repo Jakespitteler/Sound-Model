@@ -151,7 +151,7 @@ A missing save becomes new unsaved work. Named files are never written by recove
 Storage events and ownership checks pause competing tabs. A restore captures the exact reviewed
 envelope and rejects a changed candidate after async validation. This is a single best-effort
 browser draft, not a transactional multi-user system, backup or recovery history. Clearing
-browser data, unavailable storage or edits before the debounce can prevent recovery. Portable
+browser data, unavailable storage or edits before the debounce/browser disk flush can prevent recovery. Portable
 import/export, cloud sync, audit history and named-save conflict protection are not implemented.
 
 ## HTTP API
