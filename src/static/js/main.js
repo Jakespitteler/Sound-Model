@@ -78,12 +78,18 @@ store.subscribe(reason=> {
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
-  if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
+  if (reason==='restore') {manager.resetLocalAnchor(); contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
   if (['geometry','catalogue','receivers','restore'].includes(reason)) { manager.renderMarkers(); refreshReceivers(); }
   if (['geometry','catalogue','thresholds','restore'].includes(reason)) {
     refreshGeometry();
   }
+});
+
+// Focusing an object's existing details also selects its local-area anchor.
+document.querySelector('.sidebar').addEventListener('focusin',event=> {
+  const form=event.target.closest('details')?.querySelector('[data-position]');
+  if (form) manager.selectObject(form.dataset.collection,form.dataset.position);
 });
 
 // Delegation keeps handlers stable even when individual entity cards are replaced.
@@ -107,6 +113,11 @@ document.querySelector('.sidebar').addEventListener('submit',event=> {
 });
 $('cancel-mode').onclick=()=>store.setMode(null);
 document.addEventListener('keydown',event=> {if(event.key==='Escape') store.setMode(null);});
+$('fit-local-area').onclick=()=> {
+  store.setMode(null);
+  const count=manager.fitLocalArea();
+  say(count ? `Showing ${count} of ${store.sources.length+store.receivers.length} objects in this local area.` : 'Place a machine or receiver first.');
+};
 $('home').onclick=()=> {store.setMode(null); manager.fitMine();};
 $('location-form').onsubmit=event=> {event.preventDefault(); store.setMode(null); manager.map.setView([Number($('site-lat').value),Number($('site-lng').value)],14);};
 $('contour-alert').onclick=()=> {document.getElementById('contours-tab').click(); $('contour-errors').scrollIntoView({block:'nearest'});};

@@ -10,6 +10,17 @@ Open the local address in an external browser if the VS Code preview cannot load
 **Greenbushes mine** opens the mine-wide starting view at −33.8675, 116.07647 (zoom 14),
 matching the reference view. This camera is not a site boundary. Saved scenes reopen with
 their saved camera instead.
+**Fit local area**, at the map's lower right, frames the area around the selected object.
+Click or keyboard-focus a marker, or focus its sidebar details, to select it; an amber outline
+shows the anchor. Placing a new object also selects it. The fitted group keeps every pair of
+machines/receivers within 10 km, so a chain of neighbours cannot pull in a separate test area.
+Objects outside the view still contribute to the sound calculation.
+
+Selection is temporary. After opening a scenario, Fit uses the last listed receiver, or
+last listed machine if there are no receivers, until you select or place an object.
+The action is disabled in an empty scene and caps zoom at 16 for a single location.
+It leaves room for open map controls, and never runs automatically after an edit.
+
 Expand **Go to coordinates** for another location. Panning and zooming load imagery as
 needed, but do not request new sound calculations.
 

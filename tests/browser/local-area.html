@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Local area regression checks</title>
+<pre id="result" role="status">Running…</pre>
+<script type="module">
+import {objectDistance,localGroup,freeMapRectangle} from '../../src/static/js/local-area.js';
+const checks=[];
+/** @param {boolean} claim Assertion outcome. @param {string} message Behaviour being checked. */
+function check(claim,message) {if (!claim) throw new Error(message); checks.push(message);}
+/** @param {string} id Identity. @param {number} metres Equatorial distance east from zero.
+ * @param {string} [collection] Collection. @return {Object} Independent fixture. */
+const point=(id,metres,collection='sources')=>({id,lat:0,lng:metres/6371008.8*180/Math.PI,collection});
+try {
+  check(localGroup([],null).length===0,'empty scene');
+  const a=point('a',0), b=point('b',8000), c=point('c',16000), d=point('d',40000);
+  check(localGroup([a],a)[0]===a,'one object');
+  check(Math.abs(objectDistance(a,b)-8000)<1e-6,'independent equatorial distance reference');
+  check(localGroup([a,point('edge',10000)],a).length===2,'inclusive 10 km boundary');
+  check(localGroup([a,point('outside',10000.001)],a).length===1,'1 mm outside boundary excluded');
+  check(localGroup([a,b,c],a).map(x=>x.id).join() === 'a,b','neighbour chain cannot bridge a distant pair');
+  check(localGroup([c,b,a],b).map(x=>x.id).join() === 'b,a','equal-distance ties use stable IDs');
+  check(localGroup([a,b,c],b).map(x=>x.id).join() === 'b,a','input order cannot change ties');
+  check(localGroup([a,b,c,d],d).map(x=>x.id).join() === 'd','distant anchor chooses its own area');
+  const duplicate=point('a',100,'receivers');
+  check(localGroup([a,duplicate],a).length===2,'IDs are qualified by collection');
+  check(objectDistance({lat:0,lng:179.99},{lat:0,lng:-179.99})<2300,'date-line distance stays local');
+  const objects=[a,b,c,d], before=JSON.stringify(objects);
+  const group=localGroup(objects,b);
+  check(group.every(x=>group.every(y=>objectDistance(x,y)<=10000+1e-6)),'all fitted pairs satisfy the rule');
+  check(JSON.stringify(objects)===before,'all locations and ordering remain unchanged');
+  const obstacles=[{left:750,right:1000,top:0,bottom:500},{left:50,right:300,top:20,bottom:150}];
+  const space=freeMapRectangle(1000,800,obstacles);
+  check(space.right>space.left && space.bottom>space.top,'fit space has positive area');
+  check(obstacles.every(r=>space.right<=r.left || space.left>=r.right || space.bottom<=r.top || space.top>=r.bottom),'fit space clears open overlays');
+  check(space.left>=56 && space.right<=944 && space.top>=36 && space.bottom<=764,'marker margins remain inside map');
+  const fallback=freeMapRectangle(320,380,[{left:0,right:320,top:0,bottom:380}]);
+  check(fallback.right>fallback.left && fallback.bottom>fallback.top,'covered map has predictable fallback');
+  document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+  document.querySelector('#result').dataset.passed='true';
+} catch(error) {document.querySelector('#result').textContent='FAIL: '+error.message; throw error;}
+</script>

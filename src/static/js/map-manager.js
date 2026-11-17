@@ -7,6 +7,7 @@ import { ContourLayer } from './contour-layer.js';
 import { $, escapeHtml } from './utils.js';
 import {soundColor} from './sound-style.js';
 import {illustration} from './illustrations.js';
+import {localGroup,sameObject,freeMapRectangle} from './local-area.js';
 
 /** Leaflet map, imagery availability and separately draggable source/receiver markers. */
 export class MapManager {
@@ -17,6 +18,8 @@ export class MapManager {
     this.receiverMarkers = new Map();
     this.receiverReadings = null;
     this.receiverFailed = false;
+    this.selectedObject = null;
+    this.lastPlacedObject = null;
     this.map = L.map('map', {
       minZoom: 3,
       zoomAnimation: false,
@@ -44,6 +47,41 @@ export class MapManager {
     $('site-lng').value = centre.lng.toFixed(5);
   }
 
+  /** @return {import('./local-area.js').MapObject[]} All locations with collection-qualified identities. */
+  mapObjects() {
+    return ['sources','receivers'].flatMap(collection=>this.store[collection].map(item=>({...item,collection})));
+  }
+
+  /** Forget transient navigation selection when opening or restoring a scenario. */
+  resetLocalAnchor() {this.selectedObject=null; this.lastPlacedObject=null;}
+
+  /** Select by click, keyboard focus or drag; reading updates never change the anchor.
+   * @param {string} collection Source/receiver collection. @param {string} id Object ID. */
+  selectObject(collection,id) {
+    this.selectedObject={collection,id};
+    this.markers.eachLayer(marker=>marker.getElement()?.classList.toggle('local-anchor',sameObject(marker.localObject,this.selectedObject)));
+  }
+
+  /** Fit the active 10 km pairwise group, keeping all sources in the acoustic scenario.
+   * @return {number} Number of objects fitted; zero leaves an empty scene's camera unchanged. */
+  fitLocalArea() {
+    const objects=this.mapObjects();
+    const anchor=objects.find(item=>sameObject(item,this.selectedObject)) ||
+      objects.find(item=>sameObject(item,this.lastPlacedObject)) || objects.at(-1);
+    const group=localGroup(objects,anchor);
+    if (!group.length) return 0;
+    this.selectObject(anchor.collection,anchor.id);
+    const bounds=this.map.getContainer().getBoundingClientRect();
+    const obstacles=[...this.map.getContainer().parentElement.querySelectorAll('.location-bar,.sound-key,.tile-status,.contour-alert,.map-fit-button,.leaflet-control')]
+      .map(element=>element.getBoundingClientRect()).filter(rect=>rect.width && rect.height)
+      .map(rect=>({left:rect.left-bounds.left,right:rect.right-bounds.left,top:rect.top-bounds.top,bottom:rect.bottom-bounds.top}));
+    const space=freeMapRectangle(bounds.width,bounds.height,obstacles);
+    this.map.stop(); this.map.closePopup();
+    this.map.fitBounds(group.map(item=>[item.lat,item.lng]),{animate:false,maxZoom:16,
+      paddingTopLeft:[space.left,space.top],paddingBottomRight:[bounds.width-space.right,bounds.height-space.bottom]});
+    return group.length;
+  }
+
   /**
    * Update receiver badges without moving the map or replacing source markers.
    * @param {?Object<string, import('./types.js').Reading>} results Fresh readings; null while pending.
@@ -55,6 +93,7 @@ export class MapManager {
     for (const [id, marker] of this.receiverMarkers) {
       const index = this.store.receivers.findIndex(receiver=>receiver.id===id);
       marker.setIcon(this.receiverIcon(id,index));
+      marker.getElement()?.classList.toggle('local-anchor',sameObject(marker.localObject,this.selectedObject));
     }
     this.updateReceiverLabels();
   }
@@ -94,7 +133,7 @@ export class MapManager {
    */
   fitObjectTooltip(tooltip) {
     const bounds = this.map.getContainer().getBoundingClientRect();
-    const obstacles = [...this.map.getContainer().parentElement.querySelectorAll('.tile-status,.location-bar,.sound-key,.contour-alert,.leaflet-control')]
+    const obstacles = [...this.map.getContainer().parentElement.querySelectorAll('.tile-status,.location-bar,.sound-key,.contour-alert,.map-fit-button,.leaflet-control')]
       .map(element=>element.getBoundingClientRect()).filter(rect=>rect.width && rect.height);
     let best;
     for (const direction of ['top','bottom']) {
@@ -171,16 +210,23 @@ export class MapManager {
       if (!this.store.mode) return;
       const lat = Math.max(-85, Math.min(85, event.latlng.lat));
       const lng = Math.max(-180, Math.min(180, event.latlng.lng));
+      const collection=this.store.mode==='source' ? 'sources' : 'receivers';
+      const before=this.store[collection].length;
       if (this.store.mode === 'source') {
         this.store.addSource($('place-type').value, lat, lng);
       } else {
         this.store.addReceiver(lat, lng);
+      }
+      if (this.store[collection].length>before) {
+        this.lastPlacedObject={collection,id:this.store[collection].at(-1).id};
+        this.selectObject(collection,this.lastPlacedObject.id);
       }
     });
   }
 
   /** Reflect the active placement mode without replacing forms or markers. */
   syncModeUI() {
+    $('fit-local-area').disabled=!(this.store.sources.length || this.store.receivers.length);
     const mode = this.store.mode;
     $('mode-label').textContent =
       mode === 'source'
@@ -212,6 +258,10 @@ export class MapManager {
           riseOnHover: true,
         }).addTo(this.markers);
 
+        marker.localObject={collection,id:item.id};
+        marker.getElement()?.classList.toggle('local-anchor',sameObject(marker.localObject,this.selectedObject));
+        marker.on('click keypress dragstart',()=>this.selectObject(collection,item.id));
+        marker.getElement()?.addEventListener('focus',()=>this.selectObject(collection,item.id));
         if (!isSource) this.receiverMarkers.set(item.id, marker);
         const tooltip = document.createElement('span');
         const tooltipTitle = document.createElement('strong'); tooltipTitle.textContent = label;

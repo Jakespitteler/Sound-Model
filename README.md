@@ -44,7 +44,8 @@ flowchart LR
 
 **Greenbushes mine** returns to the starting mine view. Fresh scenarios open at
 −33.8675, 116.07647 with zoom 14; saved scenarios retain their saved view.
-**Go to coordinates** navigates elsewhere. **Machine data** holds the equipment catalogue
+**Fit local area** frames nearby objects around the selected marker (or last placement),
+keeping every pair within 10 km. It changes only the view. **Go to coordinates** navigates elsewhere. **Machine data** holds the equipment catalogue
 and editable estimate notes. Advanced settings stay collapsed to keep the sidebar simple.
 
 ## What the numbers mean
