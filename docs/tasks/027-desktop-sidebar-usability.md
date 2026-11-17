@@ -102,3 +102,6 @@ reported a failed level for the fixture; other levels and its failure alert rema
 Screen-reader speech and a Windows browser were not manually tested. No merge is performed.
 
 Implementation commit: `cb198e0`. Documentation and screenshot evidence follow separately.
+
+Review stack: this branch includes task 023 (#32); the sidebar PR targets
+`agent/control-repeat-placement`. Merge #32 first, then retarget this PR to main.

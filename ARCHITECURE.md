@@ -199,6 +199,13 @@ Persistent map buttons expose the next action through their titles. Keyboard han
 inputs, selects, textareas, editable content, IME composition and open dialogs. Camera, contour,
 name and catalogue power edits are outside placement history and keep their existing behaviour.
 
+Ctrl-click source placement passes through the same `addSource` history/calculation path.
+After an accepted click, `MapManager` resumes source mode with a UI-only notification if
+Control was held and fewer than 100 sources exist. The final ordinary click, cancellation,
+undo/redo and the 100th source leave placement inactive. Modifier state is read from the
+click event, so releasing Control or changing windows cannot leave a latched repeat flag.
+Receiver placement remains single-use.
+
 ## Save/Open contract
 
 ```mermaid

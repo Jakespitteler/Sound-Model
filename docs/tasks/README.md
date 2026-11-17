@@ -25,7 +25,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 9 | [021 Optional acceptable-level data](021-acceptable-level-contract.md) | Implemented; ready for review |
 | 10 | [025 Acceptable-level browser state](025-acceptable-level-browser-state.md) | Implemented; ready for review after 021 |
 | 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | Implemented; ready for review after 025 |
-| 12 | [023 Ctrl-click repeat placement](023-control-repeat-placement.md) | Ready |
+| 12 | [023 Ctrl-click repeat placement](023-control-repeat-placement.md) | Implemented; ready for review |
 | 13 | [027 Desktop sidebar usability](027-desktop-sidebar-usability.md) | Implemented; ready for review |
 | 14 | [028 Address search with autocomplete](028-address-search-autocomplete.md) | Provider review first; approve service before integration |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Agree a defensible policy before code |
