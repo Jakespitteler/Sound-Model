@@ -73,6 +73,8 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
         **cast(dict[str, object], original["document"]),
         "receivers": [{"id": "r", "lat": -33.85, "lng": 116.05, "name": ""}],
     }
+    original_types = cast(list[dict[str, object]], expected["types"])
+    expected["types"] = [{**item, "source_reference": "", "operating_mode": ""} for item in original_types]
     assert record["document"] == expected
     assert saved_client.get(f"/api/scenarios/{identifier}").json() == record
     listing = saved_client.get("/api/scenarios").json()
@@ -224,7 +226,8 @@ def test_legacy_receiver_names_are_defaulted_without_rewriting_files(saved_clien
     )
     saved = saved_client.get(f"/api/scenarios/{identifier}").json()["document"]
     assert saved == document
-    assert saved["types"] == cast(dict[str, object], payload()["document"])["types"]
+    original_types = cast(list[dict[str, object]], cast(dict[str, object], payload()["document"])["types"])
+    assert saved["types"] == [{**item, "source_reference": "", "operating_mode": ""} for item in original_types]
     assert saved["sources"] == cast(dict[str, object], payload()["document"])["sources"]
 
 
@@ -250,3 +253,59 @@ def test_named_receivers_round_trip_and_invalid_update_preserves_save(saved_clie
     invalid = {**record["document"], "receivers": [{"id": "r1", "lat": 0, "lng": 0, "name": "x" * 81}]}
     assert saved_client.put(route, json={"name": record["name"], "document": invalid}).status_code == 422
     assert saved_client.get(route).json() == record
+
+
+@pytest.mark.parametrize(("field", "limit"), [("source_reference", 500), ("operating_mode", 200)])
+def test_equipment_metadata_boundaries(saved_client: TestClient, field: str, limit: int) -> None:
+    """Accept bounded Unicode metadata and reject invalid updates atomically.
+
+    Args:
+        saved_client: Isolated scenario API.
+        field: Optional equipment field under test.
+        limit: Maximum number of Unicode characters.
+    """
+    record = saved_client.post("/api/scenarios", json=payload()).json()
+    route = f"/api/scenarios/{record['id']}"
+    document = record["document"]
+    document["types"][0][field] = "機" * limit
+    response = saved_client.put(route, json={"name": record["name"], "document": document})
+    assert response.status_code == 200
+    accepted = response.json()
+    assert saved_client.get(route).json()["document"]["types"][0][field] == "機" * limit
+    assert saved_client.post("/api/scenarios/validate", json=accepted["document"]).json() == accepted["document"]
+    for invalid in ("x" * (limit + 1), None, 123):
+        document["types"][0][field] = invalid
+        assert saved_client.put(route, json={"name": record["name"], "document": document}).status_code == 422
+        assert saved_client.get(route).json() == accepted
+
+
+def test_equipment_metadata_is_plain_text_and_not_acoustic(saved_client: TestClient) -> None:
+    """Keep references as text and preserve notes, provenance and acoustic inputs.
+
+    Args:
+        saved_client: Isolated scenario API.
+    """
+    record = saved_client.post("/api/scenarios", json=payload()).json()
+    document = record["document"]
+    baseline = json.loads(json.dumps(document))
+    machine = document["types"][0]
+    assert machine["source_reference"] == machine["operating_mode"] == ""
+    machine["source_reference"] = '<img src="https://example.invalid/spec" onerror="alert(1)"> 設備'
+    machine["operating_mode"] = "Loaded / travelling 🛻"
+    response = saved_client.put(f"/api/scenarios/{record['id']}", json={"name": record["name"], "document": document})
+    assert response.status_code == 200
+    assert response.json()["document"] == document
+    for field in ("id", "lwa", "note", "use", "kind", "provenance"):
+        assert machine[field] == baseline["types"][0][field]
+    acoustic: list[dict[str, object]] = []
+    for scene in (baseline, document):
+        acoustic.append(
+            {
+                "types": [{key: item[key] for key in ("id", "name", "lwa", "provenance")} for item in scene["types"]],
+                **{key: scene[key] for key in ("sources", "receivers", "cloud_cover")},
+            }
+        )
+    assert acoustic[0] == acoustic[1]
+    for endpoint in ("/api/predict", "/api/contours"):
+        bodies = [{**body, "levels": [60]} if endpoint.endswith("contours") else body for body in acoustic]
+        assert saved_client.post(endpoint, json=bodies[0]).json() == saved_client.post(endpoint, json=bodies[1]).json()

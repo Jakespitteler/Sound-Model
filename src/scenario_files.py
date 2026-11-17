@@ -20,8 +20,12 @@ class SavedMachine(MachineType):
         note: User's source or estimate note, retained across save/open.
         use: Optional description of the machine's operation.
         kind: Built-in illustration category, or generic for custom equipment.
+        source_reference: Optional plain-text equipment evidence reference.
+        operating_mode: Optional operating condition associated with the input level.
     """
 
+    source_reference: str = Field(default="", max_length=500)
+    operating_mode: str = Field(default="", max_length=200)
     note: str = Field(default="", max_length=2000)
     use: str = Field(default="", max_length=200)
     kind: str = Field(default="generic", max_length=40)
