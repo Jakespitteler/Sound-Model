@@ -3,8 +3,8 @@ import {uuid} from './utils.js';
 import {MACHINE_PRESETS} from './machine-presets.js';
 import {SOUND_REFERENCE} from './sound-reference.js';
 
-// Approximate overview of the mine/processing/tailings area, not a surveyed boundary.
-export const MINE_BOUNDS = [[-33.94, 116.015], [-33.825, 116.14]];
+// Fresh-scenario camera: mine-wide view from the owner's reference image.
+export const DEFAULT_VIEW = {lat:-33.8675,lng:116.07647,zoom:14};
 
 /** Observable scenario. Camera movement is deliberately not part of this state. */
 export class ScenarioStore {

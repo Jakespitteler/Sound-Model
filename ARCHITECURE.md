@@ -113,7 +113,8 @@ edges. Panning dismisses transient cards. Receiver badges retain pressure and un
 for numbers, 112×34 px for status text. Both marker types remain anchored at their coordinates.
 
 The eight preset types are project-authored guesses. `/machine-estimates` documents their origin.
-Greenbushes bounds are an approximate navigation view, not a surveyed boundary. The humorous
+Fresh scenes and the Greenbushes button use `DEFAULT_VIEW` (−33.8675, 116.07647, zoom 14).
+Saved camera views take precedence. The main grid fills the viewport with no branding header. The humorous
 guide compares pressure levels and does not supply emissions or approved assessment thresholds.
 
 ## Save/Open contract

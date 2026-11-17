@@ -27,6 +27,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | After 025 |
 | 12 | [023 Ctrl-click repeat placement](023-control-repeat-placement.md) | Ready |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Agree a defensible policy before code |
+| Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Compare required data/methods; agree one small increment |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Owner decision before any report implementation |
 
 See the [implementation plan](../../tasks/plan.md) for order, checkpoints and branch bases.

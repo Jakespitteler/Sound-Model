@@ -16,7 +16,6 @@
   <script defer src="/js/bootstrap.js"></script>
 </head>
 <body>
-  {{header}}
   <main>
     <aside class="sidebar" aria-label="Scenario controls">
       <div class="sidebar-title"><h1>Noise scenario</h1><button id="demo" class="text-button" type="button">Try example</button></div>
@@ -37,14 +36,12 @@
         {{contours-section}}
       </div>
       <details class="assumptions model-settings">
-        <summary>Model settings &amp; assumptions</summary>
+        <summary>Model info</summary>
+        <p>Estimated machine noise. <a href="/about" target="_blank" rel="noopener">How it works ↗</a></p>
         <div class="section-heading"><h2>Cloud cover</h2><output id="cloud-value" for="cloud">0%</output></div>
         <input id="cloud" aria-label="Cloud cover" type="range" min="0" max="100" step="1" value="0">
         <div class="range-labels"><span>Clear sky</span><span>Overcast</span></div>
-        <p>Cloud cover is recorded only; no numerical correction applies.</p>
-        <p>Independent point sources in a full-space free field; energy adds without phase cancellation. No terrain, ground reflection, barriers, atmospheric absorption, wind or temperature effects.</p>
-        <p>Values below 1 m use a numerical limit and are flagged. These screening results do not establish inaudibility or compliance. Machine presets are guesses; <a href="/machine-estimates" target="_blank" rel="noopener">read estimate notes</a>.</p>
-        <p>Save explicitly to keep your scenario. Reloading offers recovery of a browser draft when available. Restore keeps the working scene unsaved until you choose Save.</p>
+        <p>Recorded with the scenario; not yet used in the calculation.</p>
       </details>
       <p id="message" class="message" role="status" aria-live="polite"></p>
       <button id="retry" class="secondary compact retry" type="button" hidden>Retry calculations</button>

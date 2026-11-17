@@ -7,7 +7,9 @@
 Start the backend with the command in the [project README](../README.md#start-the-app).
 Open the local address in an external browser if the VS Code preview cannot load the app.
 
-**Greenbushes mine** fits a broad approximate area. It does not establish the site boundary.
+**Greenbushes mine** opens the mine-wide starting view at −33.8675, 116.07647 (zoom 14),
+matching the reference view. This camera is not a site boundary. Saved scenes reopen with
+their saved camera instead.
 Expand **Go to coordinates** for another location. Panning and zooming load imagery as
 needed, but do not request new sound calculations.
 

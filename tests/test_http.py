@@ -217,9 +217,9 @@ def test_equipment_estimate_notes_are_explicit(client: TestClient) -> None:
     """
     response = client.get("/machine-estimates")
     assert response.status_code == 200
-    assert "project-authored guesses" in response.text
-    assert "not manufacturer specifications" in response.text
-    assert "20 µPa" in response.text
+    assert "rough sound-power estimates" in response.text
+    assert "not verified manufacturer or site measurements" in response.text
+    assert "different quantity" in response.text
     assert "Charles Hull" in response.text
 
 
@@ -236,3 +236,17 @@ def test_about_explains_reference_levels_and_scope(client: TestClient) -> None:
     assert "not evidence" in response.text
     assert "choose Restore" in response.text
     assert "does not update named saves automatically" in response.text
+
+
+def test_scenario_screen_keeps_only_useful_navigation(client: TestClient) -> None:
+    """Keep map actions while removing the decorative header and verbose guide footer.
+
+    Args:
+        client: Local application client.
+    """
+    response = client.get("/")
+    assert "<header" not in response.text
+    assert "Light-hearted, approximate pressure-level comparisons" not in response.text
+    assert 'id="home"' in response.text
+    assert 'href="/about"' in response.text
+    assert 'id="save-scenario"' in response.text

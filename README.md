@@ -41,7 +41,8 @@ flowchart LR
    sort automatically. **High contrast** adds white outlines for busy backgrounds.
 5. Choose **Save**, name the scenario, and save again after edits. **Open** lists saved work.
 
-**Greenbushes mine** shows a broad approximate overview, not a surveyed boundary.
+**Greenbushes mine** returns to the starting mine view. Fresh scenarios open at
+−33.8675, 116.07647 with zoom 14; saved scenarios retain their saved view.
 **Go to coordinates** navigates elsewhere. **Machine data** holds the equipment catalogue
 and editable estimate notes. Advanced settings stay collapsed to keep the sidebar simple.
 
