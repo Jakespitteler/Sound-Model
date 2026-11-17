@@ -26,7 +26,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Stage | Task | Dependency / checkpoint |
 | --- | --- | --- |
 | Recover work | [012](../docs/tasks/012-unsaved-recovery.md) | Implemented on `agent/recover-unsaved-edits`; ready for review |
-| Name receivers | [013](../docs/tasks/013-receiver-name-contract.md), then [014](../docs/tasks/014-receiver-name-editor.md) | 013 implemented for review; 014 follows its contract |
+| Name receivers | [013](../docs/tasks/013-receiver-name-contract.md), then [014](../docs/tasks/014-receiver-name-editor.md) | 013 and 014 implemented for review; merge the contract before its editor |
 | Checkpoint A | Recovery and naming | Save/Open/reload, invalid drafts, preserved IDs/notes and open-state screenshots |
 | Navigate locally | [015](../docs/tasks/015-local-cluster-zoom.md) | Maximum pairwise distance 10 km; no acoustic filtering |
 | Avoid repeated work | [017](../docs/tasks/017-per-level-contour-cache.md) | Preserve coordinates, accuracy and stale-response rejection |
