@@ -8,7 +8,7 @@ import {ContourLayer} from '../../src/static/js/contour-layer.js';
 const map=L.map('map',{fadeAnimation:false,zoomAnimation:false}).setView([-33.86,116.07],15);
 const layer=new ContourLayer(map), checks=[];
 // Deliberately coincident labels isolate paint order, not acoustic geometry.
-const ring=[[116.065,-33.86],[116.07,-33.855],[116.075,-33.86],[116.07,-33.865],[116.065,-33.86]];
+const ring=[[116.068,-33.86],[116.07,-33.858],[116.072,-33.86],[116.07,-33.862],[116.068,-33.86]];
 /** @param {boolean} claim Outcome. @param {string} name Behaviour. */
 function check(claim,name){if(!claim)throw new Error(name);checks.push(name);}
 /** Verify the foreground element at the exact shared-label anchor. */
