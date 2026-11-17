@@ -26,13 +26,17 @@ Sound-Model/
 │       ├── js/
 │       │   ├── bootstrap.js       ordered Leaflet/module loading and visible startup errors
 │       │   ├── main.js            event orchestration, receiver/geometry request lanes
+│       │   ├── sidebar.js         keyboard-accessible Scenario/Contours tabs
 │       │   ├── state.js           scenario mutations and explicit change reasons
 │       │   ├── api.js             JSON requests, cancellation and geometry cache
 │       │   ├── map-manager.js     existing imagery provider, entity markers, placement
-│       │   ├── contour-layer.js   geographic polylines and threshold dragging
+│       │   ├── contour-layer.js   read-only geographic lines and static labels
 │       │   ├── ui-catalogue.js    machine type forms and cloud metadata
 │       │   ├── ui-entities.js     source/receiver cards and coordinate forms
-│       │   ├── ui-contours.js     threshold/style/count controls and legend
+│       │   ├── ui-contours.js     descending paired slider/number rows and legend
+│       │   ├── sound-style.js     shared automatic level colours
+│       │   ├── sound-guide.js     illustrative, collapsible local-flavour reference key
+│       │   ├── machine-presets.js eight provisional equipment guesses with origin notes
 │       │   ├── types.js           shared JSDoc domain definitions
 │       │   └── utils.js           DOM lookup, escaping, IDs and formatting
 │       ├── css/                   tokens, base, layout, sidebar, map, contours, responsive
@@ -60,13 +64,16 @@ flowchart TD
     State -->|source / type / receiver edit| ReceiverLane[api.js: separate receiver lane]
     ReceiverLane -->|POST /api/predict| Physics[acoustics.py: direct receiver levels]
     Physics --> Readings[ui-entities.js: readings and source breakdown]
-    State -->|colour / width / dash / visibility| Lines
+    Scale[sound-style.js: automatic colours] --> Lines
+    Scale --> Readings
     Camera[Map pan / zoom] --> Leaflet[Leaflet reprojects existing geographic lines]
     Leaflet -->|ordinary imagery requests only| Tiles[Existing Esri satellite service]
 ```
 
 Source changes update lines and receiver values. Receiver changes only update readings.
-Colour, width, line style, per-level visibility and the global display toggle are local.
+Colours are derived automatically from absolute sound-pressure level, with one fixed 2.5 px
+solid line weight. Only the global display toggle controls visibility. There are no manual
+colour/width/style settings or contour drag handlers.
 Cloud cover remains recorded metadata without an invented correction. No camera bounds are
 sent to either endpoint, and no camera handler starts predictions. New satellite tiles may
 still load when browsing another area: that is separate from acoustic computation.
@@ -118,36 +125,47 @@ A level above the possible maximum, no sources, or no levels produces empty geom
 Up to 100 sources, 50 machine types, 20 receivers and 25 unique levels are supported by validation;
 complex combinations can hit numerical safety limits before those counts.
 
-## Editing and dragging
+## Simple editing and receiver feedback
 
 ```mermaid
 sequenceDiagram
     actor User
+    participant UI as ui-contours.js
+    participant State as state.js
+    participant API as /api/contours
     participant Map as contour-layer.js
-    participant UI as main.js / state.js
-    participant API as /api/predict
-    participant Contours as /api/contours
-    User->>Map: Drag a line or its labelled handle
-    Map->>UI: Contour ID and drop coordinates
-    UI->>API: Current sources + one temporary receiver at the drop
-    API-->>UI: Combined level at that location
-    UI->>UI: Round to 0.1 dB, validate unique threshold
-    UI->>Contours: New thresholds with current sources
-    Contours-->>Map: Recomputed geographic level lines
+    User->>UI: Move slider or type a level
+    UI->>UI: Preview paired number during slider input
+    User->>UI: Release / commit change
+    UI->>State: Validate unique 0–300 dB threshold
+    State->>State: Sort descending
+    State->>API: Debounced geometry request
+    API-->>Map: Geographic lines
+    Map->>Map: Apply shared level colour and fixed line weight
 ```
 
-Dragging chooses a **decibel threshold**, not an arbitrary hand-drawn shape. The level's colour,
-width, style and ID survive. Source edits or another drag invalidate a pending drop response.
-Near-field drops (within 1 m), duplicate thresholds and out-of-range values are rejected clearly.
-Desktop users can drag the line itself; its labelled draggable marker also supports touch.
-Numeric controls provide the keyboard alternative. Contours cannot be used to delete or move
-machine sources accidentally; source/receiver markers retain their separate interactions.
+The map's contour paths and labels are noninteractive: gestures pan the map, not edit a
+threshold. Source/receiver location markers remain draggable. Receivers show a numeric
+pressure level in a colour from the same absolute palette as contours and the guide. Pending,
+failed and empty results use neutral states instead of stale numbers or a misleading 0 dB.
+Updating a reading does not replace source markers or move the camera.
+
+Machine data starts with eight explicitly guessed equipment categories in machine-presets.js.
+The local `/machine-estimates` page records the origin, limits and unavailable public references;
+it does not claim manufacturer/site evidence. Users can replace both a value and its note.
+The compact equipment editor is closed initially so selecting/placing a machine stays prominent.
+
+Greenbushes navigation uses `fitBounds` with a wider approximate mine-area overview and padding
+for overlays, rather than a fixed point/zoom. The rectangle is a navigation aid, not a surveyed
+lease or pit boundary. The top-right sound guide is collapsible and labels its comparisons as
+illustrative pressure levels, separate from the machine sound-power inputs.
 
 ## HTTP boundaries
 
 | Endpoint | Request | Response / responsibility |
 | --- | --- | --- |
 | GET `/` or `/index.html` | none | Assembled HTML; partials aren't fetched asynchronously |
+| GET `/machine-estimates` | none | Explicit origin and limits of guessed catalogue values |
 | GET `/js/*`, `/css/*`, `/vendor/*` | static path | Local frontend assets only |
 | GET `/api/health` | none | Server readiness and model ID |
 | POST `/api/predict` | `Scenario` | Receiver results keyed by ID, provenance and cloud metadata |
@@ -199,3 +217,10 @@ engine selection, validation/uncertainty, audit reports, mitigation and operatio
 optimisation notes and evaluated library candidates are in [library options](docs/library-options.md).
 The allowed input range is 0–300 dB(A) for source powers and contour thresholds; longitude
 remains limited to ±180°. Numeric range is separate from equipment plausibility or model validity.
+
+## Desktop workspaces
+
+The sidebar defaults to Scenario (machine placement and compact receiver results). Contours
+is a second tab. Switching tabs hides panels without destroying form state and has no acoustic
+side effects. Equipment data, coordinate forms, source breakdowns and model/cloud settings
+are disclosed on demand. Tabs support standard arrow/Home/End keyboard navigation.

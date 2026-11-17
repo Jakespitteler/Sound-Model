@@ -16,5 +16,11 @@ P0 establishes assessment credibility; P1 improves delivery/operating decisions;
 | [007 — Save reproducible scenarios and evidence reports](007-scenarios-and-audit-trail.md) | P1 | todo |
 | [008 — Compare practical mitigation and operating controls](008-mitigation-and-operations.md) | P1 | todo |
 | [009 — Improve map reliability and scenario editing](009-map-and-editor-usability.md) | P2 | todo |
+| [010 — Scenario autosave and recovery](010-scenario-autosave.md) | P1 | todo |
+| [011 — Simple scenario workflow](011-simple-workflow.md) | P2 | todo |
 
 Start assessment scoping and equipment/measurement planning alongside software work. Faster contour calculations do not compensate for missing propagation physics or evidence.
+
+
+Persistence is still planned: current scenarios are lost on reload. Task 010 targets that
+immediate problem before the wider reporting work in 007.
