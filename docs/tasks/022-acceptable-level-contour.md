@@ -76,3 +76,22 @@ Windows, other browsers and screen readers were not tested. No independent revie
 compliance/inaudibility validation is claimed. Human review and merge remain required.
 
 Next queued task: 023, Ctrl-click repeat placement; not implemented here.
+
+## Slider follow-up requested by the owner
+
+The slider now uses a practical scenario interval and accepts real pointer dragging while
+initially unset. A new source-only endpoint derives conservative candidates from existing
+spreading/source-centre field values and checks them with the unchanged contour engine.
+Unavailable/failed ranges explain themselves and HTTP failures can be retried. Criteria remain
+unchanged when sources/ranges change; numeric entry retains 0–300. An eight-signature cache
+and version guard prevent camera/threshold edits or stale responses from reloading old bounds.
+
+Five new backend tests first failed against the absent endpoint and now verify analytic
+single-source bounds (including 300 LwA), actual extracted lines at both endpoints/midpoint,
+combined-source/layout effects, unchanged cloud metadata and absent/weak source handling.
+Real Chromium mouse drags passed from unset and existing values at desktop/narrow widths;
+source edits updated bounds without changing an explicit value, camera/threshold edits made
+no range requests, and a simulated range outage recovered through Retry. Session artifacts:
+`/workspace/artifacts/check_scenario_slider.py`, `scenario-slider-desktop.png`,
+`scenario-slider-mobile.png`. Full suite: 110 tests; Ruff/format/Pyright/skills/lockfile checks pass.
+These are slider convenience bounds, not new physical attenuation or a validated audibility range.

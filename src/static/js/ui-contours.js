@@ -8,7 +8,7 @@ export class ContoursUI {
    * @param {import('./state.js').ScenarioStore} store Scenario state.
    * @param {function(string):void} say Accessible status message writer.
    */
-  constructor(store, say) { this.store = store; this.say = say; this.results = []; }
+  constructor(store, say) { this.store = store; this.say = say; this.results = []; this.sliderRange=null; }
 
   /** Bind once; dragging a slider previews locally and commits on release. */
   bind() {
@@ -51,12 +51,20 @@ export class ContoursUI {
     });
   }
 
+  /** @param {?Object} range Checked scenario range, or null while pending. */
+  setSliderRange(range) {this.sliderRange=range; this.syncAcceptable(); this.renderStatus();}
+
   /** Reflect committed reference state without replacing the active slider/number input. */
   syncAcceptable() {
     const value=this.store.acceptable_level_db;
     $('acceptable-level').value=value===null ? '' : String(value);
-    $('acceptable-slider').value=String(value ?? 0);
-    $('acceptable-slider').disabled=value===null; $('clear-acceptable').disabled=value===null;
+    const range=this.sliderRange, slider=$('acceptable-slider');
+    const enabled=range?.status==='ok' && Number.isFinite(range.min_db) && Number.isFinite(range.max_db) && range.max_db>range.min_db;
+    slider.min=String(enabled ? range.min_db : 0); slider.max=String(enabled ? range.max_db : 300);
+    slider.value=String(enabled ? Math.max(range.min_db,Math.min(range.max_db,value ?? (range.min_db+range.max_db)/2)) : 0);
+    slider.disabled=!enabled;
+    slider.title=enabled ? `${range.min_db}–${range.max_db} dB(A) for current machines` : range?.reason || 'Finding slider range…';
+    $('clear-acceptable').disabled=value===null;
     $('contour-count').textContent=String(this.store.getContourLevels().length);
   }
 
@@ -92,7 +100,7 @@ export class ContoursUI {
       }
     }
     const acceptable=this.results.find(c=>c.level_db===this.store.acceptable_level_db);
-    $('acceptable-status').textContent=acceptable?.status==='failed' ? 'Failed' : acceptable?.status==='empty' ? 'No crossing' : '';
+    $('acceptable-status').textContent=acceptable?.status==='failed' ? 'Failed' : acceptable?.status==='empty' ? 'No crossing' : this.sliderRange?.status==='ok' ? `${this.store.acceptable_level_db===null ? 'Drag to set · ' : 'Slider: '}${this.sliderRange.min_db}–${this.sliderRange.max_db} dB(A)` : this.sliderRange?.reason || (this.store.sources.length ? 'Finding slider range…' : 'Place a machine to enable the slider.');
     $('acceptable-status').title=acceptable?.error || '';
     const failures=this.results.filter(c=>c.status==='failed');
     $('contour-errors').innerHTML=failures.map(c=>`<p><strong>${c.level_db===this.store.acceptable_level_db ? 'Acceptable level · ' : ''}${c.level_db} dB(A) failed</strong><br>${escapeHtml(c.error)}</p>`).join('');

@@ -138,8 +138,8 @@ changes for matching levels; it never updates source powers or receiver pressure
 
 The reference is a heavier dashed line in the automatic level colour, with a distinct label
 “Acceptable level — user-set”. Its label remains visible even for a small ring. High contrast
-adds a matching dashed halo. The slider starts disabled until a number is entered, so no default
-criterion is invented. Per-level error reporting identifies the reference and preserves other
+adds a matching dashed halo. The slider stays disabled only until a useful source-based interval is available; it can
+set an initially unset criterion by dragging. Range updates do not change the numeric criterion. Per-level error reporting identifies the reference and preserves other
 lines. Ordinary-row removal tolerates the notification-before-DOM-update phase. Save snapshots
 and draft recovery retain the optional value; neither classification nor legal/audibility
 assessment is introduced.
@@ -272,3 +272,20 @@ Interactive Swagger/ReDoc and OpenAPI routes are disabled. There is no authentic
 this local API. Only `src/static` is mounted; source, templates and private scenario files
 are not public static assets. See the [developer guide](docs/development.md) for commands,
 verification and startup troubleshooting. Historical audits are indexed in [docs](docs/README.md).
+
+## Practical slider range
+
+`POST /api/contour-range` takes source inputs only. `contour_range.py` uses total sound-power
+spreading at the existing 10 km scope distance for a conservative lower candidate, and the
+combined field evaluated at source centres for a conservative peak candidate. It rounds
+inward to 0.1 dB with a 0.05 dB margin and verifies endpoints through unchanged `build_contours`.
+A failed low endpoint is narrowed toward the verified upper endpoint with at most 12 bisections.
+No interval is invented when unavailable. This is a useful checked interval, not the maximal
+feasible range or a guarantee that every intermediate extraction avoids numerical guards.
+Numeric entry retains 0–300, all per-level errors and the existing display policy.
+
+The browser uses a separately versioned request lane and an eight-signature session cache.
+Only source-signature changes request a range; panning, threshold edits and metadata changes
+do not. Pending/failed ranges disable the slider with a reason, and transient HTTP failures
+expose Retry. Source changes preserve the chosen acceptable value even outside new slider
+bounds. Endpoint probes do not alter equations, saved inputs, geometry tolerances or budgets.

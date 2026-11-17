@@ -86,14 +86,18 @@ paths. These warnings matter even when a number is shown. See [model limits](mod
 
 ### Set an acceptable-level reference
 
-In **Contours**, enter your chosen **Acceptable level**, then adjust it with the slider if
-needed. Its heavier dashed line is labelled **Acceptable level — user-set**. It starts unset;
+In **Contours**, drag the **Acceptable level** slider or enter a number. The slider becomes
+available after its current-machine range is checked. Its heavier dashed line is labelled **Acceptable level — user-set**. It starts unset;
 **Clear** removes the reference while keeping ordinary contours. This is your reference,
 not an approved compliance limit or a determination that machinery cannot be heard.
 
 Matching an ordinary threshold shares one calculation and line. The count allows 25 unique
 thresholds including the reference; if full, remove a level or choose an existing one. A failed
 reference names its level and reason while successful ordinary contours remain visible.
+The slider uses a practical contour-producing interval for the current machines. Bounds are
+checked with the existing model and scope; they are not a claim of the full feasible range or
+environmental validation. Numeric entry still accepts 0–300 dB(A), and a source change does
+not silently change your chosen value. Per-level extraction failures can still be reported.
 Save/Open and recovery retain the setting. Show lines and High contrast apply to it too.
 
 ## Save and reopen

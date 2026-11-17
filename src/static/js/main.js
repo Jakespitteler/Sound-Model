@@ -14,13 +14,14 @@ import {DraftRecovery} from './draft-recovery.js';
 const store = new ScenarioStore();
 const manager = new MapManager(store);
 const cache = new GeometryCache();
-const geometryLane = new RequestLane(), receiverLane = new RequestLane();
+const geometryLane = new RequestLane(), receiverLane = new RequestLane(), rangeLane=new RequestLane();
+const sliderRanges=new Map();
 /** @type {import('./types.js').ContourGeometry[]} Last valid current geometry. */
 let geometry = [];
 let receiverResults = {};
-let receiverFailed = false, geometryFailed = false;
+let receiverFailed = false, geometryFailed = false, rangeFailed=false;
 /** Keep independent request errors visible regardless of which lane finishes first. */
-function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed); }
+function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed || rangeFailed); }
 /** @param {string} message Human-readable feedback. */
 const say = message => { $('message').textContent = message; };
 const catalogue = new CatalogueUI(store,say), entities = new EntitiesUI(store,say), contours = new ContoursUI(store,say);
@@ -98,6 +99,23 @@ function refreshGeometry() {
       payload.levels.map(level_db=>({level_db,lines:[],status:'empty'})) : cached} : null);
 }
 
+/** Fetch checked slider limits only after a source signature changes, never on camera/threshold edits. */
+function refreshSliderRange() {
+  const payload=store.toPayload();payload.receivers=[];
+  if (!payload.sources.length) {rangeLane.cancel(); rangeFailed=false; updateRetry(); contours.setSliderRange({status:'unavailable',reason:'Place a machine to enable the slider.'}); return;}
+  const key=cache.key(payload,0);
+  rangeLane.schedule('/api/contour-range',payload,{
+    start:()=> {rangeFailed=false;updateRetry();contours.setSliderRange(null);},
+    success:range=> {
+      rangeFailed=false; updateRetry();
+      sliderRanges.set(key,range);
+      if (sliderRanges.size>8) sliderRanges.delete(sliderRanges.keys().next().value);
+      contours.setSliderRange(range);
+    },
+    error:error=> {rangeFailed=true;updateRetry();contours.setSliderRange({status:'unavailable',reason:'Slider unavailable; retry or enter a number.',error:error.message});},
+  },sliderRanges.get(key));
+}
+
 /** Refresh bounded history controls without a state notification or sound request. */
 function renderHistory() {
   for (const [id,stack] of [['undo-placement',store.undoStack],['redo-placement',store.redoStack]]) {
@@ -126,6 +144,7 @@ store.subscribe(reason=> {
   renderHistory();
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
+  if (['geometry','catalogue','restore'].includes(reason)) refreshSliderRange();
   if (reason==='acceptable-level') contours.syncAcceptable();
   if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
@@ -173,7 +192,7 @@ $('demo').onclick=()=> {
   manager.fitMine();
   say('Demonstration positions and guessed machine levels; not actual company operations.');
 };
-$('retry').onclick=()=> { $('retry').hidden=true; say('Retrying…'); refreshGeometry(); refreshReceivers(); };
+$('retry').onclick=()=> { $('retry').hidden=true; say('Retrying…'); refreshGeometry(); refreshReceivers(); refreshSliderRange(); };
 
 renderHistory(); catalogue.render(); entities.renderSources(); entities.renderReceivers({}); contours.render(); manager.syncModeUI();
 // No request is needed until equipment or receivers are added.
