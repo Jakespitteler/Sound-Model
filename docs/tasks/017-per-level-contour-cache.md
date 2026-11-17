@@ -37,7 +37,7 @@ intent alone. New dependencies and external data require separate owner approval
 
 ## Implementation and evidence
 
-Implementation commit: `e216973` on `agent/per-level-contour-cache`. Only `api.js` and
+Implementation commit: `e216973`; retry-feedback fix: `c6f0d87` on `agent/per-level-contour-cache`. Only `api.js` and
 `main.js` change runtime behaviour; no engine, equation, dependency or saved-schema change.
 
 The 32-entry LRU stores individual `ok`/`empty` results under the expected model ID, numerical
@@ -55,7 +55,7 @@ Observed before/after on 17 November 2026, using the same fictional two-source s
 | Case | Contour HTTP requests | Levels calculated | Edit-to-render observation |
 | --- | --- | --- | --- |
 | Previous complete-response cache | 1 | 3 | 0.2577 s |
-| Per-level cache | 1 | 1 | 0.2390 s |
+| Per-level cache | 1 | 1 | 0.2296 s |
 | Return to the already-cached 60 dB(A) threshold | 0 | 0 | Not timed |
 
 This fixture avoided two level calculations, not an HTTP round trip. These single-run timings
@@ -85,7 +85,9 @@ Session artifacts under `/workspace/artifacts/`: `check_contour_cache.py`,
 `cache-before.json`, `cache-after.json`, `cache-partial-failure-desktop.png` and
 `cache-contours-mobile.png`. The developer guide explains the plain-browser regression page;
 it runs separately from `pytest` and requires no additional app/test dependency.
-No independent review or environmental-model validation is claimed.
+The full browser workflow and repository checks passed again after merging current `main`
+(including task 015). A reproduced stale “Retrying…” message now clears when the contour
+result completes. No independent review or environmental-model validation is claimed.
 
 Next queued implementation task: 018, placement undo/redo. Task 027 separately records the
 owner-requested sidebar rework; neither is implemented here.
