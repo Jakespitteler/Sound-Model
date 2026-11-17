@@ -116,6 +116,21 @@ and runs separately from `pytest`. In the app also check matching threshold reus
 Save/Open/recovery, a failed reference beside successful lines, hidden/high-contrast rendering,
 and removing an ordinary row to free a budget slot. Inspect desktop and narrow screenshots.
 
+### Contour interaction regressions
+
+The plain-browser pages `tests/browser/acceptable-label-priority.html` and
+`tests/browser/explicit-contour.html` check foreground paint order (10 cases) and exact typed
+thresholds/budget rejection (13 cases). Serve the repository on loopback with Python, open
+those pages and expect PASS. They use bundled Leaflet/native modules without a new dependency.
+The label fixture deliberately overlaps a machine marker and ordinary/reference labels.
+
+For the scenario slider, backend tests verify analytic bounds and actual endpoint/midpoint
+contours. UI checks must use a real mouse drag from unset and existing criteria, source power
+changes without criterion clamping, source-only range caching, unavailable/retry states,
+and desktop/narrow screenshots. Five range checks were added to the Python suite (110 total).
+For Add contour, verify focus before typing, no data change until Enter/Add, duplicates/zero,
+Escape/Cancel, and an actual API request containing only the chosen new threshold.
+
 ## Making changes
 
 Read the selected task and relevant modules first. Keep type hints, Google-style Python

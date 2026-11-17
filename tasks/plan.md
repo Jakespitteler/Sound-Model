@@ -45,7 +45,21 @@ If a task grows into multiple independent features, split it and get approval fo
 A good starting instruction is: “Work on task 012 within its scope, verify it, and prepare the
 change for review. Do not merge or start another task automatically.”
 
-## Current acceptable-level review stack
+## Current contour-fix review stack
+
+These fixes stack above the acceptable-level feature in #25 (and its #23/#24 prerequisites).
+The complete product branch is `agent/add-contour-number`.
+
+| PR | Scope | Base |
+| --- | --- | --- |
+| [#27](https://github.com/Jakespitteler/Sound-Model/pull/27) | Foreground acceptable label | `agent/acceptable-level-contour` |
+| [#28](https://github.com/Jakespitteler/Sound-Model/pull/28) | Working scenario-aware slider | `agent/acceptable-label-priority` |
+| [#29](https://github.com/Jakespitteler/Sound-Model/pull/29) | Click, type and Enter to add a contour | `agent/scenario-contour-slider` |
+
+Merge in order and retarget each next PR to `main` when its dependency lands. No automatic
+merge is authorised. The range probes use the existing model and scope, not new attenuation.
+
+## Earlier acceptable-level feature stack
 
 | PR | Scope | Base |
 | --- | --- | --- |
