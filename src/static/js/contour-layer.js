@@ -18,7 +18,7 @@ export class ContourLayer {
       const pane = this.map.createPane('contour-labels'); pane.style.zIndex='450'; pane.style.pointerEvents='none';
     }
     if (!this.map.getPane('acceptable-labels')) {
-      const pane=this.map.createPane('acceptable-labels'); pane.style.zIndex='460'; pane.style.pointerEvents='none';
+      const pane=this.map.createPane('acceptable-labels'); pane.style.zIndex='675'; pane.style.pointerEvents='none';
     }
     this.labels = [];
     this.map.on('zoomend',()=>this.updateLabelVisibility());
