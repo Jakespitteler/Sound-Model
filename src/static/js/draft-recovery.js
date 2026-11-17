@@ -7,7 +7,7 @@ const KEY='sound-model.recovery.v1';
 export class DraftRecovery {
   /** @param {import('./scenario-files.js').ScenarioFilesUI} files Save/Open lifecycle. */
   constructor(files) {
-    this.files=files; this.writer=uuid(); this.starting=true; this.blocked=false;
+    this.files=files; this.writer=`${uuid()}-${Math.random().toString(36).slice(2)}`; this.starting=true; this.blocked=false;
     this.raw=null; this.candidate=null; this.timer=null; this.ignoredRevision=null; this.busy=false;
     files.subscribe(()=>this.changed());
     $('review-recovery').onclick=()=>this.offer();
@@ -81,6 +81,7 @@ export class DraftRecovery {
     clearTimeout(this.timer);
     if(this.blocked) return;
     if(this.files.revision===this.files.savedRevision) {
+      this.ignoredRevision=null;
       try {
         const raw=localStorage.getItem(KEY);
         if(raw && JSON.parse(raw).writer===this.writer) localStorage.removeItem(KEY);
