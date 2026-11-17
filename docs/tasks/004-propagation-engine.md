@@ -1,5 +1,8 @@
 # 004 — Select and validate a suitable propagation engine
 
+> **Existing theme brief.** See the [backlog](README.md) for current status and approvals.
+> Select a small remaining scope with the owner before treating this as an agent task.
+
 Status: todo. Priority: P0. Owner: unassigned.
 Dependencies: 001, 002, 003.
 

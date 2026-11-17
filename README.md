@@ -1,106 +1,90 @@
 # Sound-Model
 
-A Python/FastAPI and plain JavaScript noise-scenario explorer with editable, combined-source
-contour lines over the existing satellite map.
+A proof of concept to explore how noise from several machines combines around a mine or another work site.
+Place equipment and listening locations on a satellite map, compare calculated contour
+lines, and save scenarios to revisit later. Greenbushes is the starting location; the app
+also works at other coordinates.
 
-## Quick start
+**This is a screening tool. It cannot establish that a town will not hear machinery or
+that an operation meets regulatory requirements.** The current model omits important
+outdoor propagation effects and uses explicitly guessed starter equipment levels.
 
-You need Python 3.13 and uv. Run from the project folder:
+## Start the app
+
+You need **Python 3.13 or newer and uv**. From the project folder:
 
 ```sh
 uv sync --frozen
 uv run uvicorn src.main:app --host 127.0.0.1 --port 8767 --reload
 ```
 
-Open <http://127.0.0.1:8767>. `--reload` restarts the server after code changes; panning or
-zooming the map does not reload acoustic predictions. Imagery still needs internet access.
+Open <http://127.0.0.1:8767> in Edge, Chrome or Firefox. No Node.js or frontend build is
+required. `--reload` restarts the backend after code edits; navigating the map does not
+recalculate sound. Satellite imagery needs access to `server.arcgisonline.com`.
 
-## Build a scenario
+## Build your first scenario
 
-1. In **Scenario**, pick a starter machine under **Machines**, then place it on the map.
-2. Add a receiver to see its coloured predicted dB(A) reading on the map and in the sidebar.
-3. Open **Contours** to slide or type levels. They sort from highest to lowest; colours and a consistent
-   line weight are automatic. Add/remove levels as needed. Contours cannot be dragged.
-4. Drag machine/receiver markers to move them. Panning/zooming never recalculates the model.
-5. Use **Greenbushes mine** for a wider area overview, or expand **Go to coordinates** for another site.
-
-The eight starter types are **project-authored guesses**, not measured company fleet data.
-In **Scenario**, expand **Machine data** to edit equipment and its assumption note.
-Coordinates, source contributions and model settings are collapsed until needed.
-The in-app **Estimate notes** page explains their origin and the blocked public-source research.
-No claim is made that a particular model is owned or operated by Charles Hull or Talison.
-
-The top-right **Sound snapshots** guide contains light-hearted Australian/South West
-pressure-level comparisons. These are illustrative, not sound powers or compliance criteria.
-The same level palette colours contours, receiver numbers and the guide. Green is not a
-compliance verdict. The guide collapses on narrow screens.
-
-## Save and reopen
-
-Use **Save** to name a scenario, and Save again after edits. **Open** lists saved scenarios
-and offers a new blank scenario or saving a new copy. Files include equipment notes, machine
-kinds, receivers, contour levels, cloud metadata, map view, visibility and contrast settings.
-
-A saved scenario URL (`?scenario=...`) restores its **last saved** version on reload. Edits are
-not autosaved; the sidebar marks unsaved changes. Files live on the computer running the
-Python backend, under ignored `local-data/scenarios/` by default. Back up that directory;
-saves are not pushed to GitHub. Set `SOUND_MODEL_DATA_DIR` to use another data folder.
-
-## Scope and map feedback
-
-Default contours match the sound guide: **30, 40, 60, 80 and 100 dB(A)**. Failed levels have
-individual status/reasons; successful lines remain visible. A lower-map alert opens details.
-The duplicate lower legend is removed. **High contrast** adds white halos locally.
-
-Machines use compact equipment icons numbered to match the sidebar. Hover or focus one to
-see its name and **sound power (LwA)**; click/Enter opens its evidence note. Full names and power
-remain in the sidebar. Receiver badges keep their coloured prediction and units visible in
-a smaller footprint; hovering raises a badge above nearby markers. Icons stay at their actual
-coordinates, and inspecting them does not recalculate the model. Receiver badges show predicted
-**pressure (LpA)**. Receivers more than 10 km from every source show **Outside scope**, not a
-numerical extrapolation. Levels extending outside that screening scope fail independently.
-This is an owner-selected presentation guard, not a validated range or a physical sound cutoff.
-Nearer totals that include distant source paths are explicitly marked unvalidated.
-
-The **About** page explains spreading, energy addition, the Perth example and why decibels
-can be negative without negative sound energy. No absorption/weather coefficient was invented
-to disguise unrealistic long-range extrapolation. Cloud cover still has no numerical correction.
-
-This is an indicative free-field model; it cannot establish mine-noise inaudibility or compliance.
-Numerical limits, API contracts and diagrams are in [ARCHITECURE.md](ARCHITECURE.md).
-
-## Checks
-
-```sh
-uv run pytest
-uv run ruff check .
-uv run ruff format --check src tests
-uv run pyright
+```mermaid
+flowchart LR
+    Equipment[Choose type] --> Place[Place machines]
+    Place --> Receiver[Place receiver]
+    Receiver --> Read[Read level]
+    Read --> Save[Save scenario]
 ```
 
-The owner approved NumPy and ContourPy for compiled contour calculations. Run `uv sync --frozen`
-after updating this branch to install the locked dependencies.
+1. Select a type under **Machines**, choose **Place machine**, then click the map.
+2. Choose **Place a receiver**, then click a listening location. Its coloured number is
+   the calculated machine contribution there, excluding background noise.
+3. Hover or focus a numbered equipment icon to see its type and sound power. Click/Enter
+   opens its evidence note. Drag machine or receiver markers to move them.
+4. Open **Contours** to add/remove levels or edit them with a slider or number. Levels
+   sort automatically. **High contrast** adds white outlines for busy backgrounds.
+5. Choose **Save**, name the scenario, and save again after edits. **Open** lists saved work.
 
-## Blank map / VS Code preview
+**Greenbushes mine** shows a broad approximate overview, not a surveyed boundary.
+**Go to coordinates** navigates elsewhere. **Machine data** holds the equipment catalogue
+and editable estimate notes. Advanced settings stay collapsed to keep the sidebar simple.
 
-Open the local address in an external Edge, Chrome or Firefox browser if the VS Code preview
-has trouble loading it. Startup failures now show a message instead of a perpetual loading
-indicator. Restart the backend after updating this branch and refresh the browser page.
-If only imagery fails, check access to `server.arcgisonline.com`; calculations remain local.
+## What the numbers mean
 
-See [the physics and startup audit](docs/physics-audit.md) for what was checked and the limits
-of the model. Correct free-field arithmetic does not establish actual machinery inaudibility.
+| Display | Meaning |
+| --- | --- |
+| Machine sound power, **LwA** | The equipment emission input, not a reading at a listening location |
+| Receiver pressure, **LpA** | Combined calculated contribution from the machines at that receiver |
+| Contour | Locations where the combined pressure level equals the selected threshold |
+| Sound snapshots | Humorous approximate pressure comparisons; not equipment specifications or limits |
+| Outside scope | Nearest machine is more than 10 km away; a numerical extrapolation is hidden |
 
-## Assessment roadmap and performance
+Default contours match the guide: **30, 40, 60, 80 and 100 dB(A)**. A failed contour reports
+its level/reason while successful levels remain visible. Colours describe levels, not compliance.
+Cloud cover is recorded only. Negative decibels are possible because zero dB is a reference,
+not zero sound. Read [how the model works](docs/model.md) or open **About** in the app.
 
-The [due-diligence backlog](docs/tasks/README.md) prioritises assessment criteria, measured
-source/background data, validated propagation, uncertainty, reporting and operating controls.
-[Library options](docs/library-options.md) distinguish calculation speed from physical validity.
-Machine sound power and contour thresholds accept 0–300 dB(A); the upper numeric bound is
-not a realistic machinery default. The separate 200 km numerical domain guard still applies.
+The eight starter types are project-authored guesses, not verified Charles Hull or Talison
+fleet data. Replace values and notes with traceable equipment sound-power evidence. The
+in-app **Estimate notes** page records their origin.
 
-To benchmark the compiled contour implementation:
+## Keep your work
 
-```sh
-uv run python scripts/benchmark_contours.py
-```
+Saves are local to the computer running the Python backend, under `local-data/scenarios/`.
+Back up that folder. A saved `?scenario=...` URL restores its **last saved version** on reload;
+unsaved edits are not autosaved. `SOUND_MODEL_DATA_DIR` can select another storage folder.
+No scenario files are pushed to GitHub. See the [user guide](docs/user-guide.md) for details.
+
+## Documentation and agent work
+
+Use the [documentation index](docs/README.md) to find the user guide, model explanation,
+architecture, developer checks and historical change records. The approved POC task queue and
+parked wider themes are in the [backlog](docs/tasks/README.md). Work on one selected task;
+creating this plan does not start implementation of the queue.
+
+All 25 skills from [Agent Skills](https://github.com/addyosmani/agent-skills) are installed
+under `.agents/skills/`. Start a new Codex session after pulling to discover them. Project
+rules live in [AGENTS.md](AGENTS.md); the [integration guide](.agents/README.md) records
+provenance and usage. No global plugin installation is required.
+
+## Licence
+
+Original project material is proprietary, with use reserved to **Jakespitteler** unless the
+owner gives prior written permission. See [LICENSE](LICENSE). Third-party material retains
+its own terms, described in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

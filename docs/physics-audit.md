@@ -1,5 +1,8 @@
 # Physics and startup audit — 2026-11-16
 
+> **Historical change record.** For current behaviour, use the [documentation index](README.md)
+> and [architecture](../ARCHITECURE.md). The equations remain relevant. Contour dragging and the old lower legend were removed; per-level failures and the 10 km display policy were added later.
+
 ## Conclusion and scope
 
 Reviewed `src/acoustics.py`, `src/contours.py`, request/response schemas, HTTP routes, frontend
@@ -118,3 +121,9 @@ The browser regression flows cover normal scenario editing/dragging, camera requ
 error/retry handling, no-randomUUID startup, delayed Leaflet, failed module imports, and stale
 response rejection. Native Windows and the user's particular VS Code webview are unavailable
 here, so their execution is not claimed as verified.
+
+## Documentation review — 17 November 2026
+
+Current-state links and a historical-status banner were added to prevent older controls,
+limits, save behaviour or verification counts being mistaken for the current app. The
+original change record and its evidence have been retained.

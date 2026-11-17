@@ -3,6 +3,8 @@ name = "sound-model"
 version = "0.1.0"
 description = ""
 readme = "README.md"
+license = "LicenseRef-Proprietary"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", ".agents/LICENSE", "src/static/vendor/leaflet/LICENSE"]
 requires-python = ">=3.13"
 dependencies = [
     "contourpy>=1.4.0",

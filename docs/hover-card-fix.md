@@ -1,5 +1,8 @@
 # Hover card layout — 17 November 2026
 
+> **Historical change record.** For current behaviour, use the [documentation index](README.md)
+> and [architecture](../ARCHITECURE.md). This records a completed fix. Its screenshot measurements and test counts describe that verification run, not a permanent UI-size or live test-count guarantee.
+
 The machine hover card was approximately 55 px wide and 208 px tall. Its wrapping content
 shrank inside Leaflet's zero-width positioning pane; the previous browser checks verified
 the text but did not assert or inspect the opened card's dimensions.
@@ -28,3 +31,9 @@ near each map edge, then reopen its card. Check the full name and power remain r
 including beside the sound guide and, when visible, the imagery warning. Enter/click should
 show a single evidence popup; the tooltip should close. Repeat at a narrow viewport and
 with an unusually long machine name.
+
+## Documentation review — 17 November 2026
+
+Current-state links and a historical-status banner were added to prevent older controls,
+limits, save behaviour or verification counts being mistaken for the current app. The
+original change record and its evidence have been retained.
