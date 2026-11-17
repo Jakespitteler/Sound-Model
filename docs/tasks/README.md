@@ -15,7 +15,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | Order | Agent task | State / dependency |
 | --- | --- | --- |
 | 1 | [012 Recover unsaved edits](012-unsaved-recovery.md) | Implemented; ready for review |
-| 2 | [013 Optional receiver-name contract](013-receiver-name-contract.md) | Ready; small compatibility slice |
+| 2 | [013 Optional receiver-name contract](013-receiver-name-contract.md) | Implemented; ready for review |
 | 3 | [014 Receiver-name editor](014-receiver-name-editor.md) | After 013 |
 | 4 | [015 Fit a local cluster](015-local-cluster-zoom.md) | Ready; maximum pairwise distance 10 km |
 | 5 | [017 Reuse unchanged contours](017-per-level-contour-cache.md) | Ready; accuracy must remain unchanged |

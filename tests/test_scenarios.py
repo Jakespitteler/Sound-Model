@@ -69,7 +69,11 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
     assert response.status_code == 201
     record = response.json()
     identifier = record["id"]
-    assert record["document"] == original["document"]
+    expected = {
+        **cast(dict[str, object], original["document"]),
+        "receivers": [{"id": "r", "lat": -33.85, "lng": 116.05, "name": ""}],
+    }
+    assert record["document"] == expected
     assert saved_client.get(f"/api/scenarios/{identifier}").json() == record
     listing = saved_client.get("/api/scenarios").json()
     assert listing["unreadable_count"] == 0
@@ -192,3 +196,57 @@ def test_invalid_recovery_is_rejected_without_writes(
     response = saved_client.post("/api/scenarios/validate", json={**document, **change})
     assert response.status_code == 422
     assert not list(tmp_path.iterdir())
+
+
+def test_legacy_receiver_names_are_defaulted_without_rewriting_files(saved_client: TestClient, tmp_path: Path) -> None:
+    """Read old version-1 files without modifying their bytes or losing existing inputs.
+
+    Args:
+        saved_client: Isolated scenario API.
+        tmp_path: Temporary save directory.
+    """
+    identifier = str(uuid4())
+    legacy = {**payload(), "id": identifier, "updated_at": "2026-11-17T00:00:00Z"}
+    path = tmp_path / f"{identifier}.json"
+    path.write_text(json.dumps(legacy), encoding="utf-8")
+    previous = path.read_bytes()
+    response = saved_client.get(f"/api/scenarios/{identifier}")
+    assert response.status_code == 200
+    document = response.json()["document"]
+    assert document["version"] == 1
+    assert document["receivers"] == [{"id": "r", "lat": -33.85, "lng": 116.05, "name": ""}]
+    assert path.read_bytes() == previous
+    assert (
+        saved_client.put(
+            f"/api/scenarios/{identifier}", json={"name": legacy["name"], "document": document}
+        ).status_code
+        == 200
+    )
+    saved = saved_client.get(f"/api/scenarios/{identifier}").json()["document"]
+    assert saved == document
+    assert saved["types"] == cast(dict[str, object], payload()["document"])["types"]
+    assert saved["sources"] == cast(dict[str, object], payload()["document"])["sources"]
+
+
+def test_named_receivers_round_trip_and_invalid_update_preserves_save(saved_client: TestClient) -> None:
+    """Keep labels as metadata while IDs remain unique and bad updates are atomic.
+
+    Args:
+        saved_client: Isolated scenario API.
+    """
+    document = cast(dict[str, object], payload()["document"])
+    document["receivers"] = [
+        {"id": "r1", "lat": -33.85, "lng": 116.05, "name": "住宅 🏠"},
+        {"id": "r2", "lat": -33.84, "lng": 116.05, "name": "住宅 🏠"},
+    ]
+    response = saved_client.post("/api/scenarios", json={"name": "Named receivers", "document": document})
+    assert response.status_code == 201
+    record = response.json()
+    route = f"/api/scenarios/{record['id']}"
+    assert saved_client.get(route).json()["document"]["receivers"] == document["receivers"]
+    validated = saved_client.post("/api/scenarios/validate", json=record["document"])
+    assert validated.status_code == 200
+    assert validated.json()["receivers"] == document["receivers"]
+    invalid = {**record["document"], "receivers": [{"id": "r1", "lat": 0, "lng": 0, "name": "x" * 81}]}
+    assert saved_client.put(route, json={"name": record["name"], "document": invalid}).status_code == 422
+    assert saved_client.get(route).json() == record

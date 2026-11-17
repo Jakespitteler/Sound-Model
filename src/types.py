@@ -66,11 +66,13 @@ class Receiver(Position):
 
     Attributes:
         id: Unique client-supplied identifier for this receiver location.
+        name: Optional display label, empty for legacy records; never an acoustic input.
         lat: WGS84 latitude in decimal degrees within ``[-85, 85]``.
         lng: WGS84 longitude in decimal degrees within ``[-180, 180]``.
     """
 
     id: str = Field(min_length=1, max_length=80)
+    name: str = Field(default="", max_length=80)
 
 
 class Scenario(StrictModel):

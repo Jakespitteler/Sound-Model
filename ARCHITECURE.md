@@ -135,6 +135,11 @@ sequenceDiagram
     UI->>UI: Update saved URL and saved revision
 ```
 
+Receivers accept optional `name` metadata (up to 80 characters, empty by default). Duplicate
+labels are allowed; receiver IDs still identify results. Existing version-1 files without names
+load without being rewritten. Explicitly saving normalises the default field. Naming has no
+effect on receiver calculations or contour geometry; the frontend editor is task 014.
+
 Version-1 documents include catalogue notes/kinds, sources, receivers, levels, cloud metadata,
 view, contrast and visibility. They do not contain imagery or calculated results. Names are
 labels; server-generated UUIDs determine filenames. Data lives under ignored
