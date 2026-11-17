@@ -48,7 +48,7 @@ A pressure measurement taken beside a machine is not automatically a sound-power
 
 ## Undo a placement edit
 
-Use **Undo / Redo** below Save/Open for machine and receiver placement, moves and removals.
+Use **Undo / Redo** beneath the map zoom controls for machine and receiver placement, moves and removals.
 Each completed drag or submitted coordinate change counts as one action; up to 50 are retained.
 A new placement edit clears redo. Outside form fields, use Ctrl/Cmd+Z to undo, Ctrl/Cmd+Shift+Z
 or Ctrl+Y to redo. Text fields keep their native undo behaviour.

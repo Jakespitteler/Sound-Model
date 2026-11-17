@@ -149,3 +149,9 @@
 /* Camera-only local fit action. */
 .map-fit-button { position:absolute; z-index:500; right:20px; bottom:40px; width:auto; }
 @media(max-width:650px) { .map-fit-button { right:12px; bottom:60px; } }
+
+/* Persistent map editing controls beneath zoom, independent of sidebar scrolling. */
+.placement-history {display:flex; flex-direction:column;}
+.placement-history button {width:32px; height:32px; padding:0; background:white; color:var(--teal); font-size:23px; line-height:1;}
+.placement-history button:first-child {border-bottom:1px solid var(--line);}
+.placement-history button:disabled {cursor:default; color:#88988c; opacity:1; background:#f3f6f2;}

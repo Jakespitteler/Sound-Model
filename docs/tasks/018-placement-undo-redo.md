@@ -42,7 +42,7 @@ intent alone. New dependencies and external data require separate owner approval
 Implementation commit: `ed90164` on `agent/placement-undo-redo`, based on `main` after task 017.
 Four runtime files changed; no new dependency, backend, model or saved-schema change.
 
-Undo/Redo below Save/Open supports source/receiver add, move and remove. Commands retain
+Undo/Redo beneath the map zoom controls supports source/receiver add, move and remove. Commands retain
 IDs and list positions; moves replay only coordinates so later receiver names and current
 catalogue powers survive. Removing an entity captures its current metadata for later replay.
 One drag-end or coordinate submission creates one action; no-op moves create none. There

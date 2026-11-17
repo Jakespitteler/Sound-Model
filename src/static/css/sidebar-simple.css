@@ -32,6 +32,3 @@ main { grid-template-columns:340px minmax(0,1fr); }
 .scenario-list-item strong {display:block; font-size:13px;}
 .scenario-list-item small {display:block;font-size:10px;color:#708173;margin-top:5px;}
 #save-dialog-error {color:#9b4732;}
-
-.placement-history {display:flex; justify-content:flex-end; gap:8px; margin-top:4px;}
-.placement-history button:disabled {cursor:default;}

@@ -16,6 +16,10 @@
   </form>
   </details>
   <div id="map"></div>
+  <div id="placement-history" class="placement-history leaflet-bar" role="group" aria-label="Placement history" hidden>
+    <button id="undo-placement" type="button" disabled aria-label="Undo" aria-keyshortcuts="Control+Z Meta+Z">↶</button>
+    <button id="redo-placement" type="button" disabled aria-label="Redo" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y">↷</button>
+  </div>
   <button id="fit-local-area" class="secondary compact map-fit-button" type="button" disabled title="Fit the area nearest the current map centre">Fit local area</button>
   <details id="sound-key" class="sound-key" open>
     <summary><span class="guide-title">Sound snapshots</span><span class="guide-unit">dB(A)</span></summary>

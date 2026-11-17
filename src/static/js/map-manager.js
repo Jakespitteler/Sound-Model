@@ -28,6 +28,13 @@ export class MapManager {
       ],
       maxBoundsViscosity: 1,
     });
+    const historyControl=L.control({position:'topleft'});
+    historyControl.onAdd=()=> {
+      const group=$('placement-history'); group.hidden=false;
+      L.DomEvent.disableClickPropagation(group); L.DomEvent.disableScrollPropagation(group);
+      return group;
+    };
+    historyControl.addTo(this.map);
     this.fitMine();
     this.markers.addTo(this.map);
 

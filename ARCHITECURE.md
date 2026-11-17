@@ -175,7 +175,7 @@ excluded from both the API payload and recovery/save snapshots. Open/New/recover
 replacement clear it. Deleting an unused catalogue type clears both stacks; deletion of an
 in-use type is guarded in the store as well as the UI.
 
-Small sidebar buttons expose the next action through their titles. Keyboard handlers ignore
+Persistent map buttons expose the next action through their titles. Keyboard handlers ignore
 inputs, selects, textareas, editable content, IME composition and open dialogs. Camera, contour,
 name and catalogue power edits are outside placement history and keep their existing behaviour.
 
