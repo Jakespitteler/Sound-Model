@@ -46,6 +46,9 @@ No new dependencies, services or regulatory criteria are approved by these brief
 - **Accuracy:** contour reuse may avoid repeated work, but must not simplify geometry,
   omit sources or change the physical/numerical model.
 
+This diagram shows the first usability batch and the print decision. The table above is the
+complete queue, including equipment metadata, the special contour and scope investigation.
+
 ```mermaid
 flowchart TD
     Recovery[012 Recover unsaved edits] --> CheckA[Check save and recovery behaviour]
