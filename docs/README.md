@@ -20,7 +20,7 @@ dated change records explain how the project reached it.
 | --- | --- |
 | Combined independent-source contours; separate failure reporting | Validated terrain, barriers, ground, absorption and weather propagation |
 | Numbered equipment icons, receiver readings and high contrast | Site-reviewed assessment criteria and measured source/background evidence |
-| Named Save/Open/new/copy; saved-URL restoration | Automatic recovery of unsaved edits and portable import/export |
+| Named Save/Open and optional restoration of a browser recovery draft | Portable import/export, recovery history and multi-user conflict handling |
 | Typed API, numerical tests and pinned agent workflows | Validation of real mine-to-town predictions against independent measurements |
 
 This is a POC, not an environmental-assessment platform. Missing capabilities are not

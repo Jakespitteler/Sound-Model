@@ -68,7 +68,8 @@ in-app **Estimate notes** page records their origin.
 
 Saves are local to the computer running the Python backend, under `local-data/scenarios/`.
 Back up that folder. A saved `?scenario=...` URL restores its **last saved version** on reload;
-unsaved edits are not autosaved. `SOUND_MODEL_DATA_DIR` can select another storage folder.
+a separate browser draft offers **Restore/Discard** for unsaved edits. Restoring never
+updates a named save automatically. Recovery is not a backup and browser storage can be cleared. `SOUND_MODEL_DATA_DIR` can select another storage folder.
 No scenario files are pushed to GitHub. See the [user guide](docs/user-guide.md) for details.
 
 ## Documentation and agent work

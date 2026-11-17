@@ -234,4 +234,5 @@ def test_about_explains_reference_levels_and_scope(client: TestClient) -> None:
     assert "Decibels can be negative" in response.text
     assert "10 km" in response.text
     assert "not evidence" in response.text
-    assert "not autosaved" in response.text
+    assert "choose Restore" in response.text
+    assert "does not update named saves automatically" in response.text

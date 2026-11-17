@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -187,8 +188,7 @@ def test_invalid_recovery_is_rejected_without_writes(
         tmp_path: Isolated save folder.
         change: Invalid document fragment.
     """
-    document = payload()["document"]
-    assert isinstance(document, dict)
+    document = cast(dict[str, object], payload()["document"])
     response = saved_client.post("/api/scenarios/validate", json={**document, **change})
     assert response.status_code == 422
     assert not list(tmp_path.iterdir())
