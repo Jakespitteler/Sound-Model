@@ -106,6 +106,16 @@ For real UI verification also exercise a drag, typed coordinates, buttons/keyboa
 native text undo, pending calculations and Save/Open/New/recovery. Inspect keyboard focus
 and disabled toolbar controls in desktop and narrow screenshots.
 
+### Acceptable-level regression page
+
+Serve the repository on a temporary loopback HTTP server and open
+`tests/browser/acceptable-level.html`. Expect **PASS: 24 checks** for unset/zero/boundaries,
+invalid values, shared/full/split budget cases, intact rejected edits, saved snapshots,
+legacy restore, IDs/notes and unchanged receiver payloads. It requires no test dependency
+and runs separately from `pytest`. In the app also check matching threshold reuse, slider/Clear,
+Save/Open/recovery, a failed reference beside successful lines, hidden/high-contrast rendering,
+and removing an ordinary row to free a budget slot. Inspect desktop and narrow screenshots.
+
 ## Making changes
 
 Read the selected task and relevant modules first. Keep type hints, Google-style Python

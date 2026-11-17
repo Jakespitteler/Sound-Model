@@ -63,6 +63,8 @@ and editable estimate notes. Advanced settings stay collapsed to keep the sideba
 
 Default contours match the guide: **30, 40, 60, 80 and 100 dB(A)**. A failed contour reports
 its level/reason while successful levels remain visible. Colours describe levels, not compliance.
+Under **Contours**, set an optional **Acceptable level** to draw a dashed reference labelled
+“user-set”. It starts blank, shares matching thresholds, and is saved with the scenario.
 Cloud cover is recorded only. Negative decibels are possible because zero dB is a reference,
 not zero sound. Read [how the model works](docs/model.md) or open **About** in the app.
 

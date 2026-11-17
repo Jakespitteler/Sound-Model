@@ -2,6 +2,13 @@
   <div class="section-heading"><h2>Noise contours</h2><span id="contour-count" class="count">5</span></div>
   <p class="hint">Slide or enter a level. Highest first; colours and line weights are automatic.</p>
   <div class="contour-display"><label><input id="show-overlay" type="checkbox" checked> Show lines</label><label><input id="contour-contrast" type="checkbox"> High contrast</label></div>
+  <div class="acceptable-control">
+    <label for="acceptable-level">Acceptable level <span class="hint">· user-set</span></label>
+    <div class="acceptable-inputs"><input id="acceptable-slider" type="range" min="0" max="300" step="0.1" value="0" aria-label="Slide acceptable level" disabled>
+    <label class="level-number"><input id="acceptable-level" type="number" min="0" max="300" step="0.1" placeholder="Not set" aria-label="Acceptable level"><span>dB(A)</span></label>
+    <button id="clear-acceptable" type="button" class="text-button" disabled>Clear</button></div>
+    <span id="acceptable-status" class="hint" role="status"></span>
+  </div>
   <div id="contour-errors" role="status"></div>
   <div id="contours"></div>
   <button id="add-contour" class="secondary" type="button">＋ Add contour</button>

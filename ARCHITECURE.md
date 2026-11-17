@@ -129,6 +129,21 @@ source is more than 10 km away, retaining status and nearest distance. A nearer 
 all contributions and warns if some paths are beyond 10 km. This owner-selected display policy
 is neither a physical cutoff nor a validated range.
 
+The optional `acceptable_level_db` defaults to null in version-1 saves and browser state.
+It is excluded from direct receiver requests: only its numeric threshold joins the deduplicated
+contour-level union. Backend and browser enforce 25 unique levels including this value.
+`lineSettings()` emits one setting per unique level and flags a shared ordinary/reference level
+as special. Changing/clearing the reference uses the contour lane, including cache-only style
+changes for matching levels; it never updates source powers or receiver pressures.
+
+The reference is a heavier dashed line in the automatic level colour, with a distinct label
+“Acceptable level — user-set”. Its label remains visible even for a small ring. High contrast
+adds a matching dashed halo. The slider starts disabled until a number is entered, so no default
+criterion is invented. Per-level error reporting identifies the reference and preserves other
+lines. Ordinary-row removal tolerates the notification-before-DOM-update phase. Save snapshots
+and draft recovery retain the optional value; neither classification nor legal/audibility
+assessment is introduced.
+
 Default contours and the guide share `sound-reference.js`: 30/40/60/80/100 dB(A). Thresholds
 sort descending; colour and a solid 2.5 px line weight are automatic. A separate lower pane
 provides optional white halos. Contour labels sit below object badges. Contours cannot be dragged.

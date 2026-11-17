@@ -53,7 +53,7 @@ function displayGeometry(results) {
   if ($('message').textContent==='Retrying…') say('');
   const failures=geometry.filter(c=>c.status==='failed');
   geometryFailed=!!failures.length; updateRetry(); contours.setResults(geometry);
-  manager.contourLayer.render(geometry,store.contours); manager.contourLayer.setPending(false);
+  manager.contourLayer.render(geometry,store.lineSettings()); manager.contourLayer.setPending(false);
   const empty=geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
   const examples=store.sources.some(s=>store.typeFor(s).provenance==='example');
   $('calculation-status').textContent=store.sources.length ?
@@ -63,7 +63,7 @@ function displayGeometry(results) {
 /** Reuse exact current-source levels and request only missing ones; every edit still versions the lane. */
 function refreshGeometry() {
   const payload=store.toPayload(); payload.receivers=[];
-  payload.levels=store.contours.map(c=>c.level_db);
+  payload.levels=store.getContourLevels();
   const cached=payload.levels.map(level=>cache.get(cache.key(payload,level))).filter(Boolean);
   const missing=payload.levels.filter(level=>!cached.some(c=>c.level_db===level));
   /** @param {Object[]} fresh New per-level results. @param {string} [error] Missing-result reason.
@@ -74,7 +74,7 @@ function refreshGeometry() {
     start:()=> {
       geometryFailed=false; updateRetry(); contours.setResults(cached);
       // Keep valid unaffected levels; discard old-source/removed-level lines immediately.
-      manager.contourLayer.render(cached,store.contours); manager.contourLayer.setPending(false);
+      manager.contourLayer.render(cached,store.lineSettings()); manager.contourLayer.setPending(false);
       $('calculation-status').textContent='Updating contours…';
     },
     success:data=> {
@@ -126,12 +126,13 @@ store.subscribe(reason=> {
   renderHistory();
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
+  if (reason==='acceptable-level') contours.syncAcceptable();
   if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
   if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
   if (['geometry','catalogue','receivers','restore'].includes(reason)) { manager.renderMarkers(); refreshReceivers(); }
-  if (['geometry','catalogue','thresholds','restore'].includes(reason)) {
+  if (['geometry','catalogue','thresholds','acceptable-level','restore'].includes(reason)) {
     refreshGeometry();
   }
 });

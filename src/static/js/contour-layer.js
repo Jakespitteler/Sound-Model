@@ -42,11 +42,11 @@ export class ContourLayer {
 
   /** Hide labels on very small rings to keep machine markers readable; no requests. */
   updateLabelVisibility() {
-    for (const {tooltip,bounds} of this.labels) {
+    for (const {tooltip,bounds,acceptable} of this.labels) {
       const a = this.map.latLngToContainerPoint(bounds.getNorthWest());
       const b = this.map.latLngToContainerPoint(bounds.getSouthEast());
       const element = tooltip.getElement();
-      if (element) element.hidden = Math.max(Math.abs(b.x-a.x),Math.abs(b.y-a.y)) < 90;
+      if (element) element.hidden = !acceptable && Math.max(Math.abs(b.x-a.x),Math.abs(b.y-a.y)) < 90;
     }
   }
 
@@ -65,19 +65,20 @@ export class ContourLayer {
       const result = geometry.find(g=>g.level_db === contour.level_db);
       if (!result?.lines.length) continue;
       const color = soundColor(contour.level_db);
+      const dashArray=contour.acceptable ? '10 6' : undefined;
       const lines = [...result.lines].sort((a,b)=>b.length-a.length);
       for (const coords of lines) {
-        L.polyline(coords.map(([lng,lat])=>[lat,lng]), {pane:'contour-halos',color:'#fff',weight:7,opacity:.95,interactive:false,smoothFactor:.5}).addTo(this.halos);
+        L.polyline(coords.map(([lng,lat])=>[lat,lng]), {pane:'contour-halos',color:'#fff',weight:contour.acceptable ? 8 : 7,dashArray,opacity:.95,interactive:false,smoothFactor:.5}).addTo(this.halos);
         L.polyline(coords.map(([lng,lat])=>[lat,lng]),
-          {color,weight:2.5,opacity:0.95,interactive:false,smoothFactor:0.5}).addTo(this.group);
+          {color,weight:contour.acceptable ? 4 : 2.5,dashArray,opacity:0.95,interactive:false,smoothFactor:0.5}).addTo(this.group);
       }
       const anchor = lines[0][Math.floor(lines[0].length / 4)];
       const label = document.createElement('span');
-      label.textContent = `${contour.level_db.toFixed(1)} dB(A)`;
+      label.textContent = `${contour.acceptable ? 'Acceptable level — user-set · ' : ''}${contour.level_db.toFixed(1)} dB(A)`;
       label.style.color = color;
-      const tooltip = L.tooltip({pane:'contour-labels',permanent:true,direction:'center',className:'contour-label',opacity:1,interactive:false})
+      const tooltip = L.tooltip({pane:'contour-labels',permanent:true,direction:'center',className:contour.acceptable ? 'contour-label acceptable-label' : 'contour-label',opacity:1,interactive:false})
         .setLatLng([anchor[1],anchor[0]]).setContent(label).addTo(this.group);
-      this.labels.push({tooltip,bounds:L.latLngBounds(lines[0].map(([lng,lat])=>[lat,lng]))});
+      this.labels.push({tooltip,acceptable:contour.acceptable,bounds:L.latLngBounds(lines[0].map(([lng,lat])=>[lat,lng]))});
     }
     this.syncVisibility();
   }

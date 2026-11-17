@@ -84,6 +84,18 @@ white halos. **Show lines** hides/shows them without changing the calculation.
 The app also flags receivers within 1 m of a source and totals containing distant source
 paths. These warnings matter even when a number is shown. See [model limits](model.md).
 
+### Set an acceptable-level reference
+
+In **Contours**, enter your chosen **Acceptable level**, then adjust it with the slider if
+needed. Its heavier dashed line is labelled **Acceptable level — user-set**. It starts unset;
+**Clear** removes the reference while keeping ordinary contours. This is your reference,
+not an approved compliance limit or a determination that machinery cannot be heard.
+
+Matching an ordinary threshold shares one calculation and line. The count allows 25 unique
+thresholds including the reference; if full, remove a level or choose an existing one. A failed
+reference names its level and reason while successful ordinary contours remain visible.
+Save/Open and recovery retain the setting. Show lines and High contrast apply to it too.
+
 ## Save and reopen
 
 ```mermaid
