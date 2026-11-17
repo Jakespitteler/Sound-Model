@@ -35,6 +35,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Checkpoint C | Complete selected POC slice | Acceptance evidence, appropriate full checks, small UI and clear handoff |
 | Optional equipment metadata | [019](../docs/tasks/019-equipment-metadata-contract.md), then [020](../docs/tasks/020-equipment-metadata-editor.md) | Save compatibility before the collapsed editor |
 | Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | User-set reference, no default criterion; Ctrl repeat placement |
+| Sidebar usability | [027](../docs/tasks/027-desktop-sidebar-usability.md) | Compare workflow before/after; reduce scrolling and cramped controls without reducing map usability |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Owner may remove printing as scope creep; no report code before decision |
