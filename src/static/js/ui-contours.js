@@ -28,9 +28,18 @@ export class ContoursUI {
     const closeNewContour=()=> {newForm.hidden=true; newForm.reset(); newLevel.setCustomValidity(''); $('add-contour').hidden=false; $('add-contour').focus();};
     $('add-contour').onclick=()=> {
       if (this.store.contours.length>=25) return this.say('Maximum 25 ordinary contour levels. Remove one first.');
-      newForm.hidden=false; $('add-contour').hidden=true; newLevel.value=''; newLevel.setCustomValidity(''); newLevel.focus();
+      newForm.hidden=false; newForm.style.removeProperty('--level-color'); $('add-contour').hidden=true; newLevel.value=''; newLevel.setCustomValidity(''); this.syncRowSliders(); newLevel.focus();
     };
-    newLevel.oninput=()=>newLevel.setCustomValidity('');
+    newLevel.oninput=()=> {
+      newLevel.setCustomValidity('');
+      this.configureSlider($('new-contour-slider'),newLevel.value==='' ? null : newLevel.valueAsNumber);
+      newForm.style.setProperty('--level-color',soundColor(newLevel.valueAsNumber));
+    };
+    $('new-contour-slider').oninput=()=> {
+      newLevel.value=$('new-contour-slider').value; newLevel.setCustomValidity('');
+      newForm.style.setProperty('--level-color',soundColor(newLevel.valueAsNumber));
+    };
+    $('new-contour-slider').onkeydown=event=> {if(event.key==='Enter') {event.preventDefault();newForm.requestSubmit();}};
     newForm.onsubmit=event=> {
       event.preventDefault();
       if (!newForm.checkValidity()) return newForm.reportValidity();
@@ -68,21 +77,34 @@ export class ContoursUI {
   /** @param {?Object} range Checked scenario range, or null while pending. */
   setSliderRange(range) {this.sliderRange=range; this.syncAcceptable(); this.renderStatus();}
 
+  /** @param {HTMLInputElement} slider Range control. @param {?number} value Current number, preserved separately. */
+  configureSlider(slider,value) {
+    const range=this.sliderRange;
+    const enabled=range?.status==='ok' && Number.isFinite(range.min_db) && Number.isFinite(range.max_db) && range.max_db>range.min_db;
+    slider.min=String(enabled ? range.min_db : 0); slider.max=String(enabled ? range.max_db : 300);
+    slider.value=String(enabled ? Math.max(range.min_db,Math.min(range.max_db,Number.isFinite(value) ? value : (range.min_db+range.max_db)/2)) : 0);
+    slider.disabled=!enabled;
+    slider.title=enabled ? `${range.min_db}–${range.max_db} dB(A) for current machines` : range?.reason || (this.store.sources.length ? 'Finding slider range…' : 'Place a machine to enable the slider.');
+  }
+
+  /** Apply the scenario interval to ordinary and draft rows without changing entered numbers. */
+  syncRowSliders() {
+    for (const row of document.querySelectorAll('#contours .contour-row')) {
+      this.configureSlider(row.querySelector('[type=range]'),row.querySelector('[type=number]').valueAsNumber);
+    }
+    this.configureSlider($('new-contour-slider'),$('new-contour-level').value==='' ? null : $('new-contour-level').valueAsNumber);
+  }
+
   /** Reflect committed reference state without replacing the active slider/number input. */
   syncAcceptable() {
     const value=this.store.acceptable_level_db;
     $('acceptable-level').value=value===null ? '' : String(value);
-    const range=this.sliderRange, slider=$('acceptable-slider');
-    const enabled=range?.status==='ok' && Number.isFinite(range.min_db) && Number.isFinite(range.max_db) && range.max_db>range.min_db;
-    slider.min=String(enabled ? range.min_db : 0); slider.max=String(enabled ? range.max_db : 300);
-    slider.value=String(enabled ? Math.max(range.min_db,Math.min(range.max_db,value ?? (range.min_db+range.max_db)/2)) : 0);
-    slider.disabled=!enabled;
-    slider.title=enabled ? `${range.min_db}–${range.max_db} dB(A) for current machines` : range?.reason || 'Finding slider range…';
+    this.configureSlider($('acceptable-slider'),value); this.syncRowSliders();
     $('clear-acceptable').disabled=value===null;
     $('contour-count').textContent=String(this.store.getContourLevels().length);
   }
 
-  /** Render compact level rows. Sliders span the same 0–300 range as numeric input. */
+  /** Render compact rows with scenario-bounded sliders and full-range numeric inputs. */
   render() {
     this.syncAcceptable();
     $('contours').innerHTML = [...this.store.contours].sort((a,b)=>b.level_db-a.level_db).map(c =>
@@ -92,7 +114,7 @@ export class ContoursUI {
       <label class="level-number"><input type="number" data-field="level_db" min="0" max="300" step="0.1" value="${c.level_db}" aria-label="${c.level_db} dB contour level" required><span>dB(A)</span></label>
       <button class="danger remove-level" type="button" data-remove-contour="${c.id}" aria-label="Remove ${c.level_db} dB contour">×</button></div>`
     ).join('') || '<p class="empty">No ordinary contours.</p>';
-    this.renderStatus();
+    this.syncRowSliders(); this.renderStatus();
   }
 
   /** @param {import('./types.js').ContourGeometry[]} results Per-level successes/failures. */

@@ -287,8 +287,8 @@ Numeric entry retains 0–300, all per-level errors and the existing display pol
 The browser uses a separately versioned request lane and an eight-signature session cache.
 Only source-signature changes request a range; panning, threshold edits and metadata changes
 do not. Pending/failed ranges disable the slider with a reason, and transient HTTP failures
-expose Retry. Source changes preserve the chosen acceptable value even outside new slider
-bounds. Endpoint probes do not alter equations, saved inputs, geometry tolerances or budgets.
+expose Retry. Ordinary, acceptable and draft sliders share this interval. Source changes
+preserve entered numbers even outside new slider bounds. Endpoint probes do not alter equations, saved inputs, geometry tolerances or budgets.
 
 ## Contour label priority and explicit entry
 
@@ -297,7 +297,8 @@ ordinary contour labels (450), markers (600) and transient tooltips (650), while
 popups and controls keep their higher interaction layers. Label priority is independent of
 threshold ordering, high contrast, zoom and hide/show; labels stay pointer-transparent.
 
-Add contour opens a native focused numeric form. It commits once on Enter/submit and
-cancels without notifying state on Escape/Cancel. `addContour(requestedLevel)` validates the
+Add contour opens a draft of the existing slider-and-number row, focusing its numeric field.
+Draft dragging previews a number without changing state. Enter commits once; Escape or ×
+cancels without notifying state. `addContour(requestedLevel)` validates the
 exact submitted value and combined level budget, rejecting rather than replacing it. The
 no-argument helper retains its previous programmatic fallback; the UI always passes a number.

@@ -67,8 +67,9 @@ power and receiver names are retained when undoing coordinate moves.
 
 Use the **Contours** tab. Each row has a slider and editable number; duplicate levels are
 rejected and rows sort from highest to lowest. Choose **Add contour**, type a number and
-press **Enter** (or Add). **Escape/Cancel** dismisses the entry; no level is created until
-you confirm it. Remove levels with their × buttons.
+press **Enter**. The new draft uses the same slider-and-number row; **Escape** or its **×**
+dismisses it without adding a level. Sliders use the current-machine range; numeric entry
+retains 0–300 dB(A). Remove levels with their × buttons.
 Changing one level reuses unchanged contours; they remain visible while the new level loads.
 If it fails, Retry recalculates missing/failed contours while keeping successful ones.
 Contours cannot be dragged. Colours and line weight are automatic; **High contrast** adds

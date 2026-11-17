@@ -88,7 +88,4 @@ textarea { display:block; width:100%; margin-top:5px; padding:8px; border:1px so
 .acceptable-inputs input[type=range] {flex:1; min-width:40px; width:0; margin:0; accent-color:var(--teal);}
 .acceptable-control #acceptable-status {display:block; margin-top:6px;}
 .acceptable-label {background:#fff; width:max-content; border:2px dashed #28594b; padding:4px 7px; max-width:240px; white-space:normal;}
-
-.new-contour-form {display:flex; align-items:end; gap:8px; margin:10px 0;}
-.new-contour-form label {flex:1; min-width:0; margin:0;}
-.new-contour-form button {margin-bottom:0;}
+.new-contour-draft {--level-color:#67796c;}

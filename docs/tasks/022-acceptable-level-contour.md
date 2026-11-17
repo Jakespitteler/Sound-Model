@@ -114,3 +114,17 @@ new row between 60 and 40. Desktop/narrow entry screenshots were inspected:
 `add-contour-result.png`; runner `check_add_contour.py`. Full stack: 110 Python tests and
 Ruff/format/Pyright/skills/lockfile checks pass, plus real mouse-drag slider and label-paint
 regressions. No JavaScript page errors or new dependencies.
+
+
+### Follow-up: reuse the existing row
+
+The owner requested the ordinary slider-and-number row instead of the separate Add/Cancel
+form. Add contour now opens that draft with the number focused. Enter commits the exact
+number; ×/Escape cancels. Draft dragging previews without acoustic requests. Ordinary and
+draft sliders now share the checked current-machine interval with the reference slider;
+numeric input retains 0–300 and entered values survive range changes.
+
+Actual Chromium checks exercised draft and ordinary mouse dragging, focused entry, Enter,
+duplicate correction, zero and cancellation. Screenshots inspected at desktop and 390 px;
+artifacts: `/workspace/artifacts/check_draft_row.py` and `contour-draft-row-mobile.png`.
+Satellite tiles were unavailable during capture.
