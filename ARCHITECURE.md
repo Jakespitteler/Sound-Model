@@ -88,6 +88,10 @@ hover or keyboard focus; click/Enter opens the source evidence popup and closes 
 Receiver badges are 84 × 34 px for numeric readings and 112 × 34 px for explicit status text.
 Their colours and units remain visible. Hover raises a marker over nearby markers, without
 moving its geographic anchor or starting an acoustic request.
+Object tooltips use intrinsic content width with a 260 px cap, avoiding shrink-to-fit inside
+Leaflet's zero-width pane. `fitObjectTooltip` measures the opened card, chooses above/below
+and a small horizontal shift to keep it within the map and minimise overlap with visible
+controls. Its arrow stays aligned to the object. Panning dismisses transient cards.
 Cloud cover remains recorded metadata without an invented correction. No camera bounds are
 sent to either endpoint, and no camera handler starts predictions. New satellite tiles may
 still load when browsing another area: that is separate from acoustic computation.

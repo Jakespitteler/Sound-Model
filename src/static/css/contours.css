@@ -57,9 +57,11 @@ textarea { display:block; width:100%; margin-top:5px; padding:8px; border:1px so
 .source-symbol svg { width:24px; height:24px; }
 .source-number { position:absolute; top:-8px; right:-8px; min-width:17px; height:17px; padding:0 3px; display:grid; place-items:center; border:1px solid #fff; border-radius:9px; background:#28594b; color:#fff; font-size:10px; font-weight:650; }
 .machine-location:focus-visible .source-badge,.receiver-location:focus-visible .receiver-marker { outline:3px solid #fff; box-shadow:0 0 0 5px #1d6559; }
-.object-tooltip { padding:9px 12px; border:1px solid #bfd2c5; border-radius:8px; color:#28594b; font:12px/1.4 Segoe UI,Arial,sans-serif; max-width:260px; white-space:normal; }
+/* Leaflet's zero-width pane otherwise makes wrapping tooltips shrink to one word. */
+.object-tooltip { width:max-content; max-width:min(260px,calc(100vw - 32px)); padding:9px 12px; border:1px solid #bfd2c5; border-radius:8px; color:#28594b; font:12px/1.4 Segoe UI,Arial,sans-serif; white-space:normal; }
 .object-tooltip strong { display:block; overflow-wrap:anywhere; }
 .object-tooltip small { display:block; color:#536a5c; font-size:10px; margin-top:3px; }
+.object-tooltip.leaflet-tooltip-top::before,.object-tooltip.leaflet-tooltip-bottom::before { left:var(--tooltip-arrow-x,50%); }
 .source-popup { font-size:12px; max-width:260px; }
 .source-power { font-size:10px !important; color:#4e6a5c !important; }
 .sound-key { width:245px; padding:0; border-radius:13px; border:1px solid #d4dfd4; overflow:hidden; max-height:calc(100% - 125px); }

@@ -77,6 +77,43 @@ export class MapManager {
       html:`<div class="receiver-marker${reading?.level_db != null && !this.receiverFailed ? '' : ' is-status'}" data-receiver-id="${escapeHtml(id)}" style="--level-color:${color}"><span class="receiver-id">R${index+1}</span><strong class="receiver-number">${value}${reading?.level_db != null && !this.receiverFailed ? '<small>dB(A)</small>':''}</strong></div>`});
   }
 
+  /**
+   * Keep an open detail card inside the map without panning or moving its marker.
+   * @param {L.Tooltip} tooltip Newly opened object tooltip with its measured content.
+   */
+  fitObjectTooltip(tooltip) {
+    const bounds = this.map.getContainer().getBoundingClientRect();
+    const obstacles = [...this.map.getContainer().parentElement.querySelectorAll('.tile-status,.location-bar,.sound-key,.contour-alert,.leaflet-control')]
+      .map(element=>element.getBoundingClientRect()).filter(rect=>rect.width && rect.height);
+    let best;
+    for (const direction of ['top','bottom']) {
+      const vertical = direction==='top' ? -18 : 18;
+      tooltip.options.direction = direction;
+      tooltip.options.offset = L.point(0,vertical);
+      tooltip.update();
+      const rect = tooltip.getElement().getBoundingClientRect();
+      // Also try either side of controls, keeping the arrow within the card's width.
+      const minimum = Math.max(bounds.left+8-rect.left,-rect.width/2+10);
+      const maximum = Math.min(bounds.right-8-rect.right,rect.width/2-10);
+      const candidates = [0,...obstacles.flatMap(obstacle=>[obstacle.left-8-rect.right,obstacle.right+8-rect.left])];
+      const overflow = Math.max(0,bounds.top+8-rect.top)+Math.max(0,rect.bottom-bounds.bottom+8);
+      for (const candidate of candidates) {
+        const shift = Math.max(minimum,Math.min(maximum,candidate));
+        const left=rect.left+shift, right=rect.right+shift;
+        // Prefer an in-map card, then clear controls, then the least sideways movement.
+        const covered = obstacles.reduce((area,obstacle)=>area+
+          Math.max(0,Math.min(right,obstacle.right)-Math.max(left,obstacle.left))*
+          Math.max(0,Math.min(rect.bottom,obstacle.bottom)-Math.max(rect.top,obstacle.top)),0);
+        const score = overflow*rect.width*10+covered+Math.abs(shift)*.05;
+        if (!best || score<best.score) best={direction,vertical,shift,width:rect.width,score};
+      }
+    }
+    tooltip.options.direction = best.direction;
+    tooltip.options.offset = L.point(best.shift,best.vertical);
+    tooltip.getElement().style.setProperty('--tooltip-arrow-x',`${best.width/2-best.shift}px`);
+    tooltip.update();
+  }
+
   /** Initialise the existing Esri imagery provider and explicit loading failure state. */
   initTiles() {
     const tiles = L.tileLayer(
@@ -115,6 +152,7 @@ export class MapManager {
 
   /** Bind placement only: camera movement never triggers acoustic requests. */
   bindMapEvents() {
+    this.map.on('movestart',()=>this.markers.eachLayer(marker=>marker.closeTooltip()));
     this.map.on('click', (event) => {
       if (!this.store.mode) return;
       const lat = Math.max(-85, Math.min(85, event.latlng.lat));
@@ -170,6 +208,7 @@ export class MapManager {
         }
         marker.getElement()?.setAttribute('aria-label', isSource ? `${label}. Sound power ${machine.lwa.toFixed(1)} dB(A) LwA. Select for details.` : label);
         marker.bindTooltip(tooltip,{direction:'top',offset:[0,-18],className:'object-tooltip',opacity:1});
+        marker.on('tooltipopen',event=>this.fitObjectTooltip(event.tooltip));
         if (isSource) {
           const popup = document.createElement('div');
           popup.className = 'source-popup';
