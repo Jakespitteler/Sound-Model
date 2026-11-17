@@ -1,5 +1,8 @@
 # Library and optimisation options — 2026-11-16
 
+> **Historical change record.** For current behaviour, use the [documentation index](README.md)
+> and [architecture](../ARCHITECURE.md). The current engine uses the documented 640,000-cell budget and returns per-level outcomes. Earlier scalar limits and timings below are historical measurements.
+
 ## Approved performance tools
 
 The owner explicitly approved NumPy and ContourPy on 2026-11-16. NumPy provides compiled
@@ -67,3 +70,9 @@ checks passed for editing/dragging, local styling, camera request counts, error/
 stale-response handling. The 300 dB creation/edit/threshold controls were also exercised.
 Windows CPython 3.13 x64 wheels were confirmed in PyPI metadata for both approved libraries;
 native Windows execution was not available for validation. Run `uv sync --frozen` after updating.
+
+## Documentation review — 17 November 2026
+
+Current-state links and a historical-status banner were added to prevent older controls,
+limits, save behaviour or verification counts being mistaken for the current app. The
+original change record and its evidence have been retained.

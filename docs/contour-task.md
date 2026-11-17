@@ -1,5 +1,8 @@
 # Contour editor task
 
+> **Historical change record.** For current behaviour, use the [documentation index](README.md)
+> and [architecture](../ARCHITECURE.md). Contour dragging and manual styling were removed later; independent errors, saved scenarios and compact markers were subsequently added.
+
 State: review. Owner: Codex. Branch: agent/contour-lines.
 Base: walk-back at 33202ad8f37614c7055a43f137fa93789f03db27.
 
@@ -74,3 +77,9 @@ engine produced a 6.83× median benchmark speed-up with matching reference geome
 vertex errors and closure are checked independently. A measured mixed-power case justified
 raising the bounded budget from 160,000 to 640,000 cells without coarsening the accuracy target.
 62 tests and browser flows pass. See library-options.md for evidence and remaining work.
+
+## Documentation review — 17 November 2026
+
+Current-state links and a historical-status banner were added to prevent older controls,
+limits, save behaviour or verification counts being mistaken for the current app. The
+original change record and its evidence have been retained.

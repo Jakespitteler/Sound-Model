@@ -1,5 +1,8 @@
 # Partial contours, model scope and saved scenarios — 17 November 2026
 
+> **Historical change record.** For current behaviour, use the [documentation index](README.md)
+> and [architecture](../ARCHITECURE.md). Machine details now appear on hover/focus or selection instead of permanent power/name labels; see the hover correction record.
+
 The owner requested independent contour errors, defaults matching the guide, removal of the
 lower key, a physics explanation and an About page. They explicitly chose hiding receiver
 numbers beyond 10 km from all sources after being told that this is a screening policy,
@@ -37,3 +40,9 @@ zero errors. Desktop and narrow-screen Chromium flows completed without JavaScri
 Save-error simulation retained dirty edits and retry succeeded; replacing a save kept one ID.
 Satellite tile requests were deliberately blocked in browser tests to exercise the offline
 message; live imagery availability was not verified by those checks. Screenshots were inspected.
+
+## Documentation review — 17 November 2026
+
+Current-state links and a historical-status banner were added to prevent older controls,
+limits, save behaviour or verification counts being mistaken for the current app. The
+original change record and its evidence have been retained.

@@ -1,5 +1,8 @@
 # Simpler scenario editor — 17 November 2026
 
+> **Historical change record.** For current behaviour, use the [documentation index](README.md)
+> and [architecture](../ARCHITECURE.md). Named Save/Open and saved-URL restoration are now implemented. Unsaved edits are still not autosaved; permanent machine labels were replaced by numbered icons with hover/focus details.
+
 The owner authorised guessed starter levels when public research was unavailable. Requests
 to Charles Hull, Talison and FHWA still returned proxy HTTP 403 on this date. Accordingly all
 eight presets are project-authored guesses, dated and labelled; no number is attributed to an
@@ -57,3 +60,9 @@ requests. The map and receiver badges remain visible while switching workspaces.
 - Imagery requests were blocked during browser automation. Live satellite access and actual
   site-boundary coverage were not validated; the bounds are intentionally an approximate view.
 - Autosave remains a task. No claim is made that reloading preserves data.
+
+## Documentation review — 17 November 2026
+
+Current-state links and a historical-status banner were added to prevent older controls,
+limits, save behaviour or verification counts being mistaken for the current app. The
+original change record and its evidence have been retained.

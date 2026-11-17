@@ -4,7 +4,9 @@
 
 Read `README.md`, the relevant section of `ARCHITECURE.md`, and the files/tests involved in
 the task. Assessment work and proposed improvements are tracked in `docs/tasks/README.md`.
-Keep changes focused and preserve existing user work.
+Keep changes focused and preserve existing user work. The owner must approve unimplemented
+ideas before new task briefs are added. Existing broad backlog themes are not implementation
+approval; confirm the selected scope before starting a new feature.
 
 ## Stack and commands
 
@@ -34,7 +36,8 @@ uv run python scripts/check_agent_skills.py
   phase cancellation or invented cloud/weather corrections. Distinguish LwA emission from
   LpA receiver pressure. Preserve evidence notes and mark guesses explicitly.
 - The 10 km display scope is a presentation policy, not a physical sound cutoff or validated
-  propagation range. The app cannot establish inaudibility or regulatory compliance.
+  propagation range. The owner has requested review of that distance-only policy; do not invent attenuation
+  or audibility thresholds to replace it. The app cannot establish inaudibility or compliance.
 - Preserve per-level contour error isolation. Camera movement and visual changes must not
   trigger acoustic predictions. For UI fixes, reproduce the actual interaction and inspect
   screenshots with the relevant hover, focus, error or selection state open.
