@@ -302,3 +302,34 @@ Draft dragging previews a number without changing state. Enter commits once; Esc
 cancels without notifying state. `addContour(requestedLevel)` validates the
 exact submitted value and combined level budget, rejecting rather than replacing it. The
 no-argument helper retains its previous programmatic fallback; the UI always passes a number.
+
+
+## Desktop scenario workspace
+
+`sidebar-simple.css` gives the desktop sidebar a responsive 380–480 px width, retaining
+more than half the map at the supported desktop sizes. The header stays outside the
+scrolling lists. The Scenario panel divides remaining height between machine and receiver
+sections; each list scrolls independently beneath its placement controls. Contours has its
+own scroll area. At 650 px and below the layout returns to normal document flow.
+
+`EntitiesUI` uses native details/summary rows: machine type and LwA, or receiver name and
+LpA/status, remain visible while editors and removal controls are collapsed. Near-source
+and distant-source flags remain in the summary; expanded rows retain the full explanation.
+Receiver contributions have a separate disclosure so they do not separate names from
+coordinates. State and calculation lanes are unchanged.
+
+`sidebar.js` hides existing workspace panels rather than replacing them. Machine data and
+Model info share advanced-settings space; opening one closes the other without removing
+form nodes or committing drafts. Disclosure, tab selection and list scrolling do not notify
+the acoustic store or request predictions.
+
+```mermaid
+flowchart TD
+    Header[Save / Open and workspace tabs] --> Scenario[Scenario workspace]
+    Header --> Contours[Scrollable contour editor]
+    Scenario --> Machines[Machine placement controls + scrolling compact rows]
+    Scenario --> Receivers[Receiver placement controls + scrolling readings]
+    Scenario --> Settings[Machine data or Model info]
+    Machines --> Editor[Expand only the object being edited]
+    Receivers --> Editor
+```

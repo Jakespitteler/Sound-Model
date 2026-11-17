@@ -142,3 +142,12 @@ not approve a new library, dataset, propagation model or regulatory threshold. R
 commit, verification results and remaining limits when handing work to another agent.
 
 Original project material is proprietary; retain the [third-party notices](../THIRD_PARTY_NOTICES.md).
+
+
+## Compact sidebar checks
+
+Serve the repository root with `python -m http.server 8796 --bind 127.0.0.1`, then open
+<http://127.0.0.1:8796/tests/browser/sidebar-entities.html>. Expect **PASS: 15 checks**
+covering compact results, literal names, drafts, disclosures, warnings and keyboard tabs.
+This fixture does not replace full-app checks. Task 027 records desktop workflow counts,
+Save/Open/recovery checks, presentation-only request counts and inspected screenshots.

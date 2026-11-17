@@ -35,7 +35,7 @@ flowchart LR
 1. Select a type under **Machines**, choose **Place machine**, then click the map.
 2. Choose **Place a receiver**, then click a listening location. Its coloured number is
    the calculated machine contribution there, excluding background noise.
-   Expand **Details & position** to give a receiver an optional name, such as Town boundary.
+   Expand its receiver row to give it an optional name, such as Town boundary.
 3. Hover or focus a numbered equipment icon to see its type and sound power. Click/Enter
    opens its evidence note. Drag machine or receiver markers to move them.
 4. Open **Contours** to add/remove levels or edit them with a slider or number. Levels
@@ -49,7 +49,9 @@ Keyboard shortcuts work outside text fields; history lasts for the current worki
 −33.8675, 116.07647 with zoom 14; saved scenarios retain their saved view.
 **Fit local area** frames nearby objects around the object nearest the current map centre,
 keeping every pair within 10 km. It changes only the view. **Go to coordinates** navigates elsewhere. **Machine data** holds the equipment catalogue
-and editable estimate notes. Advanced settings stay collapsed to keep the sidebar simple.
+and editable estimate notes. On desktop, Save and tabs stay at the top while machine and
+receiver lists scroll separately. Expand an object row to edit it; Machine data and Model info
+share the advanced-settings space.
 
 ## What the numbers mean
 
