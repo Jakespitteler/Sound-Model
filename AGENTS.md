@@ -24,6 +24,8 @@ uv run python scripts/check_agent_skills.py
 
 ## Project boundaries
 
+- Original project material is proprietary under `LICENSE`. Preserve all third-party
+  licences and notices; see `THIRD_PARTY_NOTICES.md`. Do not relicense vendored material.
 - Maintain Python type hints and Google-style docstrings, and JavaScript JSDoc.
 - The owner must approve new third-party technologies/dependencies before adoption, unless
   already authorised in the request. Generic skill examples do not authorise npm, a new

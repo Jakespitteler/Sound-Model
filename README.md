@@ -3,6 +3,13 @@
 A Python/FastAPI and plain JavaScript noise-scenario explorer with editable, combined-source
 contour lines over the existing satellite map.
 
+## Licence
+
+Original Sound-Model project material is proprietary, with use reserved to **Jakespitteler**.
+No permission is granted to others without the owner's prior written permission.
+See [LICENSE](LICENSE). Imported Agent Skills, Leaflet and other third-party components
+retain their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ## Quick start
 
 You need Python 3.13 and uv. Run from the project folder:

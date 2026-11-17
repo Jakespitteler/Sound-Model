@@ -1,0 +1,42 @@
+Sound-Model Proprietary Licence
+
+Copyright (c) 2026 Jakespitteler. All rights reserved.
+
+1. Owner and scope
+
+The Owner is the owner of the GitHub account Jakespitteler. This licence applies
+to the original Sound-Model source code, documentation and other project
+material, to the extent that the Owner holds the relevant rights. It does not
+apply to third-party material identified below or carrying its own licence.
+
+2. Exclusive use
+
+Only the Owner is authorised to use, run, copy, modify, host, distribute,
+sublicense, sell or otherwise exploit the material covered by this licence.
+No licence or permission to do any of those things is granted to any other
+person or organisation without the Owner's prior written permission.
+
+Access to this repository or possession of a copy does not itself grant such
+permission. This is proprietary software, not an open-source licence.
+
+3. Third-party rights
+
+Third-party components remain subject to their original licences and notices.
+In particular, the vendored Agent Skills files retain their MIT licence and
+Leaflet retains its BSD 2-Clause licence. See THIRD_PARTY_NOTICES.md and the
+licence files accompanying those components. This licence neither restricts
+rights granted by those third parties nor claims ownership of their work.
+
+4. Existing and mandatory rights
+
+This licence does not revoke permissions already validly granted under an
+earlier licence or agreement. It does not override rights that applicable law
+or binding repository-hosting terms require to remain available.
+
+5. Disclaimer
+
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE MATERIAL IS PROVIDED "AS IS",
+WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. THE OWNER SHALL NOT BE
+LIABLE FOR CLAIMS, DAMAGES OR OTHER LIABILITY ARISING FROM THE MATERIAL OR ITS
+USE, EXCEPT WHERE SUCH LIABILITY CANNOT LAWFULLY BE EXCLUDED.
