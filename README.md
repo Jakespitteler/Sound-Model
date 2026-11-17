@@ -42,6 +42,9 @@ flowchart LR
    sort automatically. **High contrast** adds white outlines for busy backgrounds.
 5. Choose **Save**, name the scenario, and save again after edits. **Open** lists saved work.
 
+**Undo / Redo** beneath the map zoom controls reverses machine and receiver placement, moves and removals.
+Keyboard shortcuts work outside text fields; history lasts for the current working scene.
+
 **Greenbushes mine** returns to the starting mine view. Fresh scenarios open at
 −33.8675, 116.07647 with zoom 14; saved scenarios retain their saved view.
 **Fit local area** frames nearby objects around the object nearest the current map centre,

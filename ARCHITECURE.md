@@ -88,6 +88,11 @@ Cached values are detached on store/read to prevent renderer mutations. Every ed
 through the existing request lane, including all-cache hits: its abort/version guard rejects
 late threshold/source responses before rendering **or** caching them. Pending renders contain
 only current-signature cached levels; removed or old-source lines disappear immediately.
+`equipment-metadata` edits update catalogue forms and map details locally, without either
+acoustic lane. `toPayload()` strips notes, source references and operating modes; full save
+snapshots retain them. The plain-text editor validates 500/200 Unicode codepoint limits and
+escapes content. Version-1 legacy files default missing fields to empty strings.
+
 No equation, extraction tolerance, sampling budget, scope policy or source contribution is
 changed by this reuse.
 
@@ -158,6 +163,26 @@ The eight preset types are project-authored guesses. `/machine-estimates` docume
 Fresh scenes and the Greenbushes button use `DEFAULT_VIEW` (−33.8675, 116.07647, zoom 14).
 Saved camera views take precedence. The main grid fills the viewport with no branding header. The humorous
 guide compares pressure levels and does not supply emissions or approved assessment thresholds.
+
+## Placement history
+
+`ScenarioStore` keeps at most 50 completed add/move/remove commands for sources and receivers.
+A command records collection, before/after entity, list index and action label. Move replay
+changes only coordinates, retaining later receiver labels and current catalogue power. Removal
+captures the current entity so a later redo/undo also retains metadata edited after placement.
+Restored entities keep their IDs and original list positions. No-op moves consume no entry.
+
+Replay transfers commands between undo/redo stacks without recording a new action. New
+placement edits clear redo. Source commands notify `geometry`; receiver commands notify only
+`receivers`, reusing existing cache/request version guards. Save/recovery revision tracking
+therefore sees ordinary accepted edits; no named file is written automatically. History is
+excluded from both the API payload and recovery/save snapshots. Open/New/recovery and demo
+replacement clear it. Deleting an unused catalogue type clears both stacks; deletion of an
+in-use type is guarded in the store as well as the UI.
+
+Persistent map buttons expose the next action through their titles. Keyboard handlers ignore
+inputs, selects, textareas, editable content, IME composition and open dialogs. Camera, contour,
+name and catalogue power edits are outside placement history and keep their existing behaviour.
 
 ## Save/Open contract
 

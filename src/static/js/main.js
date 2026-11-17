@@ -98,9 +98,35 @@ function refreshGeometry() {
       payload.levels.map(level_db=>({level_db,lines:[],status:'empty'})) : cached} : null);
 }
 
+/** Refresh bounded history controls without a state notification or sound request. */
+function renderHistory() {
+  for (const [id,stack] of [['undo-placement',store.undoStack],['redo-placement',store.redoStack]]) {
+    $(id).disabled=!stack.length;
+    $(id).title=stack.length ? `${id==='undo-placement' ? 'Undo' : 'Redo'}: ${stack.at(-1).label}` : 'No placement edits';
+  }
+}
+
+/** @param {boolean} redo Replay a placement action in the requested direction. */
+function replayPlacement(redo) {
+  const label=redo ? store.redo() : store.undo();
+  if (label) say(`${redo ? 'Redid' : 'Undid'}: ${label.toLowerCase()}.`);
+}
+$('undo-placement').onclick=()=>replayPlacement(false);
+$('redo-placement').onclick=()=>replayPlacement(true);
+document.addEventListener('keydown',event=> {
+  if (!(event.target instanceof Element) || !(event.ctrlKey || event.metaKey) || event.altKey || event.isComposing ||
+    event.target.closest('input,textarea,select,[role="textbox"]') || event.target.isContentEditable ||
+    document.querySelector('dialog[open]')) return;
+  const key=event.key.toLowerCase();
+  if (key!=='z' && key!=='y') return;
+  event.preventDefault(); replayPlacement(key==='y' || event.shiftKey);
+});
+
 store.subscribe(reason=> {
+  renderHistory();
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
+  if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
   if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
@@ -148,7 +174,7 @@ $('demo').onclick=()=> {
 };
 $('retry').onclick=()=> { $('retry').hidden=true; say('Retrying…'); refreshGeometry(); refreshReceivers(); };
 
-catalogue.render(); entities.renderSources(); entities.renderReceivers({}); contours.render(); manager.syncModeUI();
+renderHistory(); catalogue.render(); entities.renderSources(); entities.renderReceivers({}); contours.render(); manager.syncModeUI();
 // No request is needed until equipment or receivers are added.
 
 const files = new ScenarioFilesUI(store,manager,say);

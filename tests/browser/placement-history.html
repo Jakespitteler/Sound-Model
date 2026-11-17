@@ -1,0 +1,56 @@
+<!doctype html><meta charset="utf-8"><title>Placement history checks</title>
+<pre id="result" role="status">Running…</pre>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour under test. */
+function check(claim,label) {if(!claim) throw new Error(label); checks.push(label);}
+try {
+ const store=new ScenarioStore(), type=store.types[0].id, events=[];
+ store.subscribe(reason=>events.push(reason));
+ check(!store.undo() && !store.redo(),'empty history is a no-op');
+ store.addSource(type,-33.86,116.07); const source=structuredClone(store.sources[0]);
+ store.undo(); check(store.sources.length===0,'undo add');
+ store.redo(); check(JSON.stringify(store.sources[0])===JSON.stringify(source),'redo preserves exact identity and coordinates');
+ store.updateSource(source.id,{lat:-33.861,lng:116.071}); store.undo();
+ check(store.sources[0].lat===source.lat && store.sources[0].lng===source.lng,'undo coordinate move');
+ store.redo(); check(store.sources[0].lat===-33.861,'redo coordinate move');
+ store.removeSource(source.id); store.undo();
+ check(store.sources[0].id===source.id && store.sources[0].lat===-33.861,'undo removal restores record');
+ store.redo(); check(!store.sources.length,'redo removal');
+ store.undo(); store.addReceiver(-33.85,116.08);
+ check(!store.redo(),'new placement clears redo');
+ const receiver=store.receivers[0]; store.renameReceiver(receiver.id,'Town boundary');
+ store.updateReceiver(receiver.id,{lat:-33.851,lng:116.081}); store.renameReceiver(receiver.id,'House 1');
+ store.undo(); check(store.receivers[0].lat===-33.85 && store.receivers[0].name==='House 1','move undo preserves later name metadata');
+ check(events.at(-1)==='receivers','receiver history uses receiver lane');
+ store.redo(); check(store.receivers[0].lng===116.081,'receiver move redo');
+ store.removeReceiver(receiver.id); store.undo(); check(store.receivers[0].name==='House 1','receiver deletion preserves name');
+ store.addReceiver(-33.84,116.08); const last=store.receivers.at(-1).id; store.renameReceiver(last,'Later label');
+ store.undo(); store.redo(); check(store.receivers.at(-1).name==='Later label','redo added receiver retains label edited after placement');
+ const before=store.undoStack.length; store.updateReceiver(last,{lat:store.receivers.at(-1).lat,lng:store.receivers.at(-1).lng});
+ check(store.undoStack.length===before,'no-op moves do not consume history');
+ store.removeSource(source.id); store.removeMachineType(type);
+ check(!store.undo() && !store.redo(),'catalogue deletion clears unsafe history');
+ const guarded=new ScenarioStore(); guarded.addSource(guarded.types[0].id,0,0); guarded.removeMachineType(guarded.types[0].id);
+ check(!!guarded.typeFor(guarded.sources[0]),'used machine types cannot be deleted');
+ const ordered=new ScenarioStore(), orderedType=ordered.types[0].id;
+ ordered.addSource(orderedType,1,1); ordered.addSource(orderedType,2,2); ordered.addSource(orderedType,3,3);
+ const ids=ordered.sources.map(item=>item.id); ordered.removeSource(ids[1]); ordered.undo();
+ check(JSON.stringify(ordered.sources.map(item=>item.id))===JSON.stringify(ids),'undo removal restores original list order');
+ ordered.updateMachineType(orderedType,{lwa:130}); ordered.undo(); ordered.redo();
+ check(ordered.typeFor(ordered.sources[2]).lwa===130,'placement replay retains current catalogue power');
+ const capped=new ScenarioStore(); capped.addReceiver(0,0); const id=capped.receivers[0].id;
+ for(let i=1;i<=55;i++) capped.updateReceiver(id,{lat:i,lng:0});
+ check(capped.undoStack.length===50,'history capped at 50 actions');
+ for(let i=0;i<50;i++) capped.undo();
+ check(capped.receivers[0].lat===5 && !capped.undo(),'oldest actions are evicted');
+ check(capped.redoStack.length===50,'redo remains bounded');
+ const snapshot={...store.toPayload(),types:store.types,levels:[60]};
+ store.restore(snapshot); check(!store.undo() && !store.redo(),'restore clears history');
+ const demo=new ScenarioStore(); demo.addReceiver(0,0); demo.undo(); demo.loadDemo();
+ check(!demo.undo() && !demo.redo(),'demo replacement clears history');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+ document.querySelector('#result').dataset.passed='true';
+} catch(error) {document.querySelector('#result').textContent='FAIL: '+error.message; throw error;}
+</script>

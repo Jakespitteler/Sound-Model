@@ -44,7 +44,24 @@ while moving a machine updates both readings and contours.
 
 The starter catalogue contains **guesses**, not confirmed company fleet data. In **Machine
 data**, replace estimates with appropriate sound-power values and record their source.
+Expand **Estimate notes & edit** to record an optional **Source reference** and
+**Operating mode**, then choose **Save type**. These text fields accompany the existing note
+and are kept by Save/Open and recovery; they do not change the calculated sound or mark
+an estimate as measured. References are plain text, not downloads.
 A pressure measurement taken beside a machine is not automatically a sound-power value.
+
+## Undo a placement edit
+
+Use **Undo / Redo** beneath the map zoom controls for machine and receiver placement, moves and removals.
+Each completed drag or submitted coordinate change counts as one action; up to 50 are retained.
+A new placement edit clears redo. Outside form fields, use Ctrl/Cmd+Z to undo, Ctrl/Cmd+Shift+Z
+or Ctrl+Y to redo. Text fields keep their native undo behaviour.
+
+Undo/redo marks the working scene unsaved and updates the browser recovery draft. A named
+save changes only when you choose Save. Opening, starting or restoring a scene clears history;
+recovery restores inputs rather than the undo stack. Deleting an unused machine type also
+clears history so it cannot restore a machine whose type has been deleted. Current equipment
+power and receiver names are retained when undoing coordinate moves.
 
 ## Adjust contours
 

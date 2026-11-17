@@ -22,6 +22,10 @@ export class ScenarioStore {
     this.receivers = [];
     /** @type {import('./types.js').ContourLevel[]} */
     this.contours = SOUND_REFERENCE.map(item=>item.level).sort((a,b)=>b-a).map(level_db => ({id:uuid(), level_db}));
+    /** @type {Object[]} Completed placement commands, oldest first. */
+    this.undoStack=[];
+    /** @type {Object[]} Commands available to replay. */
+    this.redoStack=[];
     this.cloud_cover = 0;
     /** @type {?string} */
     this.mode = null;
@@ -46,6 +50,7 @@ export class ScenarioStore {
 
   /** @param {Object} document Validated versioned scenario, supplied by the local backend. */
   restore(document) {
+    this.clearHistory();
     this.types = structuredClone(document.types);
     this.sources = structuredClone(document.sources);
     this.receivers = structuredClone(document.receivers);
@@ -72,32 +77,97 @@ export class ScenarioStore {
 
   /** @param {string} id Type ID. @param {Object} patch Validated form fields. */
   updateMachineType(id, patch) {
-    Object.assign(this.types.find(t => t.id === id), patch); this.notify('geometry');
+    const type=this.types.find(t=>t.id===id);
+    const acoustic=['name','lwa','provenance'].some(field=>field in patch && patch[field]!==type[field]);
+    Object.assign(type,patch); this.notify(acoustic ? 'geometry' : 'equipment-metadata');
   }
 
-  /** @param {string} id Unused type ID, guarded by the UI. */
-  removeMachineType(id) { this.types = this.types.filter(t => t.id !== id); this.notify('catalogue'); }
+  /** @param {string} id Unused type ID. Deleting a type invalidates both history stacks. */
+  removeMachineType(id) {
+    if (!this.types.some(t=>t.id===id) || this.sources.some(source=>source.type_id===id)) return;
+    this.clearHistory(); this.types=this.types.filter(t=>t.id!==id); this.notify('catalogue');
+  }
+
+  /** Drop transient history at scenario/reference boundaries; never save it. */
+  clearHistory() {this.undoStack=[]; this.redoStack=[];}
+
+  /** Record one completed placement action and notify only its calculation lane.
+   * @param {string} collection Sources or receivers. @param {?Object} before Previous record.
+   * @param {?Object} after Resulting record. @param {number} index Original list position.
+   * @param {string} label Human-readable action. */
+  recordPlacement(collection,before,after,index,label) {
+    this.undoStack.push(structuredClone({collection,before,after,index,label}));
+    if (this.undoStack.length>50) this.undoStack.shift();
+    this.redoStack=[]; this.mode=null;
+    this.notify(collection==='sources' ? 'geometry' : 'receivers');
+  }
+
+  /** Replay a command without creating another command or changing unrelated metadata.
+   * @param {boolean} redo Redo rather than undo. @return {?string} Applied action label. */
+  replayPlacement(redo) {
+    const from=redo ? this.redoStack : this.undoStack, to=redo ? this.undoStack : this.redoStack;
+    const command=from.at(-1); if (!command) return null;
+    const target=redo ? command.after : command.before;
+    if (command.collection==='sources' && target && !this.types.some(t=>t.id===target.type_id)) {
+      this.clearHistory(); this.notify('ui'); return null;
+    }
+    const items=this[command.collection], id=(command.before || command.after).id;
+    const index=items.findIndex(item=>item.id===id);
+    if (target===null) {
+      // Preserve names edited after an add when that add is undone/redone.
+      command[redo ? 'before' : 'after']=structuredClone(items[index]);
+      items.splice(index,1);
+    } else if (index<0) items.splice(command.index,0,structuredClone(target));
+    else Object.assign(items[index],{lat:target.lat,lng:target.lng});
+    from.pop(); to.push(command); this.mode=null;
+    this.notify(command.collection==='sources' ? 'geometry' : 'receivers');
+    return command.label;
+  }
+
+  /** @return {?string} Undone placement label, or null for empty history. */
+  undo() {return this.replayPlacement(false);}
+
+  /** @return {?string} Redone placement label, or null for empty history. */
+  redo() {return this.replayPlacement(true);}
+
+  /** @param {string} collection Sources or receivers. @param {string} id Object ID.
+   * @param {?Object} patch Coordinates, or null for removal. */
+  editPlacement(collection,id,patch) {
+    const items=this[collection], index=items.findIndex(item=>item.id===id);
+    if (index<0) return;
+    const before=structuredClone(items[index]);
+    if (patch) {
+      const lat=patch.lat ?? before.lat, lng=patch.lng ?? before.lng;
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat)>85 || Math.abs(lng)>180 ||
+        lat===before.lat && lng===before.lng) return;
+      Object.assign(items[index],{lat,lng});
+    } else items.splice(index,1);
+    this.recordPlacement(collection,before,patch ? items[index] : null,index,
+      `${patch ? 'Move' : 'Remove'} ${collection==='sources' ? 'machine' : 'receiver'}`);
+  }
 
   /** @param {string} type_id Selected type. @param {number} lat Latitude. @param {number} lng Longitude. */
   addSource(type_id, lat, lng) {
-    if (!this.types.some(t => t.id === type_id) || this.sources.length >= 100) return;
-    this.sources.push({id:uuid(), type_id, lat, lng}); this.mode = null; this.notify('geometry');
+    if (!this.types.some(t=>t.id===type_id) || this.sources.length>=100) return;
+    const source={id:uuid(),type_id,lat,lng}; this.sources.push(source);
+    this.recordPlacement('sources',null,source,this.sources.length-1,'Place machine');
   }
 
   /** @param {string} id Source ID. @param {Object} patch Coordinates to apply. */
-  updateSource(id, patch) { Object.assign(this.sources.find(s => s.id === id), patch); this.notify('geometry'); }
+  updateSource(id,patch) {this.editPlacement('sources',id,patch);}
 
   /** @param {string} id Source to remove. */
-  removeSource(id) { this.sources = this.sources.filter(s => s.id !== id); this.notify('geometry'); }
+  removeSource(id) {this.editPlacement('sources',id,null);}
 
   /** @param {number} lat Latitude. @param {number} lng Longitude. */
-  addReceiver(lat, lng) {
-    if (this.receivers.length >= 20) return;
-    this.receivers.push({id:uuid(),lat,lng,name:""}); this.mode = null; this.notify('receivers');
+  addReceiver(lat,lng) {
+    if (this.receivers.length>=20) return;
+    const receiver={id:uuid(),lat,lng,name:''}; this.receivers.push(receiver);
+    this.recordPlacement('receivers',null,receiver,this.receivers.length-1,'Place receiver');
   }
 
   /** @param {string} id Receiver ID. @param {Object} patch Coordinates to apply. */
-  updateReceiver(id, patch) { Object.assign(this.receivers.find(r => r.id === id), patch); this.notify('receivers'); }
+  updateReceiver(id,patch) {this.editPlacement('receivers',id,patch);}
 
   /** Rename metadata without scheduling sound requests. Reject invalid input without losing the old name.
    * @param {string} id Receiver ID. @param {string} name Optional display label.
@@ -111,7 +181,7 @@ export class ScenarioStore {
   }
 
   /** @param {string} id Receiver to remove. */
-  removeReceiver(id) { this.receivers = this.receivers.filter(r => r.id !== id); this.notify('receivers'); }
+  removeReceiver(id) {this.editPlacement('receivers',id,null);}
 
   /** Add a distinct contour threshold up to the API limit. */
   addContour() {
@@ -141,6 +211,7 @@ export class ScenarioStore {
   /** Load fictional demonstration data only on explicit user request. */
   loadDemo() {
     if (this.sources.length || this.receivers.length) return;
+    this.clearHistory();
     const candidates = MACHINE_PRESETS.filter(p => !this.types.some(t=>t.id===p.id));
     for (const preset of candidates) {
       if (this.types.length < 50) this.types.push(structuredClone(preset));

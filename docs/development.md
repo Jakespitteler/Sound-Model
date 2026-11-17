@@ -95,6 +95,17 @@ inputs and overlay space. They complement `pytest`; they do not run as part of i
 For the actual app, additionally check that the current camera overrides distant edits or
 placements, empty/single scenes, two distant areas and zero `/api/predict` or `/api/contours` calls on fitting.
 
+### Placement history regression page
+
+Using Python's temporary loopback HTTP server from the repository root, open
+`/tests/browser/placement-history.html` and expect **PASS: 23 checks**. It uses plain browser
+modules, no additional test dependency. Checks cover exact identities/coordinates, list order,
+metadata, correct notification lane, no-op moves, branching redo, type-reference safety,
+50-action bounds and scenario replacement. It runs separately from `pytest`.
+For real UI verification also exercise a drag, typed coordinates, buttons/keyboard shortcuts,
+native text undo, pending calculations and Save/Open/New/recovery. Inspect keyboard focus
+and disabled toolbar controls in desktop and narrow screenshots.
+
 ## Making changes
 
 Read the selected task and relevant modules first. Keep type hints, Google-style Python

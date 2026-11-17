@@ -19,9 +19,9 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 3 | [014 Receiver-name editor](014-receiver-name-editor.md) | Implemented; ready for review after 013 |
 | 4 | [015 Fit a local cluster](015-local-cluster-zoom.md) | Implemented; ready for review |
 | 5 | [017 Reuse unchanged contours](017-per-level-contour-cache.md) | Implemented; ready for review |
-| 6 | [018 Placement undo/redo](018-placement-undo-redo.md) | Ready; coordinate with recovery |
-| 7 | [019 Optional equipment metadata](019-equipment-metadata-contract.md) | Ready; compatible saved-data slice |
-| 8 | [020 Equipment metadata editor](020-equipment-metadata-editor.md) | After 019 |
+| 6 | [018 Placement undo/redo](018-placement-undo-redo.md) | Implemented; ready for review |
+| 7 | [019 Optional equipment metadata](019-equipment-metadata-contract.md) | Implemented; ready for review |
+| 8 | [020 Equipment metadata editor](020-equipment-metadata-editor.md) | Implemented; ready for review after 019 |
 | 9 | [021 Optional acceptable-level data](021-acceptable-level-contract.md) | Ready; no default limit invented |
 | 10 | [025 Acceptable-level browser state](025-acceptable-level-browser-state.md) | After 021; before 022 |
 | 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | After 025 |

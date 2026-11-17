@@ -31,9 +31,9 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Navigate locally | [015](../docs/tasks/015-local-cluster-zoom.md) | Implemented for review; maximum pairwise distance 10 km; no acoustic filtering |
 | Avoid repeated work | [017](../docs/tasks/017-per-level-contour-cache.md) | Implemented for review; preserve coordinates, accuracy and stale-response rejection |
 | Checkpoint B | Zoom and cache | No acoustic calls on navigation; unaffected contours reused; existing geometry tests pass |
-| Recover mistakes | [018](../docs/tasks/018-placement-undo-redo.md) | Integrate with recovery and scenario lifecycle |
+| Recover mistakes | [018](../docs/tasks/018-placement-undo-redo.md) | Implemented for review; integrate with recovery and scenario lifecycle |
 | Checkpoint C | Complete selected POC slice | Acceptance evidence, appropriate full checks, small UI and clear handoff |
-| Optional equipment metadata | [019](../docs/tasks/019-equipment-metadata-contract.md), then [020](../docs/tasks/020-equipment-metadata-editor.md) | Save compatibility before the collapsed editor |
+| Optional equipment metadata | [019](../docs/tasks/019-equipment-metadata-contract.md), then [020](../docs/tasks/020-equipment-metadata-editor.md) | Both implemented for review; merge saved-data contract before collapsed editor |
 | Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | User-set reference, no default criterion; Ctrl repeat placement |
 | Sidebar usability | [027](../docs/tasks/027-desktop-sidebar-usability.md) | Compare workflow before/after; reduce scrolling and cramped controls without reducing map usability |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
@@ -45,7 +45,21 @@ If a task grows into multiple independent features, split it and get approval fo
 A good starting instruction is: “Work on task 012 within its scope, verify it, and prepare the
 change for review. Do not merge or start another task automatically.”
 
-## PR stack
+## Current implementation review stack
+
+Merge and review from the bottom of the dependency chain upward. Each PR targets the branch
+immediately below it; the complete product is `agent/equipment-metadata-editor`.
+
+| PR | Scope | Base |
+| --- | --- | --- |
+| [#18](https://github.com/Jakespitteler/Sound-Model/pull/18) | Task 018: placement undo/redo | `main` |
+| [#19](https://github.com/Jakespitteler/Sound-Model/pull/19) | Persistent map Undo/Redo controls | `agent/placement-undo-redo` |
+| [#20](https://github.com/Jakespitteler/Sound-Model/pull/20) | Task 019: equipment metadata contract | `agent/persistent-history-controls` |
+| [#21](https://github.com/Jakespitteler/Sound-Model/pull/21) | Task 020: collapsed metadata editor | `agent/equipment-metadata-contract` |
+
+Retarget the next PR to `main` after its dependency merges. No automatic merge is authorised.
+
+## Earlier setup PR stack
 
 ```mermaid
 flowchart TD
