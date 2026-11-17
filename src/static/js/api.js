@@ -45,23 +45,34 @@ export async function post(url, payload, signal) {
   return data;
 }
 
-/** Cache keyed only by source positions/powers and decibel levels, not camera or styles. */
+/** Per-level geometry under the current API model/accuracy contract; no camera or style keys. */
 export class GeometryCache {
-  /** Initialise a bounded, session-local cache. */
-  constructor() { this.entries = new Map(); }
-
-  /** @param {Object} payload Contour request. @return {string} Canonical geometry signature. */
-  key(payload) {
-    return JSON.stringify({sources:payload.sources.map(s=>[s.lat,s.lng,payload.types.find(t=>t.id===s.type_id).lwa]),
-      levels:[...payload.levels].sort((a,b)=>a-b)});
+  /** Initialise a session-local LRU of at most 32 successful/empty levels.
+   * @param {string} [model] Acoustic model contract; change it when the model changes.
+   * @param {number} [toleranceDb] Numerical accuracy contract, not environmental uncertainty. */
+  constructor(model='full-space-point-source-v1', toleranceDb=.02) {
+    this.entries=new Map(); this.model=model; this.toleranceDb=toleranceDb;
   }
 
-  /** @param {string} key Signature. @return {?Object} Cached response. */
-  get(key) { return this.entries.get(key); }
+  /** @param {Object} payload Contour request. @param {number} level Threshold.
+   * @return {string} Complete geometry signature, retaining source order and multiplicity. */
+  key(payload, level) {
+    return JSON.stringify({model:this.model,tolerance_db:this.toleranceDb,
+      sources:payload.sources.map(s=>[s.lat,s.lng,payload.types.find(t=>t.id===s.type_id).lwa]),level_db:level});
+  }
 
-  /** @param {string} key Signature. @param {Object} value Successful response. */
+  /** @param {string} key Signature. @return {?Object} Detached cached level; promote on use. */
+  get(key) {
+    const value=this.entries.get(key);
+    if (!value) return null;
+    this.entries.delete(key); this.entries.set(key,value);
+    return structuredClone(value);
+  }
+
+  /** @param {string} key Signature. @param {Object} value One successful or empty contour. */
   set(key, value) {
-    this.entries.set(key,value);
-    if (this.entries.size > 12) this.entries.delete(this.entries.keys().next().value);
+    if (!['ok','empty'].includes(value.status)) return;
+    this.entries.delete(key); this.entries.set(key,structuredClone(value));
+    if (this.entries.size>32) this.entries.delete(this.entries.keys().next().value);
   }
 }

@@ -45,10 +45,11 @@ flowchart TD
     Source --> G[Contour request lane]
     Receiver[Receiver position changes] --> R
     Levels[Contour thresholds change] --> G
-    G --> Cache{Complete successful response cached?}
+    G --> Cache{All current levels cached?}
     Cache -->|Yes| Lines[Render current lines]
-    Cache -->|No| Contours[POST /api/contours]
-    Contours --> Lines
+    Cache -->|No| Contours[POST only missing levels]
+    Contours --> Merge[Merge cached and fresh levels]
+    Merge --> Lines
     R --> Predict[POST /api/predict]
     Predict --> Numbers[Update receiver readings]
     Camera[Pan or zoom] --> Reproject[Leaflet reprojects existing geometry]
@@ -60,16 +61,35 @@ cover is metadata and adds no acoustic correction. Camera movement can load tile
 a saved camera view dirty, but never starts acoustic requests. Changing a receiver leaves
 contour geometry alone. Receiver names use a separate `receiver-name` notification: headings,
 tooltips and accessible descriptions update in place, with no acoustic request or marker replacement.
-Open receiver details and active name selection survive a pending reading response. Stale readings/lines are hidden during relevant pending requests.
+Open receiver details and active name selection survive a pending reading response. Stale results are hidden during relevant pending requests; valid cached levels remain visible
+while missing ones load.
 
 Each request lane debounces for 150 ms, aborts superseded browser fetches and uses a version
 counter to reject stale responses, including the A→B→A cache race. Aborting a fetch does
 **not** promise cancellation of work already running on the Python server.
 
-The geometry cache holds at most 12 complete responses, keyed by source positions/powers
-and the sorted full level list. It excludes camera, style, receivers and cloud metadata.
-Responses containing failed levels are not cached. It is **not a per-level cache** and is
-lost on reload; saved scenarios retain inputs rather than this cache.
+The geometry cache holds at most **32 level entries**, evicting the least recently used.
+Each key includes the expected API model (`full-space-point-source-v1`), 0.02 dB numerical
+tolerance, threshold and every active source's position/power in original order. Multiplicity
+and order matter: sources contribute independently, and the first longitude anchors the
+numerical projection. Camera, visual style, receivers, unused catalogue entries, names and
+cloud metadata do not change contour geometry. Future model/accuracy contract changes must
+update the frontend cache contract as well as the backend; the cache is session-local and
+clears on reload, not persisted in saved scenarios.
+
+`main.js` snapshots cached levels for the current source signature, requests only missing
+thresholds, then merges responses in current threshold order. Both `ok` and `empty` results
+are reusable, even when another level fails. Failures and missing server results are not
+cached, so Retry requests those levels again. HTTP failure marks only missing levels failed
+and keeps unaffected cached lines. A response with a different model/tolerance clears the
+cache and hides the incompatible geometry, with an explicit reload message.
+
+Cached values are detached on store/read to prevent renderer mutations. Every edit goes
+through the existing request lane, including all-cache hits: its abort/version guard rejects
+late threshold/source responses before rendering **or** caching them. Pending renders contain
+only current-signature cached levels; removed or old-source lines disappear immediately.
+No equation, extraction tolerance, sampling budget, scope policy or source contribution is
+changed by this reuse.
 
 ## Calculation pipeline
 

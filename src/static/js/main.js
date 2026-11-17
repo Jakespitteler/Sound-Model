@@ -47,31 +47,54 @@ function refreshReceivers() {
   });
 }
 
-/** Refresh geographic lines after source or threshold changes, reusing cached geometry. */
+/** @param {import('./types.js').ContourGeometry[]} results Current results in threshold order. */
+function displayGeometry(results) {
+  geometry=results;
+  const failures=geometry.filter(c=>c.status==='failed');
+  geometryFailed=!!failures.length; updateRetry(); contours.setResults(geometry);
+  manager.contourLayer.render(geometry,store.contours); manager.contourLayer.setPending(false);
+  const empty=geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
+  const examples=store.sources.some(s=>store.typeFor(s).provenance==='example');
+  $('calculation-status').textContent=store.sources.length ?
+    `${store.sources.length} sources · combined noise${examples?' · example data':''}${failures.length?' · '+failures.length+' failed level(s)':''}${empty.length?' · No crossing at '+empty.join(', '):''}` : 'Add a source to begin';
+}
+
+/** Reuse exact current-source levels and request only missing ones; every edit still versions the lane. */
 function refreshGeometry() {
-  const payload = store.toPayload();
-  payload.receivers = [];
-  payload.levels = store.contours.map(c=>c.level_db);
-  const key = cache.key(payload);
-  geometryLane.schedule('/api/contours',payload,{
-    start:()=> { geometryFailed=false; updateRetry(); contours.setResults([]); manager.contourLayer.setPending(true); $('calculation-status').textContent='Updating contours…'; },
+  const payload=store.toPayload(); payload.receivers=[];
+  payload.levels=store.contours.map(c=>c.level_db);
+  const cached=payload.levels.map(level=>cache.get(cache.key(payload,level))).filter(Boolean);
+  const missing=payload.levels.filter(level=>!cached.some(c=>c.level_db===level));
+  /** @param {Object[]} fresh New per-level results. @param {string} [error] Missing-result reason.
+   * @return {Object[]} Complete, current-order results without omitted levels. */
+  const merge=(fresh,error='The server returned no result for this contour.')=>payload.levels.map(level_db=>
+    fresh.find(c=>c.level_db===level_db) || cached.find(c=>c.level_db===level_db) || {level_db,lines:[],status:'failed',error});
+  geometryLane.schedule('/api/contours',{...payload,levels:missing},{
+    start:()=> {
+      geometryFailed=false; updateRetry(); contours.setResults(cached);
+      // Keep valid unaffected levels; discard old-source/removed-level lines immediately.
+      manager.contourLayer.render(cached,store.contours); manager.contourLayer.setPending(false);
+      $('calculation-status').textContent='Updating contours…';
+    },
     success:data=> {
-      const failures=data.contours.filter(c=>c.status==='failed');
-      geometryFailed=!!failures.length; updateRetry();
-      if (!failures.length) cache.set(key,data);
-      geometry=data.contours; contours.setResults(geometry);
-      manager.contourLayer.render(geometry,store.contours); manager.contourLayer.setPending(false);
-      const empty = geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
-      const examples = store.sources.some(s=>store.typeFor(s).provenance==='example');
-      $('calculation-status').textContent = store.sources.length ?
-        `${store.sources.length} sources · combined noise${examples?' · example data':''}${failures.length?' · '+failures.length+' failed level(s)':''}${empty.length?' · No crossing at '+empty.join(', '):''}` : 'Add a source to begin';
+      if (data.model!==cache.model || data.tolerance_db!==cache.toleranceDb) {
+        // Never combine results from different model/accuracy contracts.
+        cache.entries.clear(); cached.length=0;
+        throw new Error('Contour model changed. Reload the app before calculating again.');
+      }
+      for (const result of data.contours) {
+        if (payload.levels.includes(result.level_db)) cache.set(cache.key(payload,result.level_db),result);
+      }
+      displayGeometry(merge(data.contours));
     },
     error:error=> {
-      geometry=store.contours.map(c=>({level_db:c.level_db,lines:[],status:'failed',error:error.message}));
-      contours.setResults(geometry); manager.contourLayer.render([],store.contours); manager.contourLayer.setPending(false);
-      geometryFailed=true; $('calculation-status').textContent='Contours unavailable'; failed(error);
+      displayGeometry(merge(missing.map(level_db=>({level_db,lines:[],status:'failed',error:error.message})),error.message));
+      if (!cached.length) $('calculation-status').textContent='Contours unavailable';
+      failed(error);
     },
-  },(!payload.sources.length || !payload.levels.length) ? {contours:payload.levels.map(level_db=>({level_db,lines:[],status:'empty'}))} : cache.get(key));
+  },(!payload.sources.length || !payload.levels.length || !missing.length) ?
+    {model:cache.model,tolerance_db:cache.toleranceDb,contours:!payload.sources.length ?
+      payload.levels.map(level_db=>({level_db,lines:[],status:'empty'})) : cached} : null);
 }
 
 store.subscribe(reason=> {

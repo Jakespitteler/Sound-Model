@@ -1,0 +1,64 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Contour cache regression checks</title>
+<pre id="result" role="status">Running…</pre>
+<script type="module">
+import {GeometryCache,RequestLane} from '../../src/static/js/api.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour under test. */
+function check(claim,label) {if (!claim) throw new Error(label); checks.push(label);}
+/** @param {number} ms Milliseconds. @return {Promise<void>} Scheduled delay. */
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const originalFetch=window.fetch;
+try {
+ const payload={types:[{id:'truck',lwa:110}],sources:[{id:'s',type_id:'truck',lat:-33.86,lng:116.07}],levels:[80,60,40],receivers:[],cloud_cover:0};
+ const cache=new GeometryCache();
+ const line={level_db:40,status:'ok',lines:[[[116.071,-33.862],[116.072,-33.863]]]};
+ cache.set(cache.key(payload,40),line);
+ const changed={...payload,levels:[80,65,40]};
+ check(JSON.stringify(cache.get(cache.key(changed,40)))===JSON.stringify(line),'editing one threshold retains exact unaffected coordinates');
+ cache.set(cache.key(payload,80),{level_db:80,status:'empty',lines:[]});
+ check(cache.get(cache.key(changed,80))?.status==='empty','empty levels are reusable');
+ check(!cache.get(cache.key(changed,65)),'new threshold is missing');
+ const moved={...payload,sources:[{...payload.sources[0],lat:-33.87}]};
+ check(!cache.get(cache.key(moved,40)),'source movement misses cache');
+ const louder={...payload,types:[{id:'truck',lwa:111}]};
+ check(!cache.get(cache.key(louder,40)),'source power change misses cache');
+ const extra={...payload,sources:[...payload.sources,{...payload.sources[0],id:'s2'}]};
+ check(!cache.get(cache.key(extra,40)),'all sources including duplicates are in signature');
+ const ordered={...payload,sources:[payload.sources[0],{...payload.sources[0],id:'other',lng:116.08}]};
+ check(cache.key(ordered,40)!==cache.key({...ordered,sources:[...ordered.sources].reverse()},40),'source order preserves the numerical projection signature');
+ check(new GeometryCache('other-model').key(payload,40)!==cache.key(payload,40),'model belongs to signature');
+ check(new GeometryCache(undefined,.01).key(payload,40)!==cache.key(payload,40),'numerical tolerance belongs to signature');
+ const metadata={...payload,receivers:[{id:'r',lat:0,lng:0}],cloud_cover:100,view:{zoom:2}};
+ check(cache.key(metadata,40)===cache.key(payload,40),'camera receiver and cloud metadata do not invalidate geometry');
+ cache.set(cache.key(payload,60),{level_db:60,status:'failed',lines:[],error:'fictional failure'});
+ check(!cache.get(cache.key(payload,60)),'failed level is never cached');
+ const returned=cache.get(cache.key(payload,40)); returned.lines[0][0][0]=0;
+ check(cache.get(cache.key(payload,40)).lines[0][0][0]===116.071,'render consumers cannot mutate cached coordinates');
+ const capacity=new GeometryCache();
+ for (let level=0;level<32;level++) capacity.set(capacity.key(payload,level),{level_db:level,status:'empty',lines:[]});
+ capacity.get(capacity.key(payload,0));
+ capacity.set(capacity.key(payload,32),{level_db:32,status:'empty',lines:[]});
+ check(capacity.entries.size===32,'cache is bounded to 32 level entries');
+ check(!!capacity.get(capacity.key(payload,0)) && !capacity.get(capacity.key(payload,1)),'least recently used entry is evicted');
+ const pending=[]; const seen=[];
+ // Deliberately ignore AbortSignal to prove version protection independent of cancellation.
+ window.fetch=()=>new Promise(resolve=>pending.push(resolve));
+ const callbacks={start:()=>{},success:data=>seen.push(data.value),error:error=>{throw error;}};
+ const lane=new RequestLane();
+ lane.schedule('/test',{},callbacks); await delay(180);
+ lane.schedule('/test',{},callbacks,{value:'cached A'});
+ pending.shift()({ok:true,json:async()=>({value:'late B'})}); await delay(0);
+ check(seen.join()==='cached A','A to B to cached A rejects late B');
+ lane.schedule('/test',{},callbacks); await delay(180);
+ lane.schedule('/test',{},callbacks); await delay(180);
+ pending.shift()({ok:true,json:async()=>({value:'old source'})}); await delay(0);
+ pending.shift()({ok:true,json:async()=>({value:'new source'})}); await delay(0);
+ check(seen.join()==='cached A,new source','pending source edit cannot publish stale geometry');
+ lane.cancel();
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+ document.querySelector('#result').dataset.passed='true';
+} catch(error) {document.querySelector('#result').textContent='FAIL: '+error.message; throw error;}
+finally {window.fetch=originalFetch;}
+</script>

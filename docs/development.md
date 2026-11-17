@@ -59,6 +59,26 @@ when checking that panning, styling and tab changes do not recalculate sound. If
 blocked for repeatable tests, say so; it does not verify live satellite availability or the
 user's native Windows/VS Code environment.
 
+### Contour cache regression page
+
+The cache and request-lane checks run in an ordinary browser with no additional dependency.
+From the repository root, start a temporary loopback server:
+
+```sh
+python -m http.server 8796 --bind 127.0.0.1
+```
+
+Open <http://127.0.0.1:8796/tests/browser/contour-cache.html> and wait for **PASS: 16 checks**.
+Stop the temporary server afterwards. These checks run separately from `pytest`; they cover
+exact reuse, source/model/tolerance signatures, failed/empty levels, the 32-entry LRU bound,
+consumer isolation and request-version races. The race fixtures deliberately ignore abort
+signals to verify that version checks protect against late responses on their own.
+
+For app integration, also inspect a partial failure with successful lines still visible;
+record requested thresholds, compare rendered coordinates with a fresh API response, and
+check retries, source edits and panning. Model/accuracy mismatch must not combine incompatible
+cached/fresh results. Keep environment-only browser instrumentation out of production code.
+
 ## Making changes
 
 Read the selected task and relevant modules first. Keep type hints, Google-style Python
