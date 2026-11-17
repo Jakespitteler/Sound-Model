@@ -17,7 +17,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 1 | [012 Recover unsaved edits](012-unsaved-recovery.md) | Implemented; ready for review |
 | 2 | [013 Optional receiver-name contract](013-receiver-name-contract.md) | Implemented; ready for review |
 | 3 | [014 Receiver-name editor](014-receiver-name-editor.md) | Implemented; ready for review after 013 |
-| 4 | [015 Fit a local cluster](015-local-cluster-zoom.md) | Ready; maximum pairwise distance 10 km |
+| 4 | [015 Fit a local cluster](015-local-cluster-zoom.md) | Implemented; ready for review |
 | 5 | [017 Reuse unchanged contours](017-per-level-contour-cache.md) | Ready; accuracy must remain unchanged |
 | 6 | [018 Placement undo/redo](018-placement-undo-redo.md) | Ready; coordinate with recovery |
 | 7 | [019 Optional equipment metadata](019-equipment-metadata-contract.md) | Ready; compatible saved-data slice |
