@@ -129,6 +129,21 @@ source is more than 10 km away, retaining status and nearest distance. A nearer 
 all contributions and warns if some paths are beyond 10 km. This owner-selected display policy
 is neither a physical cutoff nor a validated range.
 
+The optional `acceptable_level_db` defaults to null in version-1 saves and browser state.
+It is excluded from direct receiver requests: only its numeric threshold joins the deduplicated
+contour-level union. Backend and browser enforce 25 unique levels including this value.
+`lineSettings()` emits one setting per unique level and flags a shared ordinary/reference level
+as special. Changing/clearing the reference uses the contour lane, including cache-only style
+changes for matching levels; it never updates source powers or receiver pressures.
+
+The reference is a heavier dashed line in the automatic level colour, with a distinct label
+“Acceptable level — user-set”. Its label remains visible even for a small ring. High contrast
+adds a matching dashed halo. The slider stays disabled only until a useful source-based interval is available; it can
+set an initially unset criterion by dragging. Range updates do not change the numeric criterion. Per-level error reporting identifies the reference and preserves other
+lines. Ordinary-row removal tolerates the notification-before-DOM-update phase. Save snapshots
+and draft recovery retain the optional value; neither classification nor legal/audibility
+assessment is introduced.
+
 Default contours and the guide share `sound-reference.js`: 30/40/60/80/100 dB(A). Thresholds
 sort descending; colour and a solid 2.5 px line weight are automatic. A separate lower pane
 provides optional white halos. Contour labels sit below object badges. Contours cannot be dragged.
@@ -257,3 +272,33 @@ Interactive Swagger/ReDoc and OpenAPI routes are disabled. There is no authentic
 this local API. Only `src/static` is mounted; source, templates and private scenario files
 are not public static assets. See the [developer guide](docs/development.md) for commands,
 verification and startup troubleshooting. Historical audits are indexed in [docs](docs/README.md).
+
+## Practical slider range
+
+`POST /api/contour-range` takes source inputs only. `contour_range.py` uses total sound-power
+spreading at the existing 10 km scope distance for a conservative lower candidate, and the
+combined field evaluated at source centres for a conservative peak candidate. It rounds
+inward to 0.1 dB with a 0.05 dB margin and verifies endpoints through unchanged `build_contours`.
+A failed low endpoint is narrowed toward the verified upper endpoint with at most 12 bisections.
+No interval is invented when unavailable. This is a useful checked interval, not the maximal
+feasible range or a guarantee that every intermediate extraction avoids numerical guards.
+Numeric entry retains 0–300, all per-level errors and the existing display policy.
+
+The browser uses a separately versioned request lane and an eight-signature session cache.
+Only source-signature changes request a range; panning, threshold edits and metadata changes
+do not. Pending/failed ranges disable the slider with a reason, and transient HTTP failures
+expose Retry. Ordinary, acceptable and draft sliders share this interval. Source changes
+preserve entered numbers even outside new slider bounds. Endpoint probes do not alter equations, saved inputs, geometry tolerances or budgets.
+
+## Contour label priority and explicit entry
+
+The acceptable label has an opaque background in pane `acceptable-labels` (675), above
+ordinary contour labels (450), markers (600) and transient tooltips (650), while opened
+popups and controls keep their higher interaction layers. Label priority is independent of
+threshold ordering, high contrast, zoom and hide/show; labels stay pointer-transparent.
+
+Add contour opens a draft of the existing slider-and-number row, focusing its numeric field.
+Draft dragging previews a number without changing state. Enter commits once; Escape or ×
+cancels without notifying state. `addContour(requestedLevel)` validates the
+exact submitted value and combined level budget, rejecting rather than replacing it. The
+no-argument helper retains its previous programmatic fallback; the UI always passes a number.

@@ -34,7 +34,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Recover mistakes | [018](../docs/tasks/018-placement-undo-redo.md) | Implemented for review; integrate with recovery and scenario lifecycle |
 | Checkpoint C | Complete selected POC slice | Acceptance evidence, appropriate full checks, small UI and clear handoff |
 | Optional equipment metadata | [019](../docs/tasks/019-equipment-metadata-contract.md), then [020](../docs/tasks/020-equipment-metadata-editor.md) | Both implemented for review; merge saved-data contract before collapsed editor |
-| Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | User-set reference, no default criterion; Ctrl repeat placement |
+| Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | Acceptable-level contract/state/line implemented for review; Ctrl repeat placement remains queued |
 | Sidebar usability | [027](../docs/tasks/027-desktop-sidebar-usability.md) | Compare workflow before/after; reduce scrolling and cramped controls without reducing map usability |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
@@ -45,7 +45,32 @@ If a task grows into multiple independent features, split it and get approval fo
 A good starting instruction is: “Work on task 012 within its scope, verify it, and prepare the
 change for review. Do not merge or start another task automatically.”
 
-## Current implementation review stack
+## Current contour-fix review stack
+
+These fixes stack above the acceptable-level feature in #25 (and its #23/#24 prerequisites).
+The complete product branch is `agent/add-contour-number`.
+
+| PR | Scope | Base |
+| --- | --- | --- |
+| [#27](https://github.com/Jakespitteler/Sound-Model/pull/27) | Foreground acceptable label | `agent/acceptable-level-contour` |
+| [#28](https://github.com/Jakespitteler/Sound-Model/pull/28) | Working scenario-aware slider | `agent/acceptable-label-priority` |
+| [#29](https://github.com/Jakespitteler/Sound-Model/pull/29) | Click, type and Enter to add a contour | `agent/scenario-contour-slider` |
+
+Merge in order and retarget each next PR to `main` when its dependency lands. No automatic
+merge is authorised. The range probes use the existing model and scope, not new attenuation.
+
+## Earlier acceptable-level feature stack
+
+| PR | Scope | Base |
+| --- | --- | --- |
+| [#23](https://github.com/Jakespitteler/Sound-Model/pull/23) | Task 021: optional saved reference | `main` |
+| [#24](https://github.com/Jakespitteler/Sound-Model/pull/24) | Task 025: browser state and budget | `agent/acceptable-level-contract` |
+| [#25](https://github.com/Jakespitteler/Sound-Model/pull/25) | Task 022: user-set reference contour | `agent/acceptable-level-state` |
+
+The complete product is `agent/acceptable-level-contour`. Merge in table order, retargeting
+the next PR to `main` once its dependency merges. No automatic merge is authorised.
+
+## Earlier placement/equipment review stack
 
 Merge and review from the bottom of the dependency chain upward. Each PR targets the branch
 immediately below it; the complete product is `agent/equipment-metadata-editor`.

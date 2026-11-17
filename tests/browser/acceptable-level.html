@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><title>Acceptable level state checks</title>
+<input id="show-overlay" type="checkbox" checked hidden><input id="contour-contrast" type="checkbox" hidden>
+<pre id="result" role="status">Running…</pre>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {ScenarioFilesUI} from '../../src/static/js/scenario-files.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour. */
+function check(claim,label) {if(!claim) throw new Error(label); checks.push(label);}
+try {
+ const store=new ScenarioStore();store.addSource(store.types[0].id,-33.86,116.07);store.addReceiver(-33.85,116.08);
+ const payload=JSON.stringify(store.toPayload());
+ check(store.acceptable_level_db===null,'new scenarios start unset');
+ check(store.setAcceptableLevel(0) && store.acceptable_level_db===0,'zero is set rather than treated as unset');
+ check(store.setAcceptableLevel(300),'upper boundary accepted');
+ for(const value of [-1,301,NaN,Infinity,'40',true]) check(!store.setAcceptableLevel(value) && store.acceptable_level_db===300,`invalid value ${value} leaves state intact`);
+ check(JSON.stringify(store.toPayload())===payload,'reference never enters acoustic source payload');
+ store.setAcceptableLevel(40);
+ check(store.getContourLevels().filter(level=>level===40).length===1,'matching ordinary threshold is reused');
+ check(store.lineSettings().filter(c=>c.acceptable).length===1,'shared line has one special identity');
+ store.contours=Array.from({length:25},(_,level_db)=>({id:String(level_db),level_db}));
+ store.setAcceptableLevel(10); check(!store.setAcceptableLevel(100),'26th unique level rejected');
+ check(!store.updateContour('10',{level_db:100}),'ordinary edit cannot split shared level beyond budget');
+ check(store.contours.find(c=>c.id==='10').level_db===10,'rejected edit preserves ordinary contour');
+ store.removeContour('24'); store.setAcceptableLevel(100);
+ check(store.getContourLevels().length===25,'24 ordinary plus one reference fits budget');
+ check(store.addContour() && store.contours.some(c=>c.level_db===100) && store.getContourLevels().length===25,'ordinary add may reuse special slot');
+ const before=store.contours.length; check(!store.addContour() && store.contours.length===before,'full ordinary budget drops no line');
+ const manager={map:{getCenter:()=>({lat:-33.86,lng:116.07}),getZoom:()=>14}};
+ const snapshot=ScenarioFilesUI.prototype.snapshot.call({store,manager});
+ check(snapshot.acceptable_level_db===100,'saved snapshot includes reference');
+ const restored=new ScenarioStore();restored.restore(snapshot);
+ check(restored.acceptable_level_db===100,'snapshot restore retains reference');
+ check(restored.sources[0].id===store.sources[0].id && restored.receivers[0].id===store.receivers[0].id,'restore retains source and receiver identities');
+ check(JSON.stringify(restored.types)===JSON.stringify(store.types),'catalogue notes and power remain intact');
+ restored.setAcceptableLevel(null);check(restored.contours.length===25,'clearing reference retains ordinary contours');
+ const legacy={...snapshot};delete legacy.acceptable_level_db;restored.restore(legacy);
+ check(restored.acceptable_level_db===null,'old snapshots default unset');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');document.querySelector('#result').dataset.passed='true';
+} catch(error) {document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>

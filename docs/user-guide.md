@@ -66,7 +66,10 @@ power and receiver names are retained when undoing coordinate moves.
 ## Adjust contours
 
 Use the **Contours** tab. Each row has a slider and editable number; duplicate levels are
-rejected and rows sort from highest to lowest. Add/remove levels to change their count.
+rejected and rows sort from highest to lowest. Choose **Add contour**, type a number and
+press **Enter**. The new draft uses the same slider-and-number row; **Escape** or its **×**
+dismisses it without adding a level. Sliders use the current-machine range; numeric entry
+retains 0–300 dB(A). Remove levels with their × buttons.
 Changing one level reuses unchanged contours; they remain visible while the new level loads.
 If it fails, Retry recalculates missing/failed contours while keeping successful ones.
 Contours cannot be dragged. Colours and line weight are automatic; **High contrast** adds
@@ -83,6 +86,22 @@ white halos. **Show lines** hides/shows them without changing the calculation.
 
 The app also flags receivers within 1 m of a source and totals containing distant source
 paths. These warnings matter even when a number is shown. See [model limits](model.md).
+
+### Set an acceptable-level reference
+
+In **Contours**, drag the **Acceptable level** slider or enter a number. The slider becomes
+available after its current-machine range is checked. Its heavier dashed line is labelled **Acceptable level — user-set**. It starts unset;
+**Clear** removes the reference while keeping ordinary contours. This is your reference,
+not an approved compliance limit or a determination that machinery cannot be heard.
+
+Matching an ordinary threshold shares one calculation and line. The count allows 25 unique
+thresholds including the reference; if full, remove a level or choose an existing one. A failed
+reference names its level and reason while successful ordinary contours remain visible.
+The slider uses a practical contour-producing interval for the current machines. Bounds are
+checked with the existing model and scope; they are not a claim of the full feasible range or
+environmental validation. Numeric entry still accepts 0–300 dB(A), and a source change does
+not silently change your chosen value. Per-level extraction failures can still be reported.
+Save/Open and recovery retain the setting. Show lines and High contrast apply to it too.
 
 ## Save and reopen
 

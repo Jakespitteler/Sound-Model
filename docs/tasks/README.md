@@ -22,9 +22,9 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 6 | [018 Placement undo/redo](018-placement-undo-redo.md) | Implemented; ready for review |
 | 7 | [019 Optional equipment metadata](019-equipment-metadata-contract.md) | Implemented; ready for review |
 | 8 | [020 Equipment metadata editor](020-equipment-metadata-editor.md) | Implemented; ready for review after 019 |
-| 9 | [021 Optional acceptable-level data](021-acceptable-level-contract.md) | Ready; no default limit invented |
-| 10 | [025 Acceptable-level browser state](025-acceptable-level-browser-state.md) | After 021; before 022 |
-| 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | After 025 |
+| 9 | [021 Optional acceptable-level data](021-acceptable-level-contract.md) | Implemented; ready for review |
+| 10 | [025 Acceptable-level browser state](025-acceptable-level-browser-state.md) | Implemented; ready for review after 021 |
+| 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | Implemented; ready for review after 025 |
 | 12 | [023 Ctrl-click repeat placement](023-control-repeat-placement.md) | Ready |
 | 13 | [027 Desktop sidebar usability](027-desktop-sidebar-usability.md) | Ready; reduce scrolling and cramped controls |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Agree a defensible policy before code |
