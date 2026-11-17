@@ -203,7 +203,13 @@ export class MapManager {
       const lat = Math.max(-85, Math.min(85, event.latlng.lat));
       const lng = Math.max(-180, Math.min(180, event.latlng.lng));
       if (this.store.mode === 'source') {
+        const count=this.store.sources.length;
         this.store.addSource($('place-type').value, lat, lng);
+        // The store commits one ordinary placement (including history/recovery).
+        // Resume only after an accepted Ctrl-click, and stop at the source cap.
+        if (event.originalEvent?.ctrlKey && this.store.sources.length>count && this.store.sources.length<100) {
+          this.store.setMode('source');
+        }
       } else {
         this.store.addReceiver(lat, lng);
       }
@@ -216,7 +222,7 @@ export class MapManager {
     const mode = this.store.mode;
     $('mode-label').textContent =
       mode === 'source'
-        ? 'Click the map to place a machine'
+        ? 'Click to place · Ctrl-click to place multiple · Esc to cancel'
         : mode === 'receiver'
           ? 'Click the map to place a receiver'
           : 'Pan to explore · drag markers to move';

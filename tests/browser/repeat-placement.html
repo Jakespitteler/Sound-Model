@@ -1,0 +1,47 @@
+<!doctype html><meta charset="utf-8"><title>Repeat machine placement checks</title>
+<link rel="stylesheet" href="../../src/static/vendor/leaflet/leaflet.css">
+<style>#map{height:400px;width:800px}</style>
+<select id="place-type"></select><div id="map"></div><pre id="result" role="status">Running…</pre>
+<script src="../../src/static/vendor/leaflet/leaflet.js"></script>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {MapManager} from '../../src/static/js/map-manager.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour under test. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+try {
+ const store=new ScenarioStore(), events=[];
+ const select=document.querySelector('#place-type');
+ select.innerHTML=store.types.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+ const map=L.map('map').setView([-33.8675,116.07647],14);
+ MapManager.prototype.bindMapEvents.call({store,map,markers:L.layerGroup()});
+ store.subscribe(reason=>events.push(reason));
+ /** @param {boolean} ctrlKey Whether Control is held. @param {number} lat Latitude. */
+ function place(ctrlKey,lat=-33.86){map.fire('click',{latlng:L.latLng(lat,116.07),originalEvent:{ctrlKey}});}
+ store.setMode('source');place(true);place(true,-33.85);
+ check(store.sources.length===2 && store.mode==='source','Control clicks keep source placement active');
+ check(new Set(store.sources.map(s=>s.id)).size===2 && store.sources[0].lat===-33.86 && store.sources[1].lat===-33.85,'distinct identities and exact click coordinates');
+ select.value=store.types[1].id;place(true,-33.84);
+ check(store.sources.at(-1).type_id===store.types[1].id,'next placement uses current selected type');
+ place(false,-33.83);
+ check(store.sources.length===4 && store.mode===null,'release and final click exits placement');
+ place(true);check(store.sources.length===4,'exploration clicks do not place');
+ check(events.filter(e=>e==='geometry').length===4,'one geometry notification per accepted source');
+ const last=structuredClone(store.sources.at(-1));store.undo();store.redo();
+ check(JSON.stringify(store.sources.at(-1))===JSON.stringify(last) && store.mode===null,'undo/redo retains exact placement and exits mode');
+ check(store.toPayload().sources.length===4,'accepted repeated sources reach calculation and save payload');
+ store.setMode('source');store.setMode(null);place(true);
+ check(store.sources.length===4,'cancellation adds nothing');
+ store.setMode('receiver');place(true);
+ check(store.receivers.length===1 && store.mode===null,'Control does not repeat receiver placement');
+ store.setMode('source');
+ for(let i=store.sources.length;i<99;i++)place(true);
+ check(store.sources.length===99 && store.mode==='source','repeat remains active below source limit');
+ place(true);check(store.sources.length===100 && store.mode===null,'100th source exits repeat placement');
+ place(true);check(store.sources.length===100,'no extra source beyond limit');
+ store.setMode('source');place(false);
+ check(store.sources.length===100,'store still enforces source cap');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+ document.querySelector('#result').dataset.passed='true';
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>

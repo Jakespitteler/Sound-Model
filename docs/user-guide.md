@@ -28,7 +28,9 @@ A **machine type** holds a name, sound power and evidence note. A **machine on t
 one instance of that type. Several instances can share a type; editing its sound power
 changes all those instances. Removing a type is prevented while it is in use.
 
-1. Choose a type, select **Place machine**, and click its position.
+1. Choose a type, select **Place machine**, and click its position. To place several,
+   **Ctrl-click** each position, then click without Control to place the last machine.
+   **Escape** or **Cancel placement** exits without adding another. Placement stops at 100 machines.
 2. Drag its icon to move it, or expand **Edit position** and enter coordinates.
 3. Choose **Place a receiver**, then click the listening location.
 4. Read its coloured pressure level on the map or in the sidebar. Expand **Details & position**
