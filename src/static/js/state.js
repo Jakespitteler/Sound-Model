@@ -77,7 +77,9 @@ export class ScenarioStore {
 
   /** @param {string} id Type ID. @param {Object} patch Validated form fields. */
   updateMachineType(id, patch) {
-    Object.assign(this.types.find(t => t.id === id), patch); this.notify('geometry');
+    const type=this.types.find(t=>t.id===id);
+    const acoustic=['name','lwa','provenance'].some(field=>field in patch && patch[field]!==type[field]);
+    Object.assign(type,patch); this.notify(acoustic ? 'geometry' : 'equipment-metadata');
   }
 
   /** @param {string} id Unused type ID. Deleting a type invalidates both history stacks. */

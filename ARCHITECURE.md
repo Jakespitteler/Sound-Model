@@ -88,6 +88,11 @@ Cached values are detached on store/read to prevent renderer mutations. Every ed
 through the existing request lane, including all-cache hits: its abort/version guard rejects
 late threshold/source responses before rendering **or** caching them. Pending renders contain
 only current-signature cached levels; removed or old-source lines disappear immediately.
+`equipment-metadata` edits update catalogue forms and map details locally, without either
+acoustic lane. `toPayload()` strips notes, source references and operating modes; full save
+snapshots retain them. The plain-text editor validates 500/200 Unicode codepoint limits and
+escapes content. Version-1 legacy files default missing fields to empty strings.
+
 No equation, extraction tolerance, sampling budget, scope policy or source contribution is
 changed by this reuse.
 

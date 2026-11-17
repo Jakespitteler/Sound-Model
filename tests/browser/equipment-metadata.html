@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Equipment metadata checks</title>
+<pre id="result" role="status">Running…</pre>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour under test. */
+function check(claim,label) {if(!claim) throw new Error(label); checks.push(label);}
+try {
+ const store=new ScenarioStore(), type=store.types[0], original=structuredClone(type), events=[];
+ store.addSource(type.id,-33.86,116.07);store.addReceiver(-33.85,116.08);
+ const payload=JSON.stringify(store.toPayload());store.subscribe(reason=>events.push(reason));
+ store.updateMachineType(type.id,{source_reference:'<img src=x> 設備',operating_mode:'Loaded / travelling 🛻',note:'Updated estimate note'});
+ check(events.at(-1)==='equipment-metadata','metadata edits use presentation-only notification');
+ check(JSON.stringify(store.toPayload())===payload,'actual acoustic payload excludes metadata and remains identical');
+ check(type.id===original.id && type.lwa===original.lwa && type.provenance===original.provenance && type.use===original.use && type.kind===original.kind,'identity power provenance and existing descriptions are retained');
+ check(type.source_reference==='<img src=x> 設備' && type.operating_mode==='Loaded / travelling 🛻','references remain literal strings');
+ store.updateMachineType(type.id,{source_reference:'',operating_mode:''});
+ check(type.source_reference==='' && type.operating_mode==='' && type.note==='Updated estimate note','fields clear independently of the note');
+ store.updateMachineType(type.id,{lwa:type.lwa+1});
+ check(events.at(-1)==='geometry' && JSON.stringify(store.toPayload())!==payload,'power changes still trigger acoustic updates');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+ document.querySelector('#result').dataset.passed='true';
+} catch(error) {document.querySelector('#result').textContent='FAIL: '+error.message; throw error;}
+</script>

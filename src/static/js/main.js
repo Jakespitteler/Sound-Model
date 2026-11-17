@@ -126,6 +126,7 @@ store.subscribe(reason=> {
   renderHistory();
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
+  if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
   if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }

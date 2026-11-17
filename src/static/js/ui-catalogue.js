@@ -37,14 +37,22 @@ export class CatalogueUI {
       const data = new FormData(form);
       const name = String(data.get('name')).trim();
       if (!name) return this.say('Enter a machine name.');
+      for (const [field,limit] of [['source_reference',500],['operating_mode',200]]) {
+        const input=form.elements.namedItem(field);
+        if ([...input.value.trim()].length>limit) {input.setCustomValidity(`Use ${limit} characters or fewer.`); input.reportValidity(); return;}
+      }
       this.store.updateMachineType(form.dataset.editType, {
         name,
         lwa: Number(data.get('lwa')),
         provenance: String(data.get('provenance')),
         note: String(data.get('note')).trim(),
+        source_reference:String(data.get('source_reference')).trim(),
+        operating_mode:String(data.get('operating_mode')).trim(),
       });
       this.say('Type updated for all its machines.');
     });
+
+    $('types').addEventListener('input',event=>event.target.setCustomValidity?.(''));
 
     $('cloud').addEventListener('input', () => {
       const val = Number($('cloud').value);
@@ -66,6 +74,8 @@ export class CatalogueUI {
           `<div class="two-columns"><label>LwA dB(A)<input name="lwa" type="number" min="0" max="300" step="0.1" value="${t.lwa}" required></label>` +
           `<label>Data source<select name="provenance"><option value="example" ${t.provenance === 'example' ? 'selected' : ''}>Example</option>` +
           `<option value="measured" ${t.provenance === 'measured' ? 'selected' : ''}>Measured</option></select></label></div>` +
+          `<label>Source reference (optional)<input name="source_reference" placeholder="Manufacturer sheet section 4" value="${escapeHtml(t.source_reference || '')}"></label>` +
+          `<label>Operating mode (optional)<input name="operating_mode" placeholder="Loaded / travelling" value="${escapeHtml(t.operating_mode || '')}"></label>` +
           `<label>Source / assumption note<textarea name="note" maxlength="2000" rows="3">${escapeHtml(t.note || "")}</textarea></label><button class="secondary" type="submit">Save type</button></form></details></div>`,
       )
       .join('');

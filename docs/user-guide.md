@@ -44,6 +44,10 @@ while moving a machine updates both readings and contours.
 
 The starter catalogue contains **guesses**, not confirmed company fleet data. In **Machine
 data**, replace estimates with appropriate sound-power values and record their source.
+Expand **Estimate notes & edit** to record an optional **Source reference** and
+**Operating mode**, then choose **Save type**. These text fields accompany the existing note
+and are kept by Save/Open and recovery; they do not change the calculated sound or mark
+an estimate as measured. References are plain text, not downloads.
 A pressure measurement taken beside a machine is not automatically a sound-power value.
 
 ## Undo a placement edit
