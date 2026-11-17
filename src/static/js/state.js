@@ -1,13 +1,14 @@
 /** @fileoverview In-memory state with explicit geometry/receiver/style/UI notifications. */
 import {uuid} from './utils.js';
 import {MACHINE_PRESETS} from './machine-presets.js';
+import {SOUND_REFERENCE} from './sound-reference.js';
 
 // Approximate overview of the mine/processing/tailings area, not a surveyed boundary.
 export const MINE_BOUNDS = [[-33.94, 116.015], [-33.825, 116.14]];
 
 /** Observable scenario. Camera movement is deliberately not part of this state. */
 export class ScenarioStore {
-  /** Initialise provisional equipment and four descending decibel thresholds. */
+  /** Initialise provisional equipment and five descending decibel thresholds. */
   constructor() {
     /** @type {import('./types.js').MachineType[]} */
     this.types = structuredClone(MACHINE_PRESETS);
@@ -16,7 +17,7 @@ export class ScenarioStore {
     /** @type {import('./types.js').Receiver[]} */
     this.receivers = [];
     /** @type {import('./types.js').ContourLevel[]} */
-    this.contours = [65, 55, 45, 35].map(level_db => ({id:uuid(), level_db}));
+    this.contours = SOUND_REFERENCE.map(item=>item.level).sort((a,b)=>b-a).map(level_db => ({id:uuid(), level_db}));
     this.cloud_cover = 0;
     /** @type {?string} */
     this.mode = null;
@@ -39,6 +40,17 @@ export class ScenarioStore {
     return structuredClone({types,sources:this.sources,receivers:this.receivers,cloud_cover:this.cloud_cover});
   }
 
+  /** @param {Object} document Validated versioned scenario, supplied by the local backend. */
+  restore(document) {
+    this.types = structuredClone(document.types);
+    this.sources = structuredClone(document.sources);
+    this.receivers = structuredClone(document.receivers);
+    this.contours = document.levels.map(level_db=>({id:uuid(),level_db})).sort((a,b)=>b.level_db-a.level_db);
+    this.cloud_cover = document.cloud_cover;
+    this.mode = null;
+    this.notify('restore');
+  }
+
   /** @param {import('./types.js').Source} source Placed source. @return {import('./types.js').MachineType} Type. */
   typeFor(source) { return this.types.find(t => t.id === source.type_id); }
 
@@ -46,7 +58,7 @@ export class ScenarioStore {
   setMode(mode) { this.mode = mode; this.notify('ui'); }
 
   /** @param {number} value Recorded percentage, without any acoustic correction. */
-  setCloudCover(value) { this.cloud_cover = value; }
+  setCloudCover(value) { this.cloud_cover = value; this.notify('metadata'); }
 
   /** @param {string} name Type name. @param {number} lwa Sound power. @param {string} provenance Data class.
    * @param {string} [note] User-recorded source or assumption note. */

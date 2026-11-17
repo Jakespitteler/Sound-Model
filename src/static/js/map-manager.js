@@ -6,6 +6,7 @@ import { MINE_BOUNDS } from './state.js';
 import { ContourLayer } from './contour-layer.js';
 import { $, escapeHtml } from './utils.js';
 import {soundColor} from './sound-style.js';
+import {illustration} from './illustrations.js';
 
 /** Leaflet map, imagery availability and separately draggable source/receiver markers. */
 export class MapManager {
@@ -55,7 +56,7 @@ export class MapManager {
       const index = this.store.receivers.findIndex(receiver=>receiver.id===id);
       marker.setIcon(this.receiverIcon(id,index));
       const reading = results?.[id];
-      const description = failed ? 'unavailable' : !reading ? 'calculating' : reading.level_db === null
+      const description = failed ? 'unavailable' : !reading ? 'calculating' : reading.status === 'out_of_scope' ? 'outside the 10 km model scope' : reading.level_db === null
         ? 'no source contribution' : `${reading.level_db.toFixed(1)} dB(A) predicted source contribution`;
       marker.getElement()?.setAttribute('aria-label', `Receiver ${index+1}: ${description}`);
     }
@@ -69,7 +70,7 @@ export class MapManager {
    */
   receiverIcon(id, index) {
     const reading = this.receiverReadings?.[id];
-    const value = this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.level_db === null ? 'No sources' : reading.level_db.toFixed(1);
+    const value = this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.status === 'out_of_scope' ? 'Outside scope' : reading.level_db === null ? 'No sources' : reading.level_db.toFixed(1);
     const color = soundColor(reading?.level_db ?? null);
     return L.divIcon({className:'receiver-location',iconSize:[112,44],iconAnchor:[56,22],
       html:`<div class="receiver-marker${reading?.level_db != null && !this.receiverFailed ? '' : ' is-status'}" data-receiver-id="${escapeHtml(id)}" style="--level-color:${color}"><span class="receiver-id">R${index+1}</span><strong class="receiver-number">${value}${reading?.level_db != null && !this.receiverFailed ? '<small>dB(A)</small>':''}</strong></div>`});
@@ -146,11 +147,10 @@ export class MapManager {
       this.store[collection].forEach((item, i) => {
         const isSource = collection === 'sources';
         const label = isSource ? `${i + 1}. ${this.store.typeFor(item).name}` : `Receiver ${i + 1}`;
+        const machine = isSource ? this.store.typeFor(item) : null;
         const icon = !isSource ? this.receiverIcon(item.id,i) : L.divIcon({
-          className: '',
-          html: `<div class="${isSource ? 'machine' : 'receiver'}-marker">${isSource ? i + 1 : 'R' + (i + 1)}</div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
+          className:'machine-location',iconSize:[32,32],iconAnchor:[16,16],
+          html:`<div class="machine-marker source-badge${i%2 ? ' source-reversed' : ''}" data-source-id="${escapeHtml(item.id)}"><span class="source-symbol">${illustration(machine.kind)}</span><span class="source-label"><strong>${i+1}. ${escapeHtml(machine.name)}</strong><small>Power · ${machine.lwa.toFixed(1)} dB(A) LwA</small></span></div>`,
         });
         const marker = L.marker([item.lat, item.lng], {
           icon,
@@ -163,6 +163,14 @@ export class MapManager {
         const tooltip = document.createElement('span');
         tooltip.textContent = label;
         marker.bindTooltip(tooltip);
+        if (isSource) {
+          const popup = document.createElement('div');
+          popup.className = 'source-popup';
+          const title = document.createElement('strong'); title.textContent = label;
+          const power = document.createElement('p'); power.textContent = `Sound power: ${machine.lwa.toFixed(1)} dB(A) LwA. This is the machine emission, not what a receiver hears.`;
+          const evidence = document.createElement('p'); evidence.textContent = machine.note || 'No source note recorded.';
+          popup.append(title,power,evidence); marker.bindPopup(popup);
+        }
 
         marker.on('dragend', () => {
           const p = marker.getLatLng();

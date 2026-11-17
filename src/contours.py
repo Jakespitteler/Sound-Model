@@ -9,7 +9,8 @@ The scalar field remains a reference for numerical validation.
 import math
 
 from .acoustics import combine, inverse_mercator, mercator_y, source_level
-from .contour_engine import trace_tiles
+from .contour_engine import lines_within_scope, trace_tiles
+from .scope import SCREENING_DISTANCE_M
 from .types import Contour, ContourRequest, ContourResponse
 
 EARTH_RADIUS = 6_371_008.8
@@ -194,6 +195,22 @@ def build_contours(scenario: ContourRequest) -> ContourResponse:
         Contour geometry independent of receiver positions and map viewport.
     """
     if not scenario.sources:
-        return ContourResponse(contours=[Contour(level_db=level, lines=[]) for level in scenario.levels])
+        return ContourResponse(
+            contours=[Contour(level_db=level, lines=[], status="empty") for level in scenario.levels]
+        )
     field = ContourField(scenario)
-    return ContourResponse(contours=[trace_level(field, level) for level in scenario.levels])
+    results: list[Contour] = []
+    for level in scenario.levels:
+        try:
+            result = trace_level(field, level)
+            if not result.lines:
+                result.status = "empty"
+            elif not lines_within_scope(field, result.lines, SCREENING_DISTANCE_M):
+                raise ValueError(
+                    "Extends beyond the 10 km screening scope from the nearest source; not displayed. "
+                    "This is an unvalidated model scope, not a physical sound cutoff."
+                )
+            results.append(result)
+        except ValueError as error:
+            results.append(Contour(level_db=level, lines=[], status="failed", error=str(error)))
+    return ContourResponse(contours=results)

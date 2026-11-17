@@ -20,7 +20,8 @@
   <main>
     <aside class="sidebar" aria-label="Scenario controls">
       <div class="sidebar-title"><h1>Noise scenario</h1><button id="demo" class="text-button" type="button">Try example</button></div>
-      <p class="scenario-note">Screening estimates · not saved on reload</p>
+      <div class="scenario-file-actions"><button id="save-scenario" class="secondary compact" type="button">Save</button><button id="open-scenario" class="secondary compact" type="button">Open</button></div>
+      <p id="save-status" class="scenario-note" role="status">Unsaved scenario · Save to keep your work</p>
       <div class="sidebar-tabs" role="tablist" aria-label="Scenario workspace">
         <button id="scenario-tab" type="button" role="tab" aria-selected="true" aria-controls="scenario-panel">Scenario</button>
         <button id="contours-tab" type="button" role="tab" aria-selected="false" aria-controls="contours-panel" tabindex="-1">Contours</button>
@@ -41,11 +42,18 @@
         <p>Cloud cover is recorded only; no numerical correction applies.</p>
         <p>Independent point sources in a full-space free field; energy adds without phase cancellation. No terrain, ground reflection, barriers, atmospheric absorption, wind or temperature effects.</p>
         <p>Values below 1 m use a numerical limit and are flagged. These screening results do not establish inaudibility or compliance. Machine presets are guesses; <a href="/machine-estimates" target="_blank" rel="noopener">read estimate notes</a>.</p>
-        <p>Reloading still clears the scenario. Autosave is planned.</p>
+        <p>Save explicitly to keep your scenario. Reloading a saved scenario restores its last saved state; unsaved edits are not autosaved.</p>
       </details>
       <p id="message" class="message" role="status" aria-live="polite"></p>
+      <button id="retry" class="secondary compact retry" type="button" hidden>Retry calculations</button>
     </aside>
 
+    <dialog id="save-dialog" class="scenario-dialog"><form id="save-form">
+      <h2>Save scenario</h2><p>Stored on the computer running this app's backend.</p>
+      <label>Scenario name<input id="scenario-name" maxlength="100" required placeholder="e.g. Greenbushes day shift"></label>
+      <p id="save-dialog-error" role="alert"></p><div class="dialog-actions"><button type="button" data-close-dialog="save-dialog" class="text-button">Cancel</button><button class="primary compact" type="submit">Save scenario</button></div>
+    </form></dialog>
+    <dialog id="open-dialog" class="scenario-dialog"><h2>Open scenario</h2><p id="scenario-list-status" role="status"></p><div id="scenario-list"></div><div class="dialog-actions"><button id="new-scenario" class="text-button" type="button">New scenario</button><button type="button" data-close-dialog="open-dialog" class="secondary compact">Close</button></div></dialog>
     <div class="map-panel-host">{{map-overlays}}</div>
   </main>
 </body>

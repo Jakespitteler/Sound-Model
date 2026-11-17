@@ -1,26 +1,14 @@
-/** @fileoverview A small local-flavour pressure-level guide, separate from equipment LwA. */
-import {$} from './utils.js';
+/** @fileoverview Illustrated local sound references; not equipment or compliance data. */
+import {$,escapeHtml} from './utils.js';
 import {soundColor} from './sound-style.js';
+import {SOUND_REFERENCE} from './sound-reference.js';
+import {illustration} from './illustrations.js';
 
-/** Render deliberately approximate comparisons, not measurements or assessment criteria. */
+/** Render the same five levels used as default contours, with original illustrations. */
 export function renderSoundGuide() {
-  const comparisons = [
-    [30, 'Jarrah forest before the cockatoos clock on'],
-    [40, 'A quiet South West campsite'],
-    [60, 'Smoko chat — before the footy argument'],
-    [80, 'A very committed cockatoo, up close'],
-    [100, 'A crusher with no inside voice, nearby'],
-  ];
-  for (const [level, description] of comparisons) {
-    const item = document.createElement('li');
-    const number = document.createElement('span');
-    number.className = 'sound-key-number';
-    number.style.color = soundColor(level);
-    number.textContent = `${level} dB`;
-    const text = document.createElement('span');
-    text.textContent = description;
-    item.append(number,text); $('sound-key-levels').append(item);
-  }
+  $('sound-key-levels').innerHTML = SOUND_REFERENCE.map(item=>`<li class="sound-card" style="--guide-color:${soundColor(item.level)}">
+    <span class="guide-illustration">${illustration(item.icon)}</span><div class="guide-copy"><div class="guide-heading"><strong>${item.level}<small>dB(A)</small></strong><span>${escapeHtml(item.label)}</span></div>
+    <p>${escapeHtml(item.description)}</p></div></li>`).join('');
   const narrow = matchMedia('(max-width:900px)');
   if (narrow.matches) $('sound-key').open = false;
   narrow.addEventListener('change',event=> { if (event.matches) $('sound-key').open = false; });

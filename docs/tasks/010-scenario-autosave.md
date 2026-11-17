@@ -1,6 +1,6 @@
 # 010 — Keep scenarios when the page reloads
 
-Status: todo. Priority: P1 (next usability priority). Owner: unassigned.
+Status: in progress — explicit Save/Open implemented; autosave and portable recovery remain. Priority: P1 (next usability priority). Owner: unassigned.
 Related: 007, reproducible assessment reports.
 
 ## Problem
@@ -28,5 +28,8 @@ Every accepted value returns with stable IDs and provenance. Failed saves are vi
 recoverable. Export/import round-trips without losing notes. No new library is required by
 this proposal; discuss a new storage technology before selecting one.
 
-This task is planned, not implemented. The app continues to disclose that sessions are lost
-on reload until this work is complete.
+Implemented increment: named local JSON documents with source notes/kinds, view and contour
+settings; Save/Open/new/copy actions, saved-URL reload restoration, dirty indicators, schema
+validation and atomic replacement. Backend tests cover failed writes and corrupt files.
+Remaining: autosave, export/import, migrations beyond version 1 and broader recovery workflows.
+The UI explicitly distinguishes last-saved state from unsaved edits.

@@ -12,6 +12,6 @@ export const MACHINE_PRESETS = [
   {id:'preset-water', name:'Water cart', lwa:112, use:'Haul-road dust suppression'},
   {id:'preset-drill', name:'Blast-hole drill', lwa:120, use:'Production drilling'},
   {id:'preset-crusher', name:'Crusher / screening plant', lwa:120, use:'Ore sizing and processing'},
-].map(machine => ({...machine, provenance:'example',
+].map(machine => ({...machine, kind:machine.id.replace('preset-',''), provenance:'example',
   note:`Project-authored guess: ${machine.lwa} dB(A) LwA, 17 November 2026. ${machine.use}. Representative equipment category, not a confirmed company machine or measured emission. Replace with actual equipment sound-power data before assessment use.`,
 }));

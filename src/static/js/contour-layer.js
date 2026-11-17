@@ -9,8 +9,22 @@ export class ContourLayer {
     this.group = L.layerGroup().addTo(map);
     this.visible = true;
     this.pending = false;
+    this.highContrast = false;
+    this.halos = L.layerGroup();
+    if (!this.map.getPane('contour-halos')) {
+      const pane = this.map.createPane('contour-halos'); pane.style.zIndex='390'; pane.style.pointerEvents='none';
+    }
+    if (!this.map.getPane('contour-labels')) {
+      const pane = this.map.createPane('contour-labels'); pane.style.zIndex='450'; pane.style.pointerEvents='none';
+    }
     this.labels = [];
     this.map.on('zoomend',()=>this.updateLabelVisibility());
+  }
+
+  /** @param {boolean} enabled Add/remove white line halos without a model request. */
+  setHighContrast(enabled) {
+    this.highContrast = enabled;
+    if (enabled) this.group.addLayer(this.halos); else this.group.removeLayer(this.halos);
   }
 
   /** @param {boolean} visible Whether the user wants contours shown. */
@@ -43,6 +57,8 @@ export class ContourLayer {
    */
   render(geometry, settings) {
     this.group.clearLayers();
+    this.halos.clearLayers();
+    if (this.highContrast) this.group.addLayer(this.halos);
     this.labels = [];
     // Draw outer/lower contours first, then inner/higher contours.
     for (const contour of [...settings].sort((a,b)=>a.level_db-b.level_db)) {
@@ -51,6 +67,7 @@ export class ContourLayer {
       const color = soundColor(contour.level_db);
       const lines = [...result.lines].sort((a,b)=>b.length-a.length);
       for (const coords of lines) {
+        L.polyline(coords.map(([lng,lat])=>[lat,lng]), {pane:'contour-halos',color:'#fff',weight:7,opacity:.95,interactive:false,smoothFactor:.5}).addTo(this.halos);
         L.polyline(coords.map(([lng,lat])=>[lat,lng]),
           {color,weight:2.5,opacity:0.95,interactive:false,smoothFactor:0.5}).addTo(this.group);
       }
@@ -58,7 +75,7 @@ export class ContourLayer {
       const label = document.createElement('span');
       label.textContent = `${contour.level_db.toFixed(1)} dB(A)`;
       label.style.color = color;
-      const tooltip = L.tooltip({permanent:true,direction:'center',className:'contour-label',opacity:1,interactive:false})
+      const tooltip = L.tooltip({pane:'contour-labels',permanent:true,direction:'center',className:'contour-label',opacity:1,interactive:false})
         .setLatLng([anchor[1],anchor[0]]).setContent(label).addTo(this.group);
       this.labels.push({tooltip,bounds:L.latLngBounds(lines[0].map(([lng,lat])=>[lat,lng]))});
     }

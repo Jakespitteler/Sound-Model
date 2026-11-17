@@ -24,3 +24,6 @@ after a regression case demonstrated completion with unchanged vertex accuracy.
 
 Remaining: local accuracy allocation for extreme mixed-power cases, per-level caching/partial
 errors, workload cancellation/backpressure and broader real-scenario benchmarks.
+
+Per-level success/empty/error responses and visible partial-failure handling are now implemented.
+Remaining performance work includes per-level caching, cancellation/backpressure and local accuracy allocation.

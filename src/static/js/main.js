@@ -8,6 +8,7 @@ import {EntitiesUI} from './ui-entities.js';
 import {ContoursUI} from './ui-contours.js';
 import {renderSoundGuide} from './sound-guide.js';
 import {setupSidebar} from './sidebar.js';
+import {ScenarioFilesUI} from './scenario-files.js';
 
 const store = new ScenarioStore();
 const manager = new MapManager(store);
@@ -16,6 +17,9 @@ const geometryLane = new RequestLane(), receiverLane = new RequestLane();
 /** @type {import('./types.js').ContourGeometry[]} Last valid current geometry. */
 let geometry = [];
 let receiverResults = {};
+let receiverFailed = false, geometryFailed = false;
+/** Keep independent request errors visible regardless of which lane finishes first. */
+function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed); }
 /** @param {string} message Human-readable feedback. */
 const say = message => { $('message').textContent = message; };
 const catalogue = new CatalogueUI(store,say), entities = new EntitiesUI(store,say), contours = new ContoursUI(store,say);
@@ -23,21 +27,21 @@ catalogue.bind(); entities.bind(); contours.bind(); renderSoundGuide(); setupSid
 
 /** @param {Error} error Failure displayed with an explicit retry. */
 function failed(error) {
-  say(error.message); $('retry').hidden = false;
+  say(error.message); updateRetry();
 }
 
 /** Update receivers only; this lane never rebuilds or removes contours. */
 function refreshReceivers() {
   if (!store.receivers.length) {
-    receiverLane.cancel(); receiverResults = {}; entities.renderReceivers({}); return;
+    receiverLane.cancel(); receiverResults = {}; receiverFailed=false; updateRetry(); entities.renderReceivers({}); return;
   }
   receiverLane.schedule('/api/predict',store.toPayload(),{
-    start:()=> {entities.renderReceivers(); manager.setReceiverReadings(null);},
-    success:data=> {receiverResults=data.receivers; entities.renderReceivers(receiverResults); manager.setReceiverReadings(receiverResults);},
+    start:()=> {receiverFailed=false; updateRetry(); entities.renderReceivers(); manager.setReceiverReadings(null);},
+    success:data=> {receiverFailed=false; updateRetry(); receiverResults=data.receivers; entities.renderReceivers(receiverResults); manager.setReceiverReadings(receiverResults);},
     error:error=> {
       entities.renderReceivers();
       document.querySelectorAll('#receivers .result').forEach(e=> {e.textContent='Unavailable';});
-      manager.setReceiverReadings(null, true); failed(error);
+      receiverFailed=true; manager.setReceiverReadings(null, true); failed(error);
     },
   });
 }
@@ -49,29 +53,34 @@ function refreshGeometry() {
   payload.levels = store.contours.map(c=>c.level_db);
   const key = cache.key(payload);
   geometryLane.schedule('/api/contours',payload,{
-    start:()=> { manager.contourLayer.setPending(true); $('calculation-status').textContent='Updating contours…'; },
+    start:()=> { geometryFailed=false; updateRetry(); contours.setResults([]); manager.contourLayer.setPending(true); $('calculation-status').textContent='Updating contours…'; },
     success:data=> {
-      cache.set(key,data); geometry=data.contours;
+      const failures=data.contours.filter(c=>c.status==='failed');
+      geometryFailed=!!failures.length; updateRetry();
+      if (!failures.length) cache.set(key,data);
+      geometry=data.contours; contours.setResults(geometry);
       manager.contourLayer.render(geometry,store.contours); manager.contourLayer.setPending(false);
-      const empty = geometry.filter(c=>!c.lines.length).map(c=>`${c.level_db} dB(A)`);
+      const empty = geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
       const examples = store.sources.some(s=>store.typeFor(s).provenance==='example');
       $('calculation-status').textContent = store.sources.length ?
-        `${store.sources.length} sources · combined noise${examples?' · example data':''}${empty.length?' · No line at '+empty.join(', '):''}` : 'Add a source to begin';
+        `${store.sources.length} sources · combined noise${examples?' · example data':''}${failures.length?' · '+failures.length+' failed level(s)':''}${empty.length?' · No crossing at '+empty.join(', '):''}` : 'Add a source to begin';
     },
     error:error=> {
-      geometry=[]; manager.contourLayer.render([],store.contours); manager.contourLayer.setPending(false);
-      $('calculation-status').textContent='Contours unavailable'; failed(error);
+      geometry=store.contours.map(c=>({level_db:c.level_db,lines:[],status:'failed',error:error.message}));
+      contours.setResults(geometry); manager.contourLayer.render([],store.contours); manager.contourLayer.setPending(false);
+      geometryFailed=true; $('calculation-status').textContent='Contours unavailable'; failed(error);
     },
-  },(!payload.sources.length || !payload.levels.length) ? {contours:payload.levels.map(level_db=>({level_db,lines:[]}))} : cache.get(key));
+  },(!payload.sources.length || !payload.levels.length) ? {contours:payload.levels.map(level_db=>({level_db,lines:[],status:'empty'}))} : cache.get(key));
 }
 
 store.subscribe(reason=> {
-  if (['geometry','catalogue','receivers','thresholds'].includes(reason)) say('');
+  if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
-  if (['geometry','catalogue'].includes(reason)) { catalogue.render(); entities.renderSources(); }
-  if (['geometry','catalogue','receivers'].includes(reason)) { manager.renderMarkers(); refreshReceivers(); }
-  if (['geometry','catalogue','thresholds'].includes(reason)) {
-    $('retry').hidden=true; refreshGeometry();
+  if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
+  if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
+  if (['geometry','catalogue','receivers','restore'].includes(reason)) { manager.renderMarkers(); refreshReceivers(); }
+  if (['geometry','catalogue','thresholds','restore'].includes(reason)) {
+    refreshGeometry();
   }
 });
 
@@ -98,6 +107,8 @@ $('cancel-mode').onclick=()=>store.setMode(null);
 document.addEventListener('keydown',event=> {if(event.key==='Escape') store.setMode(null);});
 $('home').onclick=()=> {store.setMode(null); manager.fitMine();};
 $('location-form').onsubmit=event=> {event.preventDefault(); store.setMode(null); manager.map.setView([Number($('site-lat').value),Number($('site-lng').value)],14);};
+$('contour-alert').onclick=()=> {document.getElementById('contours-tab').click(); $('contour-errors').scrollIntoView({block:'nearest'});};
+$('contour-contrast').onchange=()=>manager.contourLayer.setHighContrast($('contour-contrast').checked);
 $('show-overlay').onchange=()=>manager.contourLayer.setVisible($('show-overlay').checked);
 $('demo').onclick=()=> {
   store.loadDemo();
@@ -108,3 +119,7 @@ $('retry').onclick=()=> { $('retry').hidden=true; say('Retrying…'); refreshGeo
 
 catalogue.render(); entities.renderSources(); entities.renderReceivers({}); contours.render(); manager.syncModeUI();
 // No request is needed until equipment or receivers are added.
+
+const files = new ScenarioFilesUI(store,manager,say);
+files.bind();
+files.restoreFromUrl();

@@ -221,3 +221,17 @@ def test_equipment_estimate_notes_are_explicit(client: TestClient) -> None:
     assert "not manufacturer specifications" in response.text
     assert "20 µPa" in response.text
     assert "Charles Hull" in response.text
+
+
+def test_about_explains_reference_levels_and_scope(client: TestClient) -> None:
+    """Expose useful plain-language physics and negative-decibel explanations.
+
+    Args:
+        client: In-process application client.
+    """
+    response = client.get("/about")
+    assert response.status_code == 200
+    assert "Decibels can be negative" in response.text
+    assert "10 km" in response.text
+    assert "not evidence" in response.text
+    assert "not autosaved" in response.text
