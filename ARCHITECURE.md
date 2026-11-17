@@ -159,6 +159,26 @@ Fresh scenes and the Greenbushes button use `DEFAULT_VIEW` (−33.8675, 116.0764
 Saved camera views take precedence. The main grid fills the viewport with no branding header. The humorous
 guide compares pressure levels and does not supply emissions or approved assessment thresholds.
 
+## Placement history
+
+`ScenarioStore` keeps at most 50 completed add/move/remove commands for sources and receivers.
+A command records collection, before/after entity, list index and action label. Move replay
+changes only coordinates, retaining later receiver labels and current catalogue power. Removal
+captures the current entity so a later redo/undo also retains metadata edited after placement.
+Restored entities keep their IDs and original list positions. No-op moves consume no entry.
+
+Replay transfers commands between undo/redo stacks without recording a new action. New
+placement edits clear redo. Source commands notify `geometry`; receiver commands notify only
+`receivers`, reusing existing cache/request version guards. Save/recovery revision tracking
+therefore sees ordinary accepted edits; no named file is written automatically. History is
+excluded from both the API payload and recovery/save snapshots. Open/New/recovery and demo
+replacement clear it. Deleting an unused catalogue type clears both stacks; deletion of an
+in-use type is guarded in the store as well as the UI.
+
+Small sidebar buttons expose the next action through their titles. Keyboard handlers ignore
+inputs, selects, textareas, editable content, IME composition and open dialogs. Camera, contour,
+name and catalogue power edits are outside placement history and keep their existing behaviour.
+
 ## Save/Open contract
 
 ```mermaid
