@@ -55,3 +55,8 @@ intent alone. New dependencies and external data require separate owner approval
 Recovery is best effort: browser storage may be cleared and very recent edits may still be in
 browser write buffers. This is not a transactional multi-user system or backup. Use explicit
 Save for important work. Scope excludes the other queued tasks.
+
+Final lifecycle review also reproduced suppression of the first edit after Discard → New
+when revision counters repeated. Clearing the discarded-revision marker at a clean scenario
+boundary fixed it; the regression flow and the complete browser suite passed afterwards.
+Writer tokens also include per-tab random entropy, avoiding same-millisecond startup collisions.
