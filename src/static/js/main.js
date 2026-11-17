@@ -78,18 +78,12 @@ store.subscribe(reason=> {
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
-  if (reason==='restore') {manager.resetLocalAnchor(); contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
+  if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
   if (['geometry','catalogue','receivers','restore'].includes(reason)) { manager.renderMarkers(); refreshReceivers(); }
   if (['geometry','catalogue','thresholds','restore'].includes(reason)) {
     refreshGeometry();
   }
-});
-
-// Focusing an object's existing details also selects its local-area anchor.
-document.querySelector('.sidebar').addEventListener('focusin',event=> {
-  const form=event.target.closest('details')?.querySelector('[data-position]');
-  if (form) manager.selectObject(form.dataset.collection,form.dataset.position);
 });
 
 // Delegation keeps handlers stable even when individual entity cards are replaced.

@@ -1,10 +1,11 @@
 /** @fileoverview Camera-only grouping and space for map overlays; never acoustic source selection. */
 
 /** @typedef {{id:string, collection:string}} ObjectIdentity */
-/** @typedef {ObjectIdentity & {lat:number, lng:number}} MapObject */
+/** @typedef {{lat:number, lng:number}} Position */
+/** @typedef {ObjectIdentity & Position} MapObject */
 /** @typedef {{left:number, right:number, top:number, bottom:number}} Rectangle */
 
-/** @param {MapObject} a First location. @param {MapObject} b Second location.
+/** @param {Position} a First location. @param {Position} b Second location.
  * @return {number} Great-circle distance in metres, using the model's mean Earth radius. */
 export function objectDistance(a,b) {
   const radians=Math.PI/180;
@@ -16,6 +17,15 @@ export function objectDistance(a,b) {
 /** @param {?ObjectIdentity} a First object. @param {?ObjectIdentity} b Second object.
  * @return {boolean} Same object, including its collection (IDs may repeat across collections). */
 export function sameObject(a,b) {return !!a && !!b && a.id===b.id && a.collection===b.collection;}
+
+/** Find the object nearest the current camera, with stable identity ties.
+ * @param {MapObject[]} objects All scenario locations.
+ * @param {Position} centre Current map centre. @return {MapObject|undefined} Nearest object, if any. */
+export function nearestObject(objects,centre) {
+  const compare=(a,b)=>a<b ? -1 : a>b ? 1 : 0;
+  return objects.map(item=>({item,distance:objectDistance(centre,item)}))
+    .sort((a,b)=>a.distance-b.distance || compare(a.item.id,b.item.id) || compare(a.item.collection,b.item.collection))[0]?.item;
+}
 
 /** Build a deterministic anchored group whose maximum pairwise distance is 10 km.
  * @param {MapObject[]} objects All scenario locations, retained unchanged.

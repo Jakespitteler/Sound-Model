@@ -3,7 +3,7 @@
 <title>Local area regression checks</title>
 <pre id="result" role="status">Running…</pre>
 <script type="module">
-import {objectDistance,localGroup,freeMapRectangle} from '../../src/static/js/local-area.js';
+import {objectDistance,nearestObject,localGroup,freeMapRectangle} from '../../src/static/js/local-area.js';
 const checks=[];
 /** @param {boolean} claim Assertion outcome. @param {string} message Behaviour being checked. */
 function check(claim,message) {if (!claim) throw new Error(message); checks.push(message);}
@@ -14,6 +14,12 @@ try {
   check(localGroup([],null).length===0,'empty scene');
   const a=point('a',0), b=point('b',8000), c=point('c',16000), d=point('d',40000);
   check(localGroup([a],a)[0]===a,'one object');
+  check(nearestObject([],a)===undefined,'empty camera anchor');
+  check(nearestObject([d,a,b],point('camera',39000))===d,'camera chooses nearest area regardless of list order');
+  check(nearestObject([c,a],b)===a,'camera distance ties use stable IDs');
+  check(nearestObject([a,c],b)===a,'camera tie independent of input order');
+  const samePosition={...a,collection:'receivers'};
+  check(nearestObject([a,samePosition],a)===samePosition,'camera ties qualify identity by collection');
   check(Math.abs(objectDistance(a,b)-8000)<1e-6,'independent equatorial distance reference');
   check(localGroup([a,point('edge',10000)],a).length===2,'inclusive 10 km boundary');
   check(localGroup([a,point('outside',10000.001)],a).length===1,'1 mm outside boundary excluded');

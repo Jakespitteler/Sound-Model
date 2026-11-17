@@ -116,11 +116,11 @@ for numbers, 112×34 px for status text. Both marker types remain anchored at th
 
 ### Local-area navigation
 
-`local-area.js` computes a camera group independently of acoustic state. Anchor selection is
-collection-qualified (a source and a receiver may share an ID). Marker click/focus/drag and
-sidebar details focus select an object; placement selects the new object. A missing selected
-object falls back to the last placed object still present, then the last listed receiver/source.
-Open/New/recovery clears transient anchor history; a saved view still restores normally.
+`local-area.js` computes a camera group independently of acoustic state. Each Fit action
+chooses the object geographically nearest the current map centre, with stable ID/collection
+ties (a source and a receiver may share an ID). It reads the centre afresh on every click;
+selection, focus, placement and edit history do not determine the group. There is no saved
+or transient anchor state to restore.
 
 Candidates sort by anchor distance, then ID and collection using JavaScript string ordering.
 The greedy group accepts a candidate only when it is within 10,000 m of every existing member
@@ -132,8 +132,7 @@ The button is disabled without objects. `fitBounds` caps zoom at 16 and reserves
 clear of currently visible overlays: candidate horizontal spans are tested against merged
 vertical obstacle intervals and the largest free rectangle is used, with a central fallback
 when the controls cover the map. Fit closes a selected popup, changes the camera and marks
-that view dirty for Save/recovery; it sends no acoustic request. Both selected highlighting
-and grouping are temporary UI state, not additional saved inputs.
+that view dirty for Save/recovery; it sends no acoustic request. Grouping is derived for the camera only, not stored as additional saved inputs.
 
 The eight preset types are project-authored guesses. `/machine-estimates` documents their origin.
 Fresh scenes and the Greenbushes button use `DEFAULT_VIEW` (−33.8675, 116.07647, zoom 14).

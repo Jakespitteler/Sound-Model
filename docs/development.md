@@ -68,12 +68,12 @@ framework or additional dependency. From the repository root, run a temporary lo
 python -m http.server 8790 --bind 127.0.0.1
 ```
 
-Open <http://127.0.0.1:8790/tests/browser/local-area.html>. It must report **PASS: 17 checks**;
+Open <http://127.0.0.1:8790/tests/browser/local-area.html>. It must report **PASS: 22 checks**;
 failures also appear in the browser console. Stop the temporary server after checking.
 These checks cover the inclusive boundary, chain prevention, deterministic ties, preserved
 inputs and overlay space. They complement `pytest`; they do not run as part of it.
-For the actual app, additionally check marker/sidebar selection, last placement, empty/single
-scenes, two distant areas and zero `/api/predict` or `/api/contours` calls on fitting.
+For the actual app, additionally check that the current camera overrides distant edits or
+placements, empty/single scenes, two distant areas and zero `/api/predict` or `/api/contours` calls on fitting.
 
 ## Making changes
 

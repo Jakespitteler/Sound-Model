@@ -10,8 +10,9 @@ The Greenbushes button is a fixed site overview. The owner wants a scenario view
 ## Scope
 
 Add a small Fit local area action using existing Leaflet. Fit only the active local group of source/receiver objects, with room for overlays and a sensible maximum zoom for one object. Keep the Greenbushes overview separate. The owner selected a maximum pairwise distance: every pair in the fitted group must be
-within 10 km, inclusive. Anchor the group at the selected object, falling back to the last
-placed object. Consider candidates in increasing anchor distance with stable ID tie-breaking;
+within 10 km, inclusive. Anchor the group at the object nearest the current map centre,
+regardless of selection, edits or placement history. This owner correction supersedes the
+original selected/last-placed anchor policy. Consider candidates in increasing anchor distance with stable ID tie-breaking;
 admit each only if it is within 10 km of every admitted object. This deterministic greedy
 group need not find a mathematically largest group and must not chain distant groups together.
 Grouping must never drop objects from acoustic calculation.
@@ -23,7 +24,7 @@ No site database, cluster library, clustering of sound calculations or change to
 ## Acceptance
 
 - [x] Every pair in the fitted group is at most 10 km apart; deterministic anchor/tie handling prevents chained neighbours from joining distant areas.
-- [x] Selecting or last-placing an object chooses the active group; empty and single-object scenes have predictable behaviour and all objects remain in the scenario.
+- [x] The current map centre chooses the local group even after editing or placing an object elsewhere; empty and single-object scenes have predictable behaviour and all objects remain in the scenario.
 - [x] Fitting changes only the camera: no prediction requests, moved coordinates, altered results or lost source contributions.
 
 ## Verification
@@ -42,47 +43,39 @@ intent alone. New dependencies and external data require separate owner approval
 
 ## Implementation and evidence
 
-Implementation commit: `2d1bc3a` on `agent/fit-local-area`, based on `main` after PR #13.
+The original implementation was `2d1bc3a`; the owner subsequently requested camera-centred
+fitting instead of selection/edit-history fitting. Current evidence is recorded below.
 
-**Fit local area** is a single lower-right map action. Click/focus/drag a marker or focus its
-sidebar details to select an anchor; an amber outline identifies it. Placement selects the
-new object. The active identity includes the collection, so a source and receiver may share
-an ID. Selected/last-placed state is transient; Open/New/recovery clears it. On a loaded file
-without a selection, the last listed receiver (otherwise source) is the deterministic fallback.
-
-The button is disabled when empty, leaves an empty camera unchanged, and caps fit zoom at 16.
-The group sorts candidates by anchor distance and stable ID/collection, then checks every
-admitted pair. Distances use the model's mean Earth radius with a 1 µm roundoff allowance at
-10,000 m. It does not seek a largest clique. Overlay-aware padding reserves space around
-visible controls. Fit closes a popup and changes the camera only; ordinary camera Save/recovery
-tracking remains intact. No new dependency, acoustic filtering or model/display-scope change.
+**Fit local area** uses the object nearest the current map centre as its anchor on every
+click. Stable ID/collection ties keep results deterministic. Selection state, focus handlers,
+last-placement tracking and amber anchor styling have been removed. The button is disabled
+when empty, caps fit zoom at 16, and preserves overlay-aware padding. Every pair in the group
+remains within 10 km; no object is removed from the acoustic scenario. No new dependency,
+schema or model/display-scope change.
 
 Verification on 17 November 2026:
 
-- All **90 pytest tests** pass; Ruff lint/format, strict Pyright, pinned-skills integrity,
+- All **90 pytest tests** pass; Ruff lint/format, strict Pyright, skills integrity,
   offline lockfile and diff checks pass.
-- The committed, dependency-free browser regression page
-  [`tests/browser/local-area.html`](../../tests/browser/local-area.html) passes **17 checks**:
-  empty/single groups, independent equatorial reference distance, inclusive 10 km boundary,
-  exclusion 1 mm beyond it, chain prevention, stable ID ties across input order, distant
-  anchor, collection-qualified IDs, date-line distance, pairwise bounds, immutable inputs,
-  overlay clearance, marker margins and covered-map fallback.
-- Chromium exercised the real app: two test areas over 40 km apart, restored-file fallback,
-  marker click and keyboard focus, sidebar focus, last placement, empty/single scenes, a
-  single-object zoom of 16, and Save after camera navigation. Saved acoustic inputs retained
-  every object, ID, position, type, threshold and cloud value; receiver readings stayed equal.
-  Request counting found **zero** prediction/contour requests for selection/fitting/navigation.
-- Desktop (1440 px) and narrow (390 px) screenshots were captured and inspected. The desktop
-  fit keeps both local objects clear of the open guide, coordinate form, imagery warning,
-  fit action and Leaflet controls. Selected source highlighting was checked by computed style.
-  The narrow view has no horizontal page overflow and the fit action remains visible.
-  No JavaScript page errors occurred.
+- The committed dependency-free browser regression page passes **22 checks**. Five new
+  checks cover empty camera anchoring, nearest-object choice independent of list order,
+  stable camera-distance ties and collection-qualified identity. The original 17 grouping,
+  boundary, chain-prevention, immutable-input and overlay checks still pass.
+- Chromium exercised two areas over 40 km apart. Starting near A fits A although B is last
+  listed. Moving near B, then editing A through its sidebar, still fits B. Returning near A
+  fits A after focusing B's details. Placing a new machine in B, then moving near A, fits A.
+  Fitting and navigation generated **zero** prediction/contour requests. Receiver readings,
+  contribution text and saved acoustic inputs remained unchanged during camera-only checks.
+- Desktop (1440 px) and narrow (390 px) screenshots were captured and inspected with map
+  controls visible. The action remains visible, and the narrow page has no horizontal
+  overflow. No JavaScript page errors occurred.
 
-Session artifacts: `/workspace/artifacts/check_local_fit.py`, `local-fit-desktop.png` and
-`local-fit-mobile.png`. See the developer guide for running the committed regression page
-with Python's loopback HTTP server and an ordinary browser; it is separate from `pytest`.
+Current session artifacts: `/workspace/artifacts/check_camera_fit.py`,
+`local-fit-camera-desktop.png` and `local-fit-camera-mobile.png`. See the developer guide
+for running `tests/browser/local-area.html` with Python's loopback HTTP server; it runs
+separately from `pytest`. The original single-object zoom-16 check remains applicable.
 Imagery was unavailable, so screenshots used the working plain-background map. Native Windows,
-Firefox/Edge, screen-reader behaviour and camera fitting across the longitude seam were not
-verified. Existing world-edge camera limits are unchanged. No independent review is claimed.
+Firefox/Edge, screen readers and camera fitting across the longitude seam were not verified;
+existing world-edge camera limits are unchanged. No independent review is claimed.
 
 Next task: 017, reuse unchanged contours without sacrificing accuracy. It is not included here.

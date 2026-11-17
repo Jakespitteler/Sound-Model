@@ -146,7 +146,6 @@
   accent-color: var(--teal);
 }
 
-/* One camera action; marker selection does not change sound inputs. */
+/* Camera-only local fit action. */
 .map-fit-button { position:absolute; z-index:500; right:20px; bottom:40px; width:auto; }
-.local-anchor .machine-marker.source-badge, .local-anchor .receiver-marker { box-shadow:0 0 0 3px #da953a; }
 @media(max-width:650px) { .map-fit-button { right:12px; bottom:60px; } }
