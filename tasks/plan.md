@@ -45,7 +45,18 @@ If a task grows into multiple independent features, split it and get approval fo
 A good starting instruction is: “Work on task 012 within its scope, verify it, and prepare the
 change for review. Do not merge or start another task automatically.”
 
-## Current implementation review stack
+## Current acceptable-level review stack
+
+| PR | Scope | Base |
+| --- | --- | --- |
+| [#23](https://github.com/Jakespitteler/Sound-Model/pull/23) | Task 021: optional saved reference | `main` |
+| [#24](https://github.com/Jakespitteler/Sound-Model/pull/24) | Task 025: browser state and budget | `agent/acceptable-level-contract` |
+| [#25](https://github.com/Jakespitteler/Sound-Model/pull/25) | Task 022: user-set reference contour | `agent/acceptable-level-state` |
+
+The complete product is `agent/acceptable-level-contour`. Merge in table order, retargeting
+the next PR to `main` once its dependency merges. No automatic merge is authorised.
+
+## Earlier placement/equipment review stack
 
 Merge and review from the bottom of the dependency chain upward. Each PR targets the branch
 immediately below it; the complete product is `agent/equipment-metadata-editor`.

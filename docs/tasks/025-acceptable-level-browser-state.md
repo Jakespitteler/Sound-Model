@@ -31,6 +31,8 @@ an acceptable threshold has been approved by an acoustic reviewer.
 
 ## Evidence
 
+Implementation: `164f052`; [PR #24](https://github.com/Jakespitteler/Sound-Model/pull/24).
+
 State defaults to null, validates finite numeric 0–300 values or unset, and derives distinct
 thresholds/line settings without including the reference in receiver/acoustic source payloads.
 Snapshots persist it; restore defaults legacy omissions to null and rejects an invalid union
@@ -40,5 +42,4 @@ sharing an existing special slot when possible. No line is silently removed.
 The dependency-free browser page `tests/browser/acceptable-level.html` checks 24 behaviours,
 including invalid inputs, zero, matching/full/split budget cases, immutable rejected edits,
 snapshot/restore, unset legacy files, intact identities/catalogue notes and unchanged acoustic
-payloads. It initially failed on the missing unset default. Full UI Save/Open/recovery checks
-follow with task 022. This slice has three runtime modules and no visible editor or physics change.
+payloads. It initially failed on the missing unset default. Full UI Save/Open/recovery checks also passed with task 022 in PR #25. This slice has three runtime modules and no visible editor or physics change.

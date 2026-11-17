@@ -32,10 +32,12 @@ Record the chosen scope, commit, actual checks and remaining limits here when wo
 
 ## Evidence
 
+Implementation: `9b087ba` with strict-typing fix `e42ba7a`; [PR #23](https://github.com/Jakespitteler/Sound-Model/pull/23).
+
 The optional strict numeric field defaults to `None`, retains version 1 and is bounded to
 0–300. Saved-document validation also enforces 25 unique ordinary/special thresholds, sharing
 a slot when equal. Legacy raw-file tests prove omitted values remain unset without rewriting
 the file. New API cases cover None/zero/300/fractional values, Save/Open/recovery validation,
-NaN/infinity/bool/string/out-of-range rejection with unchanged saved bytes/data, and the union
+NaN/infinity/bool/string/out-of-range rejection with unchanged saved records, and the union
 budget boundary. Five cases failed before implementation. All 105 Python tests, Ruff and
 strict Pyright pass. No UI, default criterion, propagation change or dependency is added.
