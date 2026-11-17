@@ -5,9 +5,22 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
 
-from .scenario_files import SavedRecord, SaveRequest, data_directory, read_scenario, save_scenario
+from .scenario_files import SavedRecord, SaveRequest, ScenarioDocument, data_directory, read_scenario, save_scenario
 
 router = APIRouter(prefix="/api/scenarios")
+
+
+@router.post("/validate", response_model=ScenarioDocument)
+def validate_recovery(document: ScenarioDocument) -> ScenarioDocument:
+    """Validate browser recovery data without reading or writing named files.
+
+    Args:
+        document: Untrusted draft checked against the complete saved-input schema.
+
+    Returns:
+        Validated, normalised scenario inputs ready for explicit restoration.
+    """
+    return document
 
 
 @router.get("")

@@ -113,7 +113,8 @@ edges. Panning dismisses transient cards. Receiver badges retain pressure and un
 for numbers, 112×34 px for status text. Both marker types remain anchored at their coordinates.
 
 The eight preset types are project-authored guesses. `/machine-estimates` documents their origin.
-Greenbushes bounds are an approximate navigation view, not a surveyed boundary. The humorous
+Fresh scenes and the Greenbushes button use `DEFAULT_VIEW` (−33.8675, 116.07647, zoom 14).
+Saved camera views take precedence. The main grid fills the viewport with no branding header. The humorous
 guide compares pressure levels and does not supply emissions or approved assessment thresholds.
 
 ## Save/Open contract
@@ -141,8 +142,18 @@ labels; server-generated UUIDs determine filenames. Data lives under ignored
 
 Atomic replacement preserves an existing save on a failed write. Unreadable files are counted
 without blocking readable saves. Browser revision tracking leaves edits dirty if made during
-an in-flight save. Saved URLs restore the last saved version; no autosave, import/export,
-cloud sync, audit history or multi-user conflict protection is implemented.
+an in-flight save. Saved URLs restore the last saved version. A separate version-1 localStorage
+recovery envelope contains inputs, saved identity, timestamp and a per-tab writer token.
+`draft-recovery.js` observes the Save/Open lifecycle, debounces accepted edits for 200 ms,
+and flushes on page exit. Restore/Discard is explicit. Restore validates through the non-writing
+`POST /api/scenarios/validate` route, checks saved identity, then marks the working scene dirty.
+A missing save becomes new unsaved work. Named files are never written by recovery.
+
+Storage events and ownership checks pause competing tabs. A restore captures the exact reviewed
+envelope and rejects a changed candidate after async validation. This is a single best-effort
+browser draft, not a transactional multi-user system, backup or recovery history. Clearing
+browser data, unavailable storage or edits before the debounce/browser disk flush can prevent recovery. Portable
+import/export, cloud sync, audit history and named-save conflict protection are not implemented.
 
 ## HTTP API
 
@@ -155,6 +166,7 @@ cloud sync, audit history or multi-user conflict protection is implemented.
 | POST `/api/predict` | Validated `Scenario` → receiver results keyed by ID |
 | POST `/api/contours` | `Scenario` plus `levels` → independent per-level results |
 | GET `/api/scenarios` | Saved metadata and unreadable-file count |
+| POST `/api/scenarios/validate` | Validate a `ScenarioDocument` without file reads/writes |
 | POST `/api/scenarios` | Name/document → new record; HTTP 201 |
 | GET `/api/scenarios/{UUID}` | Saved record; HTTP 404 if missing |
 | PUT `/api/scenarios/{UUID}` | Validated replacement of an existing record |

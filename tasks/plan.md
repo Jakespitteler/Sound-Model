@@ -25,7 +25,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 
 | Stage | Task | Dependency / checkpoint |
 | --- | --- | --- |
-| Recover work | [012](../docs/tasks/012-unsaved-recovery.md) | Explicit Save/Open already exists |
+| Recover work | [012](../docs/tasks/012-unsaved-recovery.md) | Implemented on `agent/recover-unsaved-edits`; ready for review |
 | Name receivers | [013](../docs/tasks/013-receiver-name-contract.md), then [014](../docs/tasks/014-receiver-name-editor.md) | Schema compatibility before UI |
 | Checkpoint A | Recovery and naming | Save/Open/reload, invalid drafts, preserved IDs/notes and open-state screenshots |
 | Navigate locally | [015](../docs/tasks/015-local-cluster-zoom.md) | Maximum pairwise distance 10 km; no acoustic filtering |
@@ -36,6 +36,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Optional equipment metadata | [019](../docs/tasks/019-equipment-metadata-contract.md), then [020](../docs/tasks/020-equipment-metadata-editor.md) | Save compatibility before the collapsed editor |
 | Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | User-set reference, no default criterion; Ctrl repeat placement |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
+| Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Owner may remove printing as scope creep; no report code before decision |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.

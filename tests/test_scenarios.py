@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -156,3 +157,38 @@ def test_names_are_not_paths_and_ids_are_validated(saved_client: TestClient, tmp
     assert saved_client.get(f"/api/scenarios/{uuid4()}").status_code == 404
     file = next(tmp_path.glob("*.json"))
     assert json.loads(file.read_text())["name"] == "../../outside"
+
+
+def test_recovery_validation_does_not_write_files(saved_client: TestClient, tmp_path: Path) -> None:
+    """Validate a draft without creating or altering a named scenario.
+
+    Args:
+        saved_client: Isolated local scenario client.
+        tmp_path: Isolated save folder.
+    """
+    record = saved_client.post("/api/scenarios", json=payload()).json()
+    before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    response = saved_client.post("/api/scenarios/validate", json=record["document"])
+    assert response.status_code == 200
+    assert response.json() == record["document"]
+    assert {p.name: p.read_bytes() for p in tmp_path.iterdir()} == before
+
+
+@pytest.mark.parametrize(
+    "change",
+    [{"version": 2}, {"levels": [40, 40]}, {"sources": [{"id": "s", "type_id": "missing", "lat": 0, "lng": 0}]}],
+)
+def test_invalid_recovery_is_rejected_without_writes(
+    saved_client: TestClient, tmp_path: Path, change: dict[str, object]
+) -> None:
+    """Do not apply a corrupted draft or silently repair its references.
+
+    Args:
+        saved_client: Isolated local scenario client.
+        tmp_path: Isolated save folder.
+        change: Invalid document fragment.
+    """
+    document = cast(dict[str, object], payload()["document"])
+    response = saved_client.post("/api/scenarios/validate", json={**document, **change})
+    assert response.status_code == 422
+    assert not list(tmp_path.iterdir())

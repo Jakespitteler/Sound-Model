@@ -7,7 +7,9 @@
 Start the backend with the command in the [project README](../README.md#start-the-app).
 Open the local address in an external browser if the VS Code preview cannot load the app.
 
-**Greenbushes mine** fits a broad approximate area. It does not establish the site boundary.
+**Greenbushes mine** opens the mine-wide starting view at −33.8675, 116.07647 (zoom 14),
+matching the reference view. This camera is not a site boundary. Saved scenes reopen with
+their saved camera instead.
 Expand **Go to coordinates** for another location. Panning and zooming load imagery as
 needed, but do not request new sound calculations.
 
@@ -72,7 +74,9 @@ Saves include equipment notes, machine/receiver positions, contour thresholds, c
 map view, line visibility and contrast. They do not store satellite imagery or calculated
 contour geometry. Results are recalculated when a scenario is reopened.
 
-Reloading a saved URL restores its last saved version. **Unsaved changes are not autosaved.**
+Reloading a saved URL loads its last saved version and offers **Restore/Discard** if a
+browser recovery draft is available. Nothing is restored silently and named saves are never
+automatically updated.
 A fresh URL without a scenario ID starts a fresh scenario; use **Open** to find earlier saves.
 The default storage folder is `local-data/scenarios/`, relative to the repository, on the
 computer running the backend. Back up the folder while the app is not writing to it.
@@ -89,3 +93,22 @@ there is no portable import/export UI yet.
   placement and local calculations can still work against the plain background.
 - **Loading** persists: read the eventual timeout/error notice; do not assume the acoustic
   model is waiting for imagery.
+
+## Recover unsaved edits
+
+Accepted changes are written to one versioned browser draft after a short debounce. Reload
+or reopen the app and choose **Restore** to recover it, **Discard draft** to delete it, or
+**Later** to keep it without replacing the current scene. **Review recovery draft** reopens
+the prompt. Invalid drafts remain available to discard and are never applied partially.
+
+Restored work is unsaved until you choose Save. If its original backend file was deleted,
+it becomes a new unsaved scenario. In another scenario's URL the prompt identifies the draft
+as different; Restore switches the working scene rather than mixing its machines into the URL's scene.
+
+A second tab pauses draft writes when another tab owns the single draft, leaving explicit
+Save available. If the draft changes during validation, review the latest version and retry.
+This is a single recovery slot, not collaborative version history. Storage failures are shown
+next to Save; previously stored draft data is retained when a write fails. Browser data can
+be cleared, and edits made immediately before a crash may not have passed the debounce or
+the browser's own disk flush. Keep named
+saves and backups for important work.

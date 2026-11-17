@@ -16,12 +16,13 @@
   <script defer src="/js/bootstrap.js"></script>
 </head>
 <body>
-  {{header}}
   <main>
     <aside class="sidebar" aria-label="Scenario controls">
       <div class="sidebar-title"><h1>Noise scenario</h1><button id="demo" class="text-button" type="button">Try example</button></div>
       <div class="scenario-file-actions"><button id="save-scenario" class="secondary compact" type="button">Save</button><button id="open-scenario" class="secondary compact" type="button">Open</button></div>
       <p id="save-status" class="scenario-note" role="status">Unsaved scenario · Save to keep your work</p>
+      <p id="recovery-status" class="scenario-note" role="status" hidden></p>
+      <button id="review-recovery" class="text-button" type="button" hidden>Review recovery draft</button>
       <div class="sidebar-tabs" role="tablist" aria-label="Scenario workspace">
         <button id="scenario-tab" type="button" role="tab" aria-selected="true" aria-controls="scenario-panel">Scenario</button>
         <button id="contours-tab" type="button" role="tab" aria-selected="false" aria-controls="contours-panel" tabindex="-1">Contours</button>
@@ -35,14 +36,12 @@
         {{contours-section}}
       </div>
       <details class="assumptions model-settings">
-        <summary>Model settings &amp; assumptions</summary>
+        <summary>Model info</summary>
+        <p>Estimated machine noise. <a href="/about" target="_blank" rel="noopener">How it works ↗</a></p>
         <div class="section-heading"><h2>Cloud cover</h2><output id="cloud-value" for="cloud">0%</output></div>
         <input id="cloud" aria-label="Cloud cover" type="range" min="0" max="100" step="1" value="0">
         <div class="range-labels"><span>Clear sky</span><span>Overcast</span></div>
-        <p>Cloud cover is recorded only; no numerical correction applies.</p>
-        <p>Independent point sources in a full-space free field; energy adds without phase cancellation. No terrain, ground reflection, barriers, atmospheric absorption, wind or temperature effects.</p>
-        <p>Values below 1 m use a numerical limit and are flagged. These screening results do not establish inaudibility or compliance. Machine presets are guesses; <a href="/machine-estimates" target="_blank" rel="noopener">read estimate notes</a>.</p>
-        <p>Save explicitly to keep your scenario. Reloading a saved scenario restores its last saved state; unsaved edits are not autosaved.</p>
+        <p>Recorded with the scenario; not yet used in the calculation.</p>
       </details>
       <p id="message" class="message" role="status" aria-live="polite"></p>
       <button id="retry" class="secondary compact retry" type="button" hidden>Retry calculations</button>
@@ -54,6 +53,14 @@
       <p id="save-dialog-error" role="alert"></p><div class="dialog-actions"><button type="button" data-close-dialog="save-dialog" class="text-button">Cancel</button><button class="primary compact" type="submit">Save scenario</button></div>
     </form></dialog>
     <dialog id="open-dialog" class="scenario-dialog"><h2>Open scenario</h2><p id="scenario-list-status" role="status"></p><div id="scenario-list"></div><div class="dialog-actions"><button id="new-scenario" class="text-button" type="button">New scenario</button><button type="button" data-close-dialog="open-dialog" class="secondary compact">Close</button></div></dialog>
+    <dialog id="recovery-dialog" class="scenario-dialog" aria-labelledby="recovery-title">
+      <h2 id="recovery-title">Recover unsaved edits?</h2>
+      <p id="recovery-description"></p>
+      <p>Restore replaces the current working scene, including any unsaved edits. Named saves stay unchanged until you choose Save.</p>
+      <p>One draft is kept in this browser. Browser storage can be cleared; this is not a backup.</p>
+      <p id="recovery-error" role="alert"></p>
+      <div class="dialog-actions"><button id="later-recovery" class="text-button" type="button">Later</button><button id="discard-recovery" class="secondary compact" type="button">Discard draft</button><button id="restore-recovery" class="primary compact" type="button">Restore</button></div>
+    </dialog>
     <div class="map-panel-host">{{map-overlays}}</div>
   </main>
 </body>

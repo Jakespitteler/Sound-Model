@@ -41,7 +41,8 @@ flowchart LR
    sort automatically. **High contrast** adds white outlines for busy backgrounds.
 5. Choose **Save**, name the scenario, and save again after edits. **Open** lists saved work.
 
-**Greenbushes mine** shows a broad approximate overview, not a surveyed boundary.
+**Greenbushes mine** returns to the starting mine view. Fresh scenarios open at
+−33.8675, 116.07647 with zoom 14; saved scenarios retain their saved view.
 **Go to coordinates** navigates elsewhere. **Machine data** holds the equipment catalogue
 and editable estimate notes. Advanced settings stay collapsed to keep the sidebar simple.
 
@@ -68,7 +69,8 @@ in-app **Estimate notes** page records their origin.
 
 Saves are local to the computer running the Python backend, under `local-data/scenarios/`.
 Back up that folder. A saved `?scenario=...` URL restores its **last saved version** on reload;
-unsaved edits are not autosaved. `SOUND_MODEL_DATA_DIR` can select another storage folder.
+a separate browser draft offers **Restore/Discard** for unsaved edits. Restoring never
+updates a named save automatically. Recovery is not a backup and browser storage can be cleared. `SOUND_MODEL_DATA_DIR` can select another storage folder.
 No scenario files are pushed to GitHub. See the [user guide](docs/user-guide.md) for details.
 
 ## Documentation and agent work

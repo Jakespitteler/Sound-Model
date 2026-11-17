@@ -14,7 +14,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 
 | Order | Agent task | State / dependency |
 | --- | --- | --- |
-| 1 | [012 Recover unsaved edits](012-unsaved-recovery.md) | Ready to plan implementation |
+| 1 | [012 Recover unsaved edits](012-unsaved-recovery.md) | Implemented; ready for review |
 | 2 | [013 Optional receiver-name contract](013-receiver-name-contract.md) | Ready; small compatibility slice |
 | 3 | [014 Receiver-name editor](014-receiver-name-editor.md) | After 013 |
 | 4 | [015 Fit a local cluster](015-local-cluster-zoom.md) | Ready; maximum pairwise distance 10 km |
@@ -27,6 +27,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | After 025 |
 | 12 | [023 Ctrl-click repeat placement](023-control-repeat-placement.md) | Ready |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Agree a defensible policy before code |
+| Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Compare required data/methods; agree one small increment |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Owner decision before any report implementation |
 
 See the [implementation plan](../../tasks/plan.md) for order, checkpoints and branch bases.
@@ -83,7 +84,7 @@ be independently actionable once its idea and boundaries are approved.
 | [007 Reproducible reports](007-scenarios-and-audit-trail.md) | P1 | Local saved inputs exist; report/audit features absent | Scope approval; criteria/validation for assessment claims |
 | [008 Mitigation and controls](008-mitigation-and-operations.md) | P1 | Not implemented | Validated method, evidence and site responsibilities |
 | [009 Map/editor usability](009-map-and-editor-usability.md) | P2 | Startup messages and numeric editing implemented | Approved local-fit slice: 015; approve any new provider |
-| [010 Recovery and portable saves](010-scenario-autosave.md) | P1 | Explicit Save/Open implemented; unsaved edits not recovered | Approved recovery slice: 012; export/import declined |
+| [010 Recovery and portable saves](010-scenario-autosave.md) | P1 | Explicit Save/Open and browser recovery implemented | Approved recovery slice: 012; export/import declined |
 | [011 Simple workflow](011-simple-workflow.md) | P2 | Desktop tabs and compact markers implemented | Approved name/zoom/undo slices: 013–015, 018 |
 
 ## Assessment dependencies

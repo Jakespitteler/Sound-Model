@@ -2,7 +2,7 @@
  * Manages the Leaflet map, tile status feedback, draggable markers, and placement clicks.
  */
 
-import { MINE_BOUNDS } from './state.js';
+import { DEFAULT_VIEW } from './state.js';
 import { ContourLayer } from './contour-layer.js';
 import { $, escapeHtml } from './utils.js';
 import {soundColor} from './sound-style.js';
@@ -35,10 +35,10 @@ export class MapManager {
     this.bindMapEvents();
   }
 
-  /** Fit the wider Greenbushes mine area; this is an overview, not a survey boundary. */
+  /** Open the mine-wide starting view; saved scenarios restore their own camera. */
   fitMine() {
     this.map.stop();
-    this.map.fitBounds(MINE_BOUNDS, {paddingTopLeft:[48,95],paddingBottomRight:[36,110],maxZoom:14,animate:false});
+    this.map.setView([DEFAULT_VIEW.lat,DEFAULT_VIEW.lng],DEFAULT_VIEW.zoom,{animate:false});
     const centre = this.map.getCenter();
     $('site-lat').value = centre.lat.toFixed(5);
     $('site-lng').value = centre.lng.toFixed(5);
@@ -129,7 +129,7 @@ export class MapManager {
     let timeout;
     const unavailable = () => {
       $('tile-status').hidden = false;
-      $('tile-status').textContent = 'Satellite imagery is unavailable or slow. Check access to server.arcgisonline.com. Source placement and calculations still work.';
+      $('tile-status').textContent = 'Satellite imagery is slow to load. You can still place machines and calculate.';
     };
     tiles.on('loading', () => {
       tileErrors = 0;
@@ -140,7 +140,7 @@ export class MapManager {
       tileErrors++;
       $('tile-status').hidden = false;
       $('tile-status').textContent =
-        'Satellite imagery unavailable or incomplete. Check internet access. Coordinates and calculations still work.';
+        'Satellite imagery unavailable. You can still place machines and calculate.';
     });
     tiles.on('load', () => {
       clearTimeout(timeout);

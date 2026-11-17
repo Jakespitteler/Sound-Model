@@ -1,51 +1,8 @@
-.header {
-  height: 82px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  padding: 0 30px;
-  background: var(--surface);
-}
-.brand {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.brand-mark {
-  font-size: 37px;
-  color: var(--teal);
-}
-.brand strong {
-  font-size: 22px;
-  letter-spacing: -.7px;
-  display: block;
-}
-.brand div > span {
-  display: block;
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 3px;
-  letter-spacing: .8px;
-}
-.project-label {
-  font-size: 10px;
-  letter-spacing: 2.4px;
-  color: var(--muted);
-}
-.badge {
-  font-size: 10px;
-  letter-spacing: 1.2px;
-  border: 1px solid #d9dfd3;
-  color: #616f4e;
-  background: #f4f6ef;
-  padding: 8px 11px;
-  border-radius: 30px;
-}
 main {
   display: grid;
   grid-template-columns: 375px minmax(0, 1fr);
-  height: calc(100vh - 82px);
+  height: 100vh;
+  height: 100dvh;
 }
 .map-panel-host {
   min-width: 0;

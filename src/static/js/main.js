@@ -9,6 +9,7 @@ import {ContoursUI} from './ui-contours.js';
 import {renderSoundGuide} from './sound-guide.js';
 import {setupSidebar} from './sidebar.js';
 import {ScenarioFilesUI} from './scenario-files.js';
+import {DraftRecovery} from './draft-recovery.js';
 
 const store = new ScenarioStore();
 const manager = new MapManager(store);
@@ -122,4 +123,5 @@ catalogue.render(); entities.renderSources(); entities.renderReceivers({}); cont
 
 const files = new ScenarioFilesUI(store,manager,say);
 files.bind();
-files.restoreFromUrl();
+const recovery = new DraftRecovery(files);
+recovery.start();

@@ -16,12 +16,16 @@ export class ScenarioFilesUI {
   constructor(store,manager,say) {
     this.store=store; this.manager=manager; this.say=say;
     this.id=null; this.name=''; this.revision=0; this.savedRevision=0; this.busy=false; this.applying=false;
+    this.listeners=new Set();
     store.subscribe(reason=> {if(!this.applying && !['ui'].includes(reason)) {this.revision++; this.renderStatus();}});
     manager.map.on('moveend',()=>this.markDirty());
   }
 
   /** Record a saved-input or presentation change without causing an acoustic request. */
   markDirty() {if(!this.applying) {this.revision++; this.renderStatus();}}
+
+  /** @param {function():void} listener Save, edit and scenario-lifecycle observer. */
+  subscribe(listener) {this.listeners.add(listener);}
 
   /** Bind Save/Open dialogs and optional copied saves. */
   bind() {
@@ -110,7 +114,21 @@ export class ScenarioFilesUI {
   }
 
   /** Reopen only an explicitly saved URL, never silently restore unsaved edits. */
-  restoreFromUrl() {const id=new URL(location.href).searchParams.get('scenario'); if(id) this.load(id);}
+  async restoreFromUrl() {const id=new URL(location.href).searchParams.get('scenario'); if(id) await this.load(id);}
+
+  /** @param {Object} document Server-validated recovery inputs. @param {?Object} record Existing save, or null if missing. */
+  applyRecovery(document,record) {
+    this.applying=true;
+    try {
+      this.store.restore(document);
+      if(document.view) this.manager.map.setView([document.view.lat,document.view.lng],document.view.zoom,{animate:false});
+      else this.manager.fitMine();
+      $('contour-contrast').checked=document.high_contrast; this.manager.contourLayer.setHighContrast(document.high_contrast);
+      $('show-overlay').checked=document.show_contours; this.manager.contourLayer.setVisible(document.show_contours);
+      this.id=record?.id ?? null; this.name=record?.name ?? 'Recovered scenario';
+      this.revision=1; this.savedRevision=0; this.setUrl(this.id);
+    } finally {this.applying=false; this.renderStatus();}
+  }
 
   /** @param {?string} id Saved scenario to retain in the reloadable local URL. */
   setUrl(id) {
@@ -121,6 +139,7 @@ export class ScenarioFilesUI {
   /** Reflect saved versus edited state without claiming autosave. */
   renderStatus() {
     $('save-status').textContent=this.id ? `${this.name} · ${this.revision===this.savedRevision ? 'Saved' : 'Unsaved changes'}` : 'Unsaved scenario · Save to keep your work';
+    for(const listener of this.listeners) listener();
   }
 
   /** @param {boolean} busy Prevent conflicting save/open operations from double clicks. */

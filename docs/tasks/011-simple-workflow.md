@@ -50,3 +50,12 @@ After feedback on overlapping labels, machines now show only numbered category i
 Hover/focus reveals their name and sound power, while click/Enter shows the evidence note.
 Receiver badges are smaller and rise above neighbours on hover. Full machine names and
 power remain in the sidebar, with no added map-display setting. Coordinates remain exact.
+
+## Screen cleanup — 17 November 2026
+
+Removed the decorative branding header and filled the desktop viewport with the scenario/map.
+The guide footer was removed; source/estimate and About copy now explain user actions without
+workspace history or developer commentary. Fresh scenes and Home use a mine-wide camera at
+−33.8675, 116.07647, zoom 14; saved views take precedence. Live Esri imagery, desktop/mobile
+screenshots and saved-view round trips were checked. Task 026 separately evaluates feasible
+model improvements; no propagation correction was added by this UI change.
