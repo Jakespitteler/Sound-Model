@@ -132,12 +132,12 @@ export class MapObjectControls {
         this.group.addLayer(overlay);
         const root=overlay.getElement(), icon=marker.getElement();
         if(root && icon) {
-          const half=icon.getBoundingClientRect().width/2, point=this.map.latLngToContainerPoint(marker.getLatLng());
+          const size=icon.getBoundingClientRect(), half=size.width/2, top=-size.height/2-12, point=this.map.latLngToContainerPoint(marker.getLatLng());
           const width=this.map.getSize().x;
           let left=half-12;
           if(point.x+left+24>width-2) left=-half-12;
           root.style.marginLeft=`${Math.max(2-point.x,Math.min(width-point.x-26,left))}px`;
-          root.style.marginTop=`${point.y<31 ? 5 : -29}px`;
+          root.style.marginTop=`${point.y+top<2 ? 5 : top}px`;
         }
       } else this.group.removeLayer(overlay);
     }

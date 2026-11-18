@@ -85,10 +85,6 @@ export class MapManager {
   setReceiverReadings(results, failed = false) {
     this.receiverReadings = results;
     this.receiverFailed = failed;
-    for (const [id, marker] of this.receiverMarkers) {
-      const index = this.store.receivers.findIndex(receiver=>receiver.id===id);
-      marker.setIcon(this.receiverIcon(id,index));
-    }
     this.updateReceiverLabels();
   }
 
@@ -100,11 +96,25 @@ export class MapManager {
       const reading=this.receiverReadings?.[id];
       const description=this.receiverFailed ? 'unavailable' : !reading ? 'calculating' : reading.status==='out_of_scope' ? 'outside the 10 km model scope' : reading.level_db===null
         ? 'no source contribution' : `${reading.level_db.toFixed(1)} dB(A) predicted source contribution`;
+      const root=marker.getElement(), badge=root?.querySelector('.receiver-marker');
+      if(badge) {
+        const hasLevel=!this.receiverFailed && reading?.level_db!=null && reading.status!=='out_of_scope';
+        const value=this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.status==='out_of_scope' ? 'Outside scope' : reading.level_db===null ? 'No sources' : reading.level_db.toFixed(1);
+        const name=badge.querySelector('.receiver-name'); name.textContent=label;
+        const reference=badge.querySelector('.receiver-id'); reference.textContent=`R${index+1}`; reference.hidden=!this.store.receivers[index].name;
+        badge.querySelector('.receiver-value').textContent=value;
+        badge.querySelector('.receiver-number small').hidden=!hasLevel;
+        badge.classList.toggle('is-status',!hasLevel);
+        badge.style.setProperty('--level-color',soundColor(hasLevel ? reading.level_db : null));
+        const size=badge.getBoundingClientRect();
+        root.style.marginLeft=`${-size.width/2}px`; root.style.marginTop=`${-size.height/2}px`;
+        marker.options.icon.options.iconSize=[size.width,size.height]; marker.options.icon.options.iconAnchor=[size.width/2,size.height/2];
+      }
       marker.getTooltip().getContent().querySelector('strong').textContent=label;
       marker.getElement()?.setAttribute('aria-label',`${label} (R${index+1}): ${description}. Select for details.`);
       const popup=marker.getPopup()?.getContent();
       if(popup instanceof HTMLElement) popup.querySelector('[data-receiver-reading]').textContent=description;
-      if (marker.isTooltipOpen()) this.fitObjectTooltip(marker.getTooltip());
+      if (marker.isTooltipOpen()) this.fitObjectTooltip(marker.getTooltip(),marker);
     }
     this.objectControls.refresh();
   }
@@ -116,25 +126,24 @@ export class MapManager {
    * @return {L.DivIcon} A clear unknown/empty/error or numeric badge, never a false 0 dB.
    */
   receiverIcon(id, index) {
-    const reading = this.receiverReadings?.[id];
-    const value = this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.status === 'out_of_scope' ? 'Outside scope' : reading.level_db === null ? 'No sources' : reading.level_db.toFixed(1);
-    const color = soundColor(reading?.level_db ?? null);
-    const width = reading?.level_db != null && !this.receiverFailed ? 84 : 112;
-    return L.divIcon({className:'receiver-location',iconSize:[width,34],iconAnchor:[width/2,17],
-      html:`<div class="receiver-marker${reading?.level_db != null && !this.receiverFailed ? '' : ' is-status'}" data-receiver-id="${escapeHtml(id)}" style="--level-color:${color}"><span class="receiver-id">R${index+1}</span><strong class="receiver-number">${value}${reading?.level_db != null && !this.receiverFailed ? '<small>dB(A)</small>':''}</strong></div>`});
+    const receiver=this.store.receivers[index],label=receiverLabel(receiver,index);
+    return L.divIcon({className:'receiver-location',iconSize:null,iconAnchor:[0,0],
+      html:`<div class="receiver-marker is-status" data-receiver-id="${escapeHtml(id)}" style="--level-color:${soundColor(null)}"><span class="receiver-identity"><span class="receiver-name">${escapeHtml(label)}</span><span class="receiver-id"${receiver.name ? '' : ' hidden'}>R${index+1}</span></span><strong class="receiver-number"><span class="receiver-value">…</span><small hidden>dB(A)</small></strong></div>`});
   }
 
   /**
    * Keep an open detail card inside the map without panning or moving its marker.
    * @param {L.Tooltip} tooltip Newly opened object tooltip with its measured content.
+   * @param {L.Marker} [marker] Object whose current height determines the gap.
    */
-  fitObjectTooltip(tooltip) {
+  fitObjectTooltip(tooltip,marker) {
     const bounds = this.map.getContainer().getBoundingClientRect();
     const obstacles = [...this.map.getContainer().parentElement.querySelectorAll('.tile-status,.location-bar,.sound-key,.contour-alert,.map-fit-button,.leaflet-control')]
       .map(element=>element.getBoundingClientRect()).filter(rect=>rect.width && rect.height);
     let best;
     for (const direction of ['top','bottom']) {
-      const vertical = direction==='top' ? -18 : 18;
+      const gap=marker ? Math.max(18,marker.getElement().getBoundingClientRect().height/2+2) : 18;
+      const vertical = direction==='top' ? -gap : gap;
       tooltip.options.direction = direction;
       tooltip.options.offset = L.point(0,vertical);
       tooltip.update();
@@ -200,7 +209,7 @@ export class MapManager {
   /** Bind placement only: camera movement never triggers acoustic requests. */
   bindMapEvents() {
     this.map.on('resize',()=>this.markers.eachLayer(marker=> {
-      if (marker.isTooltipOpen()) this.fitObjectTooltip(marker.getTooltip());
+      if (marker.isTooltipOpen()) this.fitObjectTooltip(marker.getTooltip(),marker);
     }));
     this.map.on('movestart',()=>this.markers.eachLayer(marker=>marker.closeTooltip()));
     this.map.on('click', (event) => {
@@ -266,7 +275,7 @@ export class MapManager {
         }
         marker.getElement()?.setAttribute('aria-label', isSource ? `${label}. Sound power ${machine.lwa.toFixed(1)} dB(A) LwA. Select for details.` : label);
         marker.bindTooltip(tooltip,{direction:'top',offset:[0,-18],className:'object-tooltip',opacity:1});
-        marker.on('tooltipopen',event=>this.fitObjectTooltip(event.tooltip));
+        marker.on('tooltipopen',event=>this.fitObjectTooltip(event.tooltip,marker));
         const popup = document.createElement('div');
         popup.className = 'source-popup object-popup';
         const title = document.createElement('strong'); title.textContent = label; title.dataset.objectTitle='';

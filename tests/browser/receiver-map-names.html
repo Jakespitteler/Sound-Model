@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8"><title>Persistent receiver map names</title>
+<link rel="stylesheet" href="../../src/static/vendor/leaflet/leaflet.css"><link rel="stylesheet" href="../../src/static/css/tokens.css"><link rel="stylesheet" href="../../src/static/css/base.css"><link rel="stylesheet" href="../../src/static/css/map.css"><link rel="stylesheet" href="../../src/static/css/contours.css">
+<style>#map{width:900px;height:550px}</style><div id="map"></div><pre id="result">Running…</pre>
+<script src="../../src/static/vendor/leaflet/leaflet.js"></script>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {MapManager} from '../../src/static/js/map-manager.js';
+import {MapObjectControls} from '../../src/static/js/map-object-controls.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+try {
+ const store=new ScenarioStore();store.addReceiver(-33.86,116.07);const id=store.receivers[0].id;
+ store.renameReceiver(id,'Town');store.addReceiver(-33.859,116.072);
+ const map=L.map('map',{zoomAnimation:false}).setView([-33.86,116.07],16);
+ const manager=Object.assign(Object.create(MapManager.prototype),{store,map,markers:L.layerGroup().addTo(map),receiverMarkers:new Map(),receiverReadings:null,receiverFailed:false,objectControls:new MapObjectControls(map,store)});
+ manager.renderMarkers();const marker=manager.receiverMarkers.get(id),root=marker.getElement();
+ check(root.querySelector('.receiver-name')?.textContent==='Town','named receiver persists without hover');
+ check(manager.receiverMarkers.get(store.receivers[1].id).getElement().querySelector('.receiver-name').textContent==='Receiver 2','unnamed receiver has a persistent fallback');
+ const badge=root.querySelector('.receiver-marker'),events=[];store.subscribe(reason=>events.push(reason));
+ const readings={[id]:{status:'ok',level_db:46.2}};manager.setReceiverReadings(readings);
+ check(marker.getElement()===root && root.querySelector('.receiver-marker')===badge,'prediction refresh preserves marker and badge nodes');
+ check(root.querySelector('.receiver-name').textContent==='Town' && root.querySelector('.receiver-number').textContent.includes('46.2'),'name and pressure appear together');
+ const anchor=marker._icon.getBoundingClientRect(),point=map.latLngToContainerPoint(marker.getLatLng()),area=map.getContainer().getBoundingClientRect();
+ check(Math.abs(anchor.x+anchor.width/2-area.x-point.x)<1 && Math.abs(anchor.y+anchor.height/2-area.y-point.y)<1,'badge stays centred on its geographic point');
+ root.focus();store.renameReceiver(id,'Camp <img src=x> 🌳');manager.updateReceiverLabels();
+ check(marker.getElement()===root && document.activeElement===root,'rename preserves focused marker');
+ check(!root.querySelector('img') && root.querySelector('.receiver-name').textContent==='Camp <img src=x> 🌳','names remain literal text');
+ check(events.length===1 && events[0]==='receiver-name','rename uses presentation lane only');
+ store.renameReceiver(id,'');manager.updateReceiverLabels();check(root.querySelector('.receiver-name').textContent==='Receiver 1','clearing a name restores fallback immediately');
+ store.renameReceiver(id,'長い名前🌳'.repeat(16));manager.updateReceiverLabels();
+ check(root.getBoundingClientRect().width<=220 && root.getBoundingClientRect().height<=70,'long Unicode names stay compact');
+ check(root.getAttribute('aria-label').includes(store.receivers[0].name) && marker.getTooltip().getContent().textContent.includes(store.receivers[0].name),'full long name remains available for focus/hover and accessibility');
+ for(const [results,failed,expected] of [[null,false,'…'],[{},true,'Unavailable'],[{[id]:{status:'ok',level_db:null}},false,'No sources'],[{[id]:{status:'out_of_scope',level_db:null}},false,'Outside scope']]) {
+  manager.setReceiverReadings(results,failed);
+  check(root.querySelector('.receiver-name').textContent===store.receivers[0].name && root.querySelector('.receiver-number').textContent.includes(expected),`name remains with ${expected} status`);
+ }
+ manager.setReceiverReadings(readings);manager.objectControls.setActive(true);
+ check(document.querySelector('.map-delete-button').getAttribute('aria-label').includes(store.receivers[0].name),'Ctrl delete control follows current name');
+ map.setZoom(14,{animate:false});check(root.querySelector('.receiver-name').textContent===store.receivers[0].name,'zoom does not hide names');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');document.querySelector('#result').dataset.passed='true';
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>
