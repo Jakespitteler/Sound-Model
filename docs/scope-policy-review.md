@@ -2,7 +2,9 @@
 
 [Current model](model.md) · [Task 024](tasks/024-source-aware-model-scope.md)
 
-**Proposed, 18 November 2026. Owner decision pending.** This review changes no app behaviour.
+**Historical proposal, 18 November 2026.** The owner subsequently chose the adaptive
+background policy recorded below. Earlier options are retained for context; current behaviour
+is documented in [the model guide](model.md).
 Reviewed baseline: `29ae47f` (main, including task 030).
 
 The current equation cannot decide whether machinery can be heard. It can calculate an
@@ -142,8 +144,8 @@ flowchart TD
 
 ## Validation contract after a decision
 
-No implementation brief has been added: the owner reviews new task additions first.
-If approved, the first slice should implement the policy contract and its renderer together,
+At the review checkpoint, no implementation brief had been added.
+The following contract informed the subsequently approved slice; the first slice should implement the policy contract and its renderer together,
 then verify these cases before changing the default behaviour:
 
 | Case | Proposed outcome |
@@ -206,8 +208,18 @@ PYCODE
 These tests exercise the current app, including its existing 10 km rule. They do not
 verify a policy change that has not been implemented.
 
-## Owner decision
+## Owner decision — 18 November 2026
 
-Pending. Proposed choice: qualified geometry estimates without a hard distance hide,
-with the 300 dB(A) stress input withheld from ordinary map predictions. Confirm or amend
-those two choices before application code or follow-up implementation tasks are added.
+The owner approved a different replacement after the review:
+
+- No fixed receiver-distance or numeric contour-threshold cap.
+- One user-entered background pressure level for the scenario, initially unset.
+- An adaptive outer boundary where the combined machinery energy adds 0.1 dB to background.
+- Below that increase, receivers show **Negligible increase**, and lower contours are hidden.
+- No invented propagation correction. The 10 km pairwise camera group remains separate.
+
+The previous recommendation to withhold the 300 dB stress input is superseded by the owner's
+no-limit request. It remains experimental arithmetic with an explicit unsupported-machinery
+warning. Real projection and calculation failures remain explicit, rather than silently
+clipping geometry. See [task 024](tasks/024-source-aware-model-scope.md) for implementation
+and verification evidence. No further owner approval is required for this agreed slice.

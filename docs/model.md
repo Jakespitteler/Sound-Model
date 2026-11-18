@@ -9,10 +9,10 @@ starting point for exploring a scenario, not proof that machinery will be inaudi
 flowchart TD
     Inputs[Machine powers and positions] --> Spread[Spread each source over distance]
     Spread --> Add[Add independent sound energies]
-    Add --> Scope[Apply display scope and warnings]
+    Add --> Scope[Compare with entered background]
     Scope --> Readings[Receiver pressure readings]
     Add --> Levels[Find equal-level contour lines]
-    Levels --> Checks[Per-level geometry and scope checks]
+    Levels --> Checks[Per-level relevance and geometry checks]
     Checks --> Map[Successful lines and explicit failures]
 ```
 
@@ -59,28 +59,45 @@ Zero dB is a reference level, not an absence of sound. A pressure level of −20
 to 2 micropascals. Energy remains positive. The app does not clamp legitimate negative
 receiver levels to zero, but a tiny extrapolated value is not evidence of actual audibility.
 
-## Why the app hides distant numbers
+## Adaptive background boundary
 
-With geometric spreading alone, a 120 dB(A) LwA source still produces about 2.42 dB(A) at the
-roughly 213.57 km from Greenbushes to Perth. That mathematical result does not establish that
-someone can hear the machine there. Important propagation effects and background masking
-are absent.
+Enter one A-weighted background pressure level for the whole scenario. No background is
+assumed for new or legacy scenes. With background blank, receivers show the unfiltered
+machinery estimate at any distance. Numeric contour thresholds have no fixed lower or upper
+cap, including negative values; non-finite values remain invalid.
 
-The app currently applies a **10 km display scope**. The owner has requested a replacement
-that better distinguishes source plausibility and unsupported distant extrapolation;
-the [policy review](scope-policy-review.md) compares a proposed replacement and records
-the pending owner decision. Until approved and implemented,
-the current behaviour is:
+The app adds **all machinery energies first**, then evaluates their increase over background:
 
-| Situation | Current behaviour |
-| --- | --- |
-| Receiver more than 10 km from every source | Hide numeric level and contribution breakdown; show Outside scope |
-| Receiver within 10 km, with some more distant sources | Keep all contributions and warn that distant paths are unvalidated |
-| Calculated contour extends outside the nearest-source 10 km scope | Reject the entire level with a reason; keep other successful levels |
+```text
+increase = 10 log10(1 + 10 ** ((machinery_level - background_level) / 10))
+boundary_level = background_level + 10 log10(10 ** (0.1 / 10) - 1)
+               ≈ background_level - 16.327747 dB
+```
 
-This is a presentation policy, **not a physical sound cutoff or a validated operating range**.
-Even predictions inside 10 km are unvalidated. The separate 200 km contour domain guard is
-computational; it does not expand the display scope.
+A dotted contour at that exact machinery level marks a **0.1 dB increase**. Lower machinery
+contours are labelled **Negligible increase** and not drawn. Receivers below the boundary
+show the same phrase instead of numeric totals or contribution breakdowns. Numeric readings
+and other contours continue to describe machinery alone; background is never added to the
+reported machinery level. At the threshold, the increase is 0.1 dB; below it, it is less.
+
+For example, background 40 dB(A) produces an outer threshold of approximately 23.7 dB(A).
+A 120 dB(A) source's geometry-only boundary is about 18.5 km away; changing machine power,
+source count/positions or background changes the boundary automatically. The display rule
+uses neither a fixed distance nor an absolute machinery-pressure threshold.
+
+This owner-selected **display relevance** setting is not a test of inaudibility or compliance.
+A distinctive tone can remain noticeable; broadband background alone does not describe
+masking. Use compatible A-weighted metrics and averaging periods, and distinguish measured
+background from assumptions. Propagation remains geometry-only and is not a guaranteed upper
+bound. Extreme inputs such as 300 dB(A) remain experimental arithmetic, not explosion models.
+
+Contours retain a 640,000-cell budget per level and supported ±85° map projection. The old
+200 km domain-radius cap and 10 km display suppression are removed. An unrepresentable
+complete domain reports a named failure rather than a clipped line; successful other levels
+and receiver estimates remain available. The separate 10 km pairwise navigation rule is unchanged.
+
+The [scope review](scope-policy-review.md) preserves the earlier options and records the
+owner's approved replacement. See [task 024](tasks/024-source-aware-model-scope.md) for checks.
 
 ## What is missing
 
@@ -90,7 +107,7 @@ computational; it does not expand the display scope.
 | Ground, terrain, pits, buildings and barriers | Real paths can reflect, absorb, shield or diffract sound |
 | Wind, temperature, humidity and atmospheric absorption | Weather and frequency change outdoor propagation |
 | Source/receiver heights and directivity | Installation and direction affect the received level |
-| Background noise, duty cycles, sound character and uncertainty | A source contribution alone cannot establish disruption or compliance |
+| Spatial background measurements, duty cycles, sound character and uncertainty | A source contribution alone cannot establish disruption or compliance |
 
 Cloud cover is saved as metadata and has **no numerical correction**. A universal cloud-to-dB
 multiplier would not account for these missing effects. Colours and the humorous sound guide

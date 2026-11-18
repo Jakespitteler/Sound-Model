@@ -62,7 +62,7 @@ def calculate_contour_range(scenario: Scenario) -> ContourRange:
     )
     if floor >= peak:
         return ContourRange(
-            status="unavailable", reason="All machinery levels produce a negligible increase over background."
+            status="unavailable", reason="No useful slider interval above background; enter a level directly."
         )
     low = math.ceil((floor + 0.05) * 10) / 10
     high = math.floor((peak - 0.05) * 10) / 10

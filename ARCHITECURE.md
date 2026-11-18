@@ -25,7 +25,7 @@ they do not add missing propagation physics. Imagery uses the external tile serv
 | --- | --- | --- |
 | HTTP and pages | `src/main.py`, `pages.py`, `assets.py` | Routes, server-assembled partials, deterministic asset MIME types |
 | Validated inputs | `src/types.py` | Catalogue, source/receiver references, finite values and limits |
-| Receiver calculation | `src/acoustics.py`, `scope.py` | Scalar spreading/energy sum, then display scope |
+| Receiver calculation | `src/acoustics.py`, `scope.py` | Scalar spreading/energy sum, then background relevance |
 | Contour calculation | `src/contours.py`, `contour_engine.py` | Domain, sparse tiles, line extraction, stitching and per-level outcomes |
 | Persistence | `src/scenario_files.py`, `scenario_routes.py` | Versioned schema, safe UUID filenames, atomic saves and listing |
 | Frontend entry/state | `src/static/js/bootstrap.js`, `main.js`, `state.js` | Ordered startup, observable state and request orchestration |
@@ -104,7 +104,8 @@ batched paths evaluate independent omnidirectional sources using great-circle ho
 distances. Source distances below 1 m use a numerical limit. Energies combine logarithmically;
 no coherent phase cancellation or numerical weather correction is applied.
 
-For each requested contour level:
+Before geometry extraction, thresholds below the background boundary return `negligible`
+without tracing. For each remaining requested contour level:
 
 1. Build a conservative source-centred domain, unwrapping longitude around the first source
    so date-line neighbours stay local. The viewport is not an input.
@@ -114,25 +115,38 @@ For each requested contour level:
    a minimum 0.05 m projected cell target.
 4. Extract lines from sparse 8×8 tiles with ContourPy. Join endpoints using exact lattice
    identities, then refine crossings by vectorised bisection.
-5. Convert to longitude/latitude and check the nearest-source display scope at vertices and
-   segment midpoints. A level outside scope fails as a whole; it is not silently clipped.
+5. Convert to longitude/latitude without clipping or a nearest-source distance filter.
 6. Return that level's `ok`, `empty` or `failed` result and continue with the other levels.
 
-The 0.02 dB tolerance is a target at line vertices, not uncertainty of environmental predictions.
-Straight segments still approximate the field. Numerical guards include 640,000 charged cells
-per level, a 200 km total-power domain radius and domains inside ±85° latitude. They do not
-validate physical predictions over those distances. Do not omit real machines to force a result.
+The 0.02 dB tolerance is a target at line vertices, not environmental uncertainty.
+Straight segments still approximate the field. Numerical guards retain 640,000 charged cells
+per level and complete domains inside ±85° latitude. The 200 km radius cap is removed;
+projection support is checked in log-radius space before exponentiation to avoid overflow
+for extreme finite thresholds. Do not omit machines or silently crop lines to force a result.
 
-## Scope and display
+## Background and display
 
-`scope.py` hides a receiver's pressure and numeric contribution breakdown when its nearest
-source is more than 10 km away, retaining status and nearest distance. A nearer receiver keeps
-all contributions and warns if some paths are beyond 10 km. This owner-selected display policy
-is neither a physical cutoff nor a validated range.
+`scope.py` derives `boundary_level = background_db + 10 log10(expm1(0.1 ln(10) / 10))`.
+This is approximately background minus 16.327747 dB, the machinery contribution at a 0.1 dB
+increase in the combined total. It is a display rule, not new attenuation or an audibility test.
+`screen_receiver` compares the **all-source total** to that threshold; below it, status is
+`negligible` with no numeric level or contribution breakdown. There is no receiver-distance
+cutoff. Empty scenes retain `no_sources`, and near-field flags survive the relevance filter.
+
+`background_db` is nullable, finite pressure metadata saved in version-1 documents and
+included in acoustic payloads. Omitted legacy fields default to null: no background is guessed.
+The browser mirrors the threshold in `background.js`, adds one derived line to the level union,
+and flags its dotted label. A 1e-9 dB comparison allowance at contour classification absorbs
+cross-runtime floating-point differences; receiver comparison uses the unrounded threshold.
+The auto line is not saved as an ordinary contour. Background notifications refresh receivers,
+geometry and slider range; camera, style and name-only changes still make no acoustic requests.
+Both geometry and range cache keys include background, so classified results cannot leak
+between backgrounds. `negligible` contour results can be cached with that complete signature.
 
 The optional `acceptable_level_db` defaults to null in version-1 saves and browser state.
 It is excluded from direct receiver requests: only its numeric threshold joins the deduplicated
-contour-level union. Backend and browser enforce 25 unique levels including this value.
+contour-level union. Saved/browser editable levels enforce 25 unique levels including this value; the API
+allows 26 to accommodate the derived background boundary.
 `lineSettings()` emits one setting per unique level and flags a shared ordinary/reference level
 as special. Changing/clearing the reference uses the contour lane, including cache-only style
 changes for matching levels; it never updates source powers or receiver pressures.
@@ -280,8 +294,9 @@ Invalid input uses HTTP 422 with sanitised error details; raw input/context is o
 A valid contour request returns HTTP 200 even if individual levels fail. File failures use
 HTTP 500 with a user-readable message. Unknown fields, duplicate IDs, broken type references
 and non-finite values are rejected. Limits are 50 types, 100 sources, 20 receivers and
-25 unique levels; power/threshold inputs allow 0–300 dB(A). The numeric ceiling is not a
-realistic machinery specification. Coordinates use latitude ±85° and longitude ±180°.
+25 editable unique levels (26 with the automatic boundary in API requests). Machine powers
+allow 0–300 dB(A); contour/reference thresholds accept any finite value. The source-power
+ceiling is not a realistic machinery specification. Coordinates use latitude ±85° and longitude ±180°.
 
 Interactive Swagger/ReDoc and OpenAPI routes are disabled. There is no authentication for
 this local API. Only `src/static` is mounted; source, templates and private scenario files
@@ -291,13 +306,13 @@ verification and startup troubleshooting. Historical audits are indexed in [docs
 ## Practical slider range
 
 `POST /api/contour-range` takes source inputs only. `contour_range.py` uses total sound-power
-spreading at the existing 10 km scope distance for a conservative lower candidate, and the
+spreading at a projection-derived distance and the background boundary for a lower candidate; the
 combined field evaluated at source centres for a conservative peak candidate. It rounds
 inward to 0.1 dB with a 0.05 dB margin and verifies endpoints through unchanged `build_contours`.
 A failed low endpoint is narrowed toward the verified upper endpoint with at most 12 bisections.
 No interval is invented when unavailable. This is a useful checked interval, not the maximal
 feasible range or a guarantee that every intermediate extraction avoids numerical guards.
-Numeric entry retains 0–300, all per-level errors and the existing display policy.
+Numeric entry accepts any finite level, retaining per-level errors and the background relevance policy.
 
 The browser uses a separately versioned request lane and an eight-signature session cache.
 Only source-signature changes request a range; panning, threshold edits and metadata changes

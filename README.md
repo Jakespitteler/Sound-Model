@@ -66,7 +66,13 @@ share the advanced-settings space.
 | Receiver pressure, **LpA** | Combined calculated contribution from the machines at that receiver |
 | Contour | Locations where the combined pressure level equals the selected threshold |
 | Sound snapshots | Humorous approximate pressure comparisons; not equipment specifications or limits |
-| Outside scope | Nearest machine is more than 10 km away; a numerical extrapolation is hidden |
+| Negligible increase | Machinery adds less than 0.1 dB to the entered background |
+
+**Background noise** sets one level for the whole scenario. The dotted outer contour marks
+a 0.1 dB increase over it; beyond that boundary, receivers show **Negligible increase**.
+Leave background blank to view unfiltered geometry estimates. There is no fixed receiver
+distance or numeric contour-level cap; projection and calculation budgets can still cause
+individual contour failures. Background is retained by Save/Open and recovery.
 
 Default contours match the guide: **30, 40, 60, 80 and 100 dB(A)**. A failed contour reports
 its level/reason while successful levels remain visible. Colours describe levels, not compliance.

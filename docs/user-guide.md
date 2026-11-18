@@ -98,13 +98,32 @@ white halos. **Show lines** hides/shows them without changing the calculation.
 | --- | --- |
 | Numeric receiver reading | Treat it as a screening machine contribution, excluding background |
 | No sources | Place a machine; this does not mean the site has zero ambient noise |
-| Outside scope | The nearest machine is beyond 10 km; no credible distant number is supplied |
+| Negligible increase | Machinery adds less than 0.1 dB to the entered background |
 | No crossing | That threshold has no line for the current field |
 | Failed contour | Open its reason; other successful levels remain visible |
 | Unavailable or startup error | Read the displayed error; use Retry when offered |
 
-The app also flags receivers within 1 m of a source and totals containing distant source
-paths. These warnings matter even when a number is shown. See [model limits](model.md).
+The app flags receivers within 1 m of a source. These are numerical limits rather than
+near-field predictions. See [model limits](model.md).
+
+### Set background noise
+
+Enter **Background noise** above the workspace tabs. Use one measured or explicitly assumed
+level for the whole scenario; zero is a valid level, while blank means not set. The app does
+not supply a guessed default. Save/Open and recovery retain your value.
+
+A dotted outer contour marks where all machines together add **0.1 dB** to background.
+Receivers beyond it show **Negligible increase**. Lower contour levels remain in your list
+with that status, and reappear if the background or machines change. The automatic boundary
+is derived, so it does not need another editable contour row. A failed boundary is identified
+in contour error details; successful other levels remain visible.
+
+Numeric readings still show the machinery contribution, excluding background. Negligible
+increase does not guarantee that machinery cannot be heard. Clear background to turn this
+filter off. There is no fixed receiver-distance cutoff or numeric contour-level cap;
+calculation budgets and supported map projection can still cause individual line failures.
+
+![Adaptive outer boundary and receiver states](images/background-boundary.png)
 
 ### Set an acceptable-level reference
 
@@ -114,11 +133,11 @@ available after its current-machine range is checked. Its heavier dashed line is
 not an approved compliance limit or a determination that machinery cannot be heard.
 
 Matching an ordinary threshold shares one calculation and line. The count allows 25 unique
-thresholds including the reference; if full, remove a level or choose an existing one. A failed
+editable thresholds including the reference, plus the derived outer boundary; if full, remove a level or choose an existing one. A failed
 reference names its level and reason while successful ordinary contours remain visible.
 The slider uses a practical contour-producing interval for the current machines. Bounds are
-checked with the existing model and scope; they are not a claim of the full feasible range or
-environmental validation. Numeric entry still accepts 0–300 dB(A), and a source change does
+checked with the current model, background and geometry engine; they are not a claim of the full feasible range or
+environmental validation. Numeric entry accepts any finite dB(A) value, and a source change does
 not silently change your chosen value. Per-level extraction failures can still be reported.
 Save/Open and recovery retain the setting. Show lines and High contrast apply to it too.
 
