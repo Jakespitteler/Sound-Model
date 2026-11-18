@@ -10,6 +10,7 @@ dated change records explain how the project reached it.
 | Understand the calculations and their limits | [Sound model](model.md) |
 | Find modules, data flows and API boundaries | [Architecture](../ARCHITECURE.md) |
 | Run checks or troubleshoot startup | [Developer guide](development.md) |
+| Review the proposed replacement for the distance-only display rule | [Scope policy review — decision pending](scope-policy-review.md) |
 | Choose an approved POC task | [Task backlog](tasks/README.md) |
 | Use or update the installed agent skills | [Agent Skills integration](../.agents/README.md) |
 | Check use permissions | [Project licence](../LICENSE) and [third-party notices](../THIRD_PARTY_NOTICES.md) |

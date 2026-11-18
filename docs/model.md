@@ -68,7 +68,8 @@ are absent.
 
 The app currently applies a **10 km display scope**. The owner has requested a replacement
 that better distinguishes source plausibility and unsupported distant extrapolation;
-the [backlog](tasks/README.md) records that investigation. Until implemented,
+the [policy review](scope-policy-review.md) compares a proposed replacement and records
+the pending owner decision. Until approved and implemented,
 the current behaviour is:
 
 | Situation | Current behaviour |
