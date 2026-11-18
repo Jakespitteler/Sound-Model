@@ -1,0 +1,53 @@
+<!doctype html><meta charset="utf-8"><title>Address search checks</title>
+<div id="address-search"><form id="address-form"><input id="address-query" role="combobox" aria-controls="address-results"><button id="clear-address" type="button" hidden aria-label="Clear address">×</button><button>Search</button></form>
+<ul id="address-results" role="listbox" hidden></ul><p id="address-status"></p><small id="address-credit" hidden>Photon / OSM</small></div>
+<button id="outside">Outside</button><pre id="result" role="status">Running…</pre>
+<script type="module">
+import {AddressSearch,validPlaces} from '../../src/static/js/address-search.js';
+const checks=[];
+/** @param {boolean} claim Behaviour. @param {string} label Test description. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+/** @param {number} ms Browser pause. @return {Promise<void>} Settled timer. */
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+try {
+ check(validPlaces([{label:'Bad',lat:90,lng:0},{label:'Bad',lat:false,lng:0},{label:'Bad',lat:0,lng:181}]).length===0,'unsupported coordinates never navigate');
+ const safe=validPlaces([{label:'Town',lat:-33,lng:116,bounds:[-30,120,-40,110]}]);
+ check(safe.length===1 && safe[0].bounds===null,'invalid bounds preserve valid point');
+ const calls=[],chosen=[];
+ let answer=[{label:'Town <img src=x>',lat:-33,lng:116,bounds:null},{label:'Town WA 6254',lat:-34,lng:117,bounds:null}];
+ let releaseOld;
+ const widget=new AddressSearch(()=>({lat:-33.85,lng:116.05}),place=>chosen.push(place),async(url,options)=> {
+   const query=JSON.parse(options.body).query;calls.push(query);
+   if(query==='Old Town') return new Promise(resolve=> {releaseOld=()=>resolve(new Response(JSON.stringify([{label:'Stale',lat:1,lng:1}])));});
+   return new Response(JSON.stringify(answer));
+ });
+ const input=document.querySelector('#address-query');
+ /** @param {string} value Simulate accepted text. */
+ function type(value){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));}
+ type('To');await wait(550);check(!calls.length,'short queries do not request');
+ type('Town');await wait(250);type('Town WA');await wait(300);check(!calls.length,'typing is debounced');
+ await wait(250);check(calls.length===1 && calls[0]==='Town WA','one request for latest typed text');
+ check(!document.querySelector('#address-results img') && document.querySelector('[role=option]').textContent.includes('<img'),'provider labels render as literal text');
+ check(!chosen.length && input.getAttribute('aria-expanded')==='true','suggestions do not navigate automatically');
+ input.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
+ check(input.getAttribute('aria-activedescendant')===document.querySelector('[role=option]').id,'active option is exposed on combobox');
+ input.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+ check(chosen.length===1 && chosen[0].lat===-34 && document.querySelector('#address-results').hidden,'Enter selects the explicitly highlighted option');
+ check(!document.querySelector('#address-credit').hidden,'attribution remains for selected result');
+ type('Old Town');await wait(1150);check(!!releaseOld,'old query is in flight');
+ answer=[{label:'New Town',lat:2,lng:2}];type('New Town');await wait(1150);releaseOld();await wait(50);
+ check(document.querySelector('[role=option]').textContent==='New Town','late response cannot replace current suggestions');
+ input.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+ check(document.querySelector('#address-results').hidden && input.value==='New Town','Escape dismisses without clearing input or moving camera');
+ type('');await wait(550);check(input.getAttribute('aria-busy')==='false','clearing query cancels pending state');
+ type('Town');widget.dismiss();await wait(600);check(calls.length===3,'dismiss cancels a queued request');
+ const clear=document.querySelector('#clear-address');
+ const count=calls.length;type('Pending clear');clear.click();await wait(600);
+ check(input.value==='' && input.getAttribute('aria-expanded')==='false' && document.querySelector('#address-results').hidden,'clear removes text and suggestions');
+ check(calls.length===count && document.activeElement===input && clear.hidden,'clear cancels queued search and restores input focus');
+ type('Old Town');await wait(1150);clear.click();releaseOld();await wait(50);
+ check(document.querySelector('#address-results').hidden && input.value==='' && document.querySelector('#address-status').hidden,'late response cannot reopen a cleared search');
+ check(chosen.length===1 && document.querySelector('#address-credit').hidden,'clear preserves camera and removes selected-result attribution');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');document.querySelector('#result').dataset.passed='true';
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>

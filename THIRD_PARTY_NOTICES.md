@@ -21,3 +21,9 @@ complete inventory of installed dependencies.
 Satellite imagery is supplied by Esri and its credited providers under their
 applicable service terms. Preserve map attribution. The project licence grants
 no ownership or additional rights in satellite imagery or other external data.
+
+Address/place lookup uses the approved [Photon public API](https://github.com/komoot/photon#demo-server),
+which searches [OpenStreetMap data](https://www.openstreetmap.org/copyright). Preserve
+OpenStreetMap attribution for returned information. Photon software is not bundled or
+installed; its public service permits reasonable use without an availability guarantee.
+The project licence grants no ownership of external search results.

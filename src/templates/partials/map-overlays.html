@@ -8,13 +8,29 @@
     <a class="about-link" href="/about" target="_blank" rel="noopener">About</a>
     <button id="home" class="secondary compact" type="button">Greenbushes mine</button>
   </div>
-  <details class="location-bar"><summary>Go to coordinates</summary>
+  <div class="location-bar map-navigation">
+  <div id="address-search" class="address-search">
+    <form id="address-form" role="search" aria-label="Find a location">
+      <div class="address-input">
+      <input id="address-query" type="text" role="combobox" aria-label="Address or place" placeholder="Address or place"
+        aria-autocomplete="list" aria-controls="address-results" aria-expanded="false" aria-describedby="address-status"
+        autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="160">
+      <button id="clear-address" class="address-clear" type="button" aria-label="Clear address" title="Clear address" hidden><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      </div>
+      <button class="secondary compact" type="submit" aria-label="Search address">Search</button>
+    </form>
+    <ul id="address-results" role="listbox" aria-label="Address suggestions" hidden></ul>
+    <p id="address-status" role="status" aria-live="polite" hidden></p>
+    <small id="address-credit" hidden>Search: <a href="https://github.com/komoot/photon" target="_blank" rel="noopener">Photon</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a></small>
+  </div>
+  <details class="coordinate-entry"><summary>Go to coordinates</summary>
   <form id="location-form">
     <label>Latitude<input id="site-lat" type="number" min="-85" max="85" step="any" value="-33.86750" required></label>
     <label>Longitude<input id="site-lng" type="number" min="-180" max="180" step="any" value="116.07647" required></label>
     <button type="submit" class="secondary compact">Go to location</button>
   </form>
   </details>
+  </div>
   <div id="map"></div>
   <div id="placement-history" class="placement-history leaflet-bar" role="group" aria-label="Placement history" hidden>
     <button id="undo-placement" type="button" disabled aria-label="Undo" aria-keyshortcuts="Control+Z Meta+Z">↶</button>

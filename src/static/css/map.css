@@ -155,3 +155,23 @@
 .placement-history button {width:32px; height:32px; padding:0; background:white; color:var(--teal); font-size:23px; line-height:1;}
 .placement-history button:first-child {border-bottom:1px solid var(--line);}
 .placement-history button:disabled {cursor:default; color:#88988c; opacity:1; background:#f3f6f2;}
+
+/* One compact navigation panel; suggestions stay separate from acoustic controls. */
+.location-bar.map-navigation { top:88px; width:350px; max-width:calc(100% - 84px); z-index:710; display:block; background:var(--surface); }
+.map-navigation #address-form { display:flex; gap:8px; margin:0; align-items:center; }
+.map-navigation .address-input { position:relative; flex:1; min-width:0; }
+.map-navigation #address-query { min-width:0; width:100%; margin:0; font-size:12px; padding-right:32px !important; }
+.map-navigation #clear-address { position:absolute; right:3px; top:3px; bottom:3px; width:28px; padding:0; background:none; color:var(--muted); display:grid; place-items:center; line-height:1; border-radius:3px; }
+.map-navigation .coordinate-entry { margin-top:10px; }
+.map-navigation #location-form { flex-wrap:wrap; }
+.map-navigation #address-results { padding:0; margin:10px 0 0; list-style:none; max-height:28vh; overflow-y:auto; }
+.map-navigation [role=option] { cursor:pointer; padding:9px 8px; font-size:12px; line-height:1.4; overflow-wrap:anywhere; border-bottom:1px solid var(--line); }
+.map-navigation [role=option][aria-selected=true] { background:#e4f1eb; box-shadow:inset 3px 0 var(--teal); }
+.map-navigation #address-status { font-size:11px; line-height:1.4; margin:8px 0 0; color:var(--muted); }
+.map-navigation #address-credit { display:block; font-size:10px; margin-top:8px; line-height:1.4; }
+.map-navigation #address-credit a { color:var(--teal); }
+.map-panel:has(.map-navigation) .tile-status { top:auto; bottom:80px; max-width:calc(100% - 96px); }
+@media(max-width:650px) {
+  .location-bar.map-navigation { top:122px; left:50px; right:12px; width:auto; max-width:calc(100% - 62px); }
+  .map-panel:has(.map-navigation) .tile-status { top:auto; bottom:95px; }
+}

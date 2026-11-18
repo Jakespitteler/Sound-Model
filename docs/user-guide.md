@@ -11,7 +11,7 @@ Open the local address in an external browser if the VS Code preview cannot load
 matching the reference view. This camera is not a site boundary. Saved scenes reopen with
 their saved camera instead.
 **Fit local area**, at the map's lower right, frames the group nearest the current map centre.
-Pan or use coordinates to move near the area you want, then click Fit. Editing, clicking or
+Pan, search for an address/place or use coordinates to move near the area you want, then click Fit. Editing, clicking or
 placing an object does not override the area you are currently viewing. The fitted group keeps
 every pair of machines/receivers within 10 km, so a chain of neighbours cannot pull in a
 separate test area. Objects outside the view still contribute to the sound calculation.
@@ -19,7 +19,11 @@ separate test area. Objects outside the view still contribute to the sound calcu
 The action is disabled in an empty scene and caps zoom at 16 for a single location.
 It leaves room for open map controls, and never runs automatically after an edit.
 
-Expand **Go to coordinates** for another location. Panning and zooming load imagery as
+Type in **Address or place** and choose a suggestion, or use Arrow Down/Up and Enter.
+Typing alone never moves the map. Escape closes suggestions. The **×** inside the field
+clears the address and suggestions, leaving the map where it is. Add a town or postcode when
+results are ambiguous. **Search** can retry a failed lookup; **Go to coordinates** works
+without address lookup. Panning and zooming load imagery as
 needed, but do not request new sound calculations.
 
 ## Add equipment and listening locations

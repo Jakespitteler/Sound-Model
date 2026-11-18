@@ -10,6 +10,7 @@ from .acoustics import at_point
 from .assets import FrontendFiles
 from .contour_range import ContourRange, calculate_contour_range
 from .contours import build_contours
+from .geocoding_routes import router as geocoding_router
 from .pages import about_page, index_page, machine_estimates_page
 from .scenario_routes import router as scenario_router
 from .scope import screen_receiver
@@ -97,6 +98,7 @@ def contours(scenario: ContourRequest) -> ContourResponse:
 
 
 app.include_router(scenario_router)
+app.include_router(geocoding_router)
 
 app.add_api_route("/about", about_page, methods=["GET"], response_class=HTMLResponse)
 app.add_api_route("/machine-estimates", machine_estimates_page, methods=["GET"], response_class=HTMLResponse)
