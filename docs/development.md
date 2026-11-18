@@ -178,3 +178,12 @@ to map interactions. Task 029 records full-app request counts, Save/recovery and
 Playwright normally emulates an always-focused page. To check real tab-switch resets,
 disable Chromium focus emulation through the existing CDP session before changing tabs;
 otherwise a background tab may still report itself visible/focused during automation.
+
+
+## Persistent receiver-name checks
+
+With the repository-root static server running, open `/tests/browser/receiver-map-names.html`.
+Expect **PASS: 17 checks** for names/fallbacks, reading states, literal Unicode text, bounded
+badges, coordinate anchoring, stable focused nodes and Ctrl-delete labels. Rerun the map
+deletion and acceptable-label-priority fixtures when changing badge layout. Task 030 records
+full-app dragging, acoustic request counts, Save/Open/recovery and inspected screenshots.

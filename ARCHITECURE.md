@@ -61,7 +61,7 @@ flowchart TD
 cover is metadata and adds no acoustic correction. Camera movement can load tiles and mark
 a saved camera view dirty, but never starts acoustic requests. Changing a receiver leaves
 contour geometry alone. Receiver names use a separate `receiver-name` notification: headings,
-tooltips and accessible descriptions update in place, with no acoustic request or marker replacement.
+map badges, tooltips and accessible descriptions update in place, with no acoustic request or marker replacement.
 Open receiver details and active name selection survive a pending reading response. Stale results are hidden during relevant pending requests; valid cached levels remain visible
 while missing ones load.
 
@@ -152,8 +152,15 @@ provides optional white halos. Contour labels sit below object badges. Contours 
 Machine icons show category and number; hover/focus exposes name and LwA, while selection
 opens the evidence note. Tooltip width is intrinsic with a 260 px cap. Measured placement
 chooses above/below and shifts sideways to minimise overlap with controls while respecting map
-edges. Open tooltips are refitted after a map resize. Panning dismisses transient cards. Receiver badges retain pressure and units: 84×34 px
-for numbers, 112×34 px for status text. Both marker types remain anchored at their coordinates.
+edges. Open tooltips are refitted after a map resize; their gap accounts for marker height.
+Panning dismisses transient cards. Receiver badges show persistent identity alongside
+pressure/units or status text, on an opaque background. They size to content (104–220 px
+wide), clamp names to two lines and retain the full name in hover/focus and accessible text.
+Named badges keep a compact R-number for duplicate names; unnamed ones show Receiver N.
+Measured dimensions centre each badge on its coordinate and update Leaflet icon metadata
+for keyboard-focus panning. Name and reading updates change existing text/style nodes,
+without replacing the marker or badge, preserving focus and active dragging. Both marker
+types remain anchored at their coordinates.
 
 ### Local-area navigation
 
@@ -229,7 +236,7 @@ Receivers accept optional `name` metadata (up to 80 characters, empty by default
 labels are allowed; receiver IDs still identify results. Existing version-1 files without names
 load without being rewritten. Explicitly saving normalises the default field. Naming has no
 effect on receiver calculations or contour geometry. The optional editor lives in receiver details;
-sidebar headings and hover/focus descriptions use the name, while map badges keep R-numbers.
+sidebar headings, persistent map badges and hover/focus descriptions use the name.
 Accepted edits update locally as the user types; whitespace is trimmed when leaving the field.
 Overlong text is rejected explicitly, retaining the previous accepted label.
 
@@ -378,8 +385,9 @@ data. Search, no-match, offline and 429/503 states remain separate from acoustic
 `MapObjectControls` owns popup actions and a separate temporary marker layer. Bindings use
 collection-qualified IDs, so reordering/renaming never changes the deletion target.
 `MapManager` clears/rebinds these alongside ordinary marker rebuilds, and refreshes labels
-and offsets after receiver/name updates. Reading `setIcon` calls therefore cannot destroy
-the separate delete controls. Dragging updates overlay positions; camera changes only
+and offsets after receiver/name updates. Delete offsets use the current badge width and
+height. Reading updates preserve the original marker node and the separate delete controls.
+Dragging updates overlay positions; camera changes only
 refresh visibility/layout, with no state or acoustic notification.
 
 The control pane is 680; object popups use 720 inside the Leaflet map pane. Since outside

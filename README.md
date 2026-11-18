@@ -36,7 +36,8 @@ flowchart LR
 1. Select a type under **Machines**, choose **Place machine**, then click the map.
 2. Choose **Place a receiver**, then click a listening location. Its coloured number is
    the calculated machine contribution there, excluding background noise.
-   Expand its receiver row to give it an optional name, such as Town boundary.
+   Expand its receiver row to give it an optional name, such as Town boundary; the name
+   stays visible beside its map reading.
 3. Hover or focus a numbered equipment icon to see its type and sound power. Click/Enter
    opens its evidence note. Drag machine or receiver markers to move them.
 4. Open **Contours** to add/remove levels or edit them with a slider or number. Levels
