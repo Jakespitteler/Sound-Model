@@ -37,7 +37,8 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | Acceptable-level contract/state/line implemented for review; Ctrl repeat placement implemented for review |
 | Sidebar usability | [027](../docs/tasks/027-desktop-sidebar-usability.md) | Implemented for review; verified fewer scroll gestures with unchanged workflow click count |
 | Address navigation | [028](../docs/tasks/028-address-search-autocomplete.md) | Photon approved; API adapter implemented, browser integration follows; camera changes only |
-| Map object removal | [029](../docs/tasks/029-map-object-deletion.md) | Two clicks: select object, then Delete; reuse history and recovery |
+| Map object removal | [029](../docs/tasks/029-map-object-deletion.md) | Popup then Delete, or hold Ctrl and click its red ×; reuse history and recovery |
+| Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Persistent names beside readings; reuse existing names and preserve compact map controls |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Owner may remove printing as scope creep; no report code before decision |
