@@ -165,3 +165,16 @@ results using keyboard and mouse, and inspect saved camera values. Count predict
 contour and range calls during search: all must remain unchanged. Task 028 records the
 actual browser integration and live-service checks. Never use private site addresses
 or machinery/receiver data for provider probes.
+
+
+## Map deletion checks
+
+With the repository-root static server running, open `/tests/browser/map-deletion.html`.
+Expect **PASS: 21 checks**. It exercises actual Leaflet/store bindings, popup and Ctrl
+actions, stale controls, history, keyboard activation, held-key resets and edge layout.
+Also rerun repeat-placement (14 checks) and placement-history (23 checks) after changes
+to map interactions. Task 029 records full-app request counts, Save/recovery and screenshots.
+
+Playwright normally emulates an always-focused page. To check real tab-switch resets,
+disable Chromium focus emulation through the existing CDP session before changing tabs;
+otherwise a background tab may still report itself visible/focused during automation.

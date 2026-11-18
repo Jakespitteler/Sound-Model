@@ -1,6 +1,6 @@
 # 029 — Delete map objects with a popup or Ctrl shortcut
 
-Status: Ready for implementation when selected.
+Status: Implemented and verified; ready for review.
 Requested by the owner on 18 November 2026. Related: 018 (undo/redo), 027 (sidebar).
 
 ## Problem and baseline
@@ -67,9 +67,9 @@ task 029 by number and title before implementing it.
 
 ## Acceptance
 
-- [ ] Without Control, exactly two clicks delete either object: marker, then labelled Delete. Holding Control shows a small red × for each visible object; one click on its × deletes only that object. Releasing Control, Escape, window blur and tab switching clear the shortcut controls. Holding Control alone, ordinary marker selection, hovering, dragging and cancellation never delete.
-- [ ] Only the chosen instance disappears from map/sidebar and inputs; its type and other objects stay intact. Undo/redo preserves identity, coordinates, names and order. Save/Open and recovery retain the accepted deletion; an already-removed object's stale control is a harmless no-op. Both deletion paths behave the same way and cannot add an object or trigger underlying markers during ordinary/Ctrl-repeat placement.
-- [ ] Showing/hiding × controls and opening/closing popups make no acoustic requests. Source removal uses the existing source recalculation path; receiver removal updates receivers without recalculating contours. Delete controls work with keyboard activation, have visible focus and clear object identity, and remain usable at desktop and 390 px widths.
+- [x] Without Control, exactly two clicks delete either object: marker, then labelled Delete. Holding Control shows a small red × for each visible object; one click on its × deletes only that object. Releasing Control, Escape, window blur and tab switching clear the shortcut controls. Holding Control alone, ordinary marker selection, hovering, dragging and cancellation never delete.
+- [x] Only the chosen instance disappears from map/sidebar and inputs; its type and other objects stay intact. Undo/redo preserves identity, coordinates, names and order. Save/Open and recovery retain the accepted deletion; an already-removed object's stale control is a harmless no-op. Both deletion paths behave the same way and cannot add an object or trigger underlying markers during ordinary/Ctrl-repeat placement.
+- [x] Showing/hiding × controls and opening/closing popups make no acoustic requests. Source removal uses the existing source recalculation path; receiver removal updates receivers without recalculating contours. Delete controls work with keyboard activation, have visible focus and clear object identity, and remain usable at desktop and 390 px widths.
 
 ## Verification and likely files
 
@@ -87,3 +87,46 @@ Likely files: `src/static/js/map-manager.js`, popup styles in `src/static/css/ma
 focused browser regression. Read the existing store/history and request subscriptions before
 editing; change those only if required to preserve their contracts. Keep the implementation
 small and record its commit, checks, screenshots and remaining limits here when complete.
+
+
+## Implementation and evidence — 18 November 2026
+
+`map-object-controls.js` binds deletion by collection and stable ID. A normal marker click
+opens its popup, exits placement and exposes Delete beside the current reading/power,
+before long evidence notes. Escape/click-away cancels. Ctrl-held × buttons use a separate
+Leaflet layer, so receiver reading refreshes do not replace focused controls. Controls
+follow positions, flip inward near map edges and reset on Control release, Escape, blur,
+visibility changes or entry into an editor/dialog. Enter/Space explicitly activate a focused
+control, including while Ctrl is held. A short double-click guard prevents deletion of an
+object underneath a removed control.
+
+Both paths use the existing store removal methods and exact undo/history payloads. No
+dependency, saved-data schema or physics change. Popup padding reuses the existing free-map
+rectangle helper so names/actions do not sit under navigation and guide overlays.
+
+Verified with actual Chromium input in a fictional three-machine/two-receiver scene:
+
+- Source and receiver popup deletion, Ctrl one-click deletion, keyboard activation, exact
+  undo/redo restore, retained type definitions and names, Save and unsaved recovery.
+- No acoustic requests on selection/control display. Receiver deletion uses receiver
+  predictions without contour/range calls; source deletion updates combined sound normally.
+- Ctrl repeat placement stays functional on empty map space; selection and deletion do not
+  leak clicks into placement. Overlapping-marker double-click removes just the top object.
+- Ctrl-held dragging, editor/dialog shortcuts, Escape, and tab focus loss reset/preserve
+  the intended interactions. Real tab visibility was checked with Chromium focus emulation
+  disabled, so Playwright's default always-focused behaviour did not mask the event.
+- Desktop and 390 px screenshots inspected for source/receiver popups and Ctrl controls;
+  the narrow popup title is visibly above navigation, not hidden behind it.
+
+`tests/browser/map-deletion.html` passes 21 checks, including stale controls, stable IDs,
+keyboard paths, blur/visibility, map movement and top-right edge hit areas. Existing repeat
+placement/history pages pass 14/23 checks. Full pytest suite: 130 tests; Ruff, formatting,
+Pyright and skill integrity pass. Artifacts: `/workspace/artifacts/check_map_deletion.py`
+and `map-delete-*.png`. Satellite imagery was unavailable during captures. Windows and
+screen-reader speech were not manually tested. No merge or deployment performed.
+
+![Temporary Ctrl-held delete controls on a fictional scenario](../images/map-delete-controls.png)
+
+![Receiver popup with a direct Delete action](../images/map-delete-popup.png)
+
+Implementation commit: `def4417`. Documentation and screenshot evidence follow separately.

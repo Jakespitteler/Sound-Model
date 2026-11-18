@@ -2,6 +2,7 @@
  * Manages the Leaflet map, tile status feedback, draggable markers, and placement clicks.
  */
 
+import {MapObjectControls} from './map-object-controls.js';
 import { DEFAULT_VIEW, receiverLabel } from './state.js';
 import { ContourLayer } from './contour-layer.js';
 import { $, escapeHtml } from './utils.js';
@@ -37,6 +38,7 @@ export class MapManager {
     historyControl.addTo(this.map);
     this.fitMine();
     this.markers.addTo(this.map);
+    this.objectControls=new MapObjectControls(this.map,store);
 
     this.contourLayer = new ContourLayer(this.map);
     this.initTiles();
@@ -99,9 +101,12 @@ export class MapManager {
       const description=this.receiverFailed ? 'unavailable' : !reading ? 'calculating' : reading.status==='out_of_scope' ? 'outside the 10 km model scope' : reading.level_db===null
         ? 'no source contribution' : `${reading.level_db.toFixed(1)} dB(A) predicted source contribution`;
       marker.getTooltip().getContent().querySelector('strong').textContent=label;
-      marker.getElement()?.setAttribute('aria-label',`${label} (R${index+1}): ${description}`);
+      marker.getElement()?.setAttribute('aria-label',`${label} (R${index+1}): ${description}. Select for details.`);
+      const popup=marker.getPopup()?.getContent();
+      if(popup instanceof HTMLElement) popup.querySelector('[data-receiver-reading]').textContent=description;
       if (marker.isTooltipOpen()) this.fitObjectTooltip(marker.getTooltip());
     }
+    this.objectControls.refresh();
   }
 
   /**
@@ -232,6 +237,7 @@ export class MapManager {
 
   /** Rebuild entity markers only after catalogue/source/receiver mutations. */
   renderMarkers() {
+    this.objectControls.clear();
     this.markers.clearLayers();
     this.receiverMarkers.clear();
     for (const collection of ['sources', 'receivers']) {
@@ -261,17 +267,18 @@ export class MapManager {
         marker.getElement()?.setAttribute('aria-label', isSource ? `${label}. Sound power ${machine.lwa.toFixed(1)} dB(A) LwA. Select for details.` : label);
         marker.bindTooltip(tooltip,{direction:'top',offset:[0,-18],className:'object-tooltip',opacity:1});
         marker.on('tooltipopen',event=>this.fitObjectTooltip(event.tooltip));
+        const popup = document.createElement('div');
+        popup.className = 'source-popup object-popup';
+        const title = document.createElement('strong'); title.textContent = label; title.dataset.objectTitle='';
+        popup.append(title);
         if (isSource) {
-          const popup = document.createElement('div');
-          popup.className = 'source-popup';
-          const title = document.createElement('strong'); title.textContent = label;
           const power = document.createElement('p'); power.textContent = `Sound power: ${machine.lwa.toFixed(1)} dB(A) LwA. This is the machine emission, not what a receiver hears.`;
           const evidence = document.createElement('p'); evidence.textContent = machine.note || 'No source note recorded.';
-          popup.append(title,power,evidence); marker.bindPopup(popup);
-          // Selection shows one detail card, rather than a tooltip over the same popup.
-          marker.on('popupopen',()=>marker.closeTooltip());
-          marker.on('tooltipopen',()=> {if(marker.isPopupOpen()) marker.closeTooltip();});
+          popup.append(power,evidence);
+        } else {
+          const reading=document.createElement('p'); reading.dataset.receiverReading=''; popup.append(reading);
         }
+        this.objectControls.bind(marker,collection,item.id,popup);
 
         marker.on('dragend', () => {
           const p = marker.getLatLng();
