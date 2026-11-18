@@ -175,3 +175,9 @@
   .location-bar.map-navigation { top:122px; left:50px; right:12px; width:auto; max-width:calc(100% - 62px); }
   .map-panel:has(.map-navigation) .tile-status { top:auto; bottom:95px; }
 }
+
+/* Delete controls are separate from reading badges and retain clear hit areas. */
+.map-delete-marker { pointer-events:auto; }
+.map-delete-button { width:24px; height:24px; padding:0; display:grid; place-items:center; color:#b73528; background:#fff; border:1px solid #b73528; border-radius:50%; box-shadow:0 1px 5px #14372d30; line-height:1; }
+.map-delete-button:focus-visible { outline:3px solid #da953a; outline-offset:2px; }
+.object-popup-delete { display:block; margin-top:12px; padding:8px 12px; border:1px solid #c34b3b; color:#a32e23; background:#fff5f1; border-radius:5px; font-size:12px; }

@@ -1,0 +1,63 @@
+<!doctype html><meta charset="utf-8"><title>Map deletion checks</title>
+<link rel="stylesheet" href="../../src/static/vendor/leaflet/leaflet.css"><link rel="stylesheet" href="../../src/static/css/tokens.css"><link rel="stylesheet" href="../../src/static/css/base.css"><link rel="stylesheet" href="../../src/static/css/map.css"><style>#map{height:500px;width:800px}</style>
+<div id="map"></div><input id="editing"><pre id="result">Running…</pre>
+<script src="../../src/static/vendor/leaflet/leaflet.js"></script>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {MapObjectControls} from '../../src/static/js/map-object-controls.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+try {
+ const map=L.map('map').setView([-33.86,116.07],15),store=new ScenarioStore();
+ store.addSource(store.types[0].id,-33.86,116.07);store.addReceiver(-33.858,116.072);
+ const source=structuredClone(store.sources[0]),receiver=structuredClone(store.receivers[0]),events=[];
+ const controls=new MapObjectControls(map,store);
+ const marker=L.marker([source.lat,source.lng],{icon:L.divIcon({iconSize:[32,32],html:'Machine'})}).addTo(map);
+ const popup=document.createElement('div');popup.textContent='Machine';controls.bind(marker,'sources',source.id,popup);
+ store.subscribe(reason=>events.push(reason));
+ controls.setActive(true);check(document.querySelectorAll('.map-delete-button').length===1,'Control exposes one delete control per visible bound object');
+ check(!events.length && store.sources.length===1,'showing controls never changes inputs');
+ controls.setActive(false);check(!document.querySelector('.map-delete-button'),'releasing Control hides controls');
+ marker.openPopup();check(store.sources.length===1 && !events.length,'opening popup never deletes or calculates');
+ popup.querySelector('button').click();check(store.sources.length===0 && events.at(-1)==='geometry','popup button removes exact source through existing geometry lane');
+ const history=store.undoStack.length;popup.querySelector('button').click();check(store.undoStack.length===history,'stale deletion is a no-op');
+ store.undo();check(JSON.stringify(store.sources[0])===JSON.stringify(source),'undo restores source identity and position');
+ store.redo();check(!store.sources.length,'redo removes source again');
+ const rmarker=L.marker([receiver.lat,receiver.lng],{icon:L.divIcon({iconSize:[84,34],html:'Receiver'})}).addTo(map);
+ const rpopup=document.createElement('div');controls.bind(rmarker,'receivers',receiver.id,rpopup);
+ controls.setActive(true);const button=document.querySelector('.map-delete-button');button.click();
+ check(store.receivers.length===0 && events.at(-1)==='receivers','shortcut removes receiver without a geometry event');
+ store.undo();check(JSON.stringify(store.receivers[0])===JSON.stringify(receiver),'receiver undo preserves identity and name');
+ controls.setActive(false);document.querySelector('#editing').focus();document.querySelector('#editing').dispatchEvent(new KeyboardEvent('keydown',{key:'Control',ctrlKey:true,bubbles:true}));
+ check(!controls.active,'typing shortcuts do not activate map deletion');
+ document.querySelector('#editing').blur();document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Control',ctrlKey:true,bubbles:true}));
+ check(controls.active,'Control activates outside editors');
+ window.dispatchEvent(new Event('blur'));check(!controls.active,'window blur resets held-key state');
+ document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Control',ctrlKey:true,bubbles:true}));document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',ctrlKey:true,bubbles:true}));
+ check(!controls.active,'Escape hides controls');
+ document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Control',ctrlKey:true,bubbles:true,repeat:true}));
+ check(!controls.active,'held-key repeat cannot reopen controls after Escape');
+ document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Control',ctrlKey:true,bubbles:true}));document.dispatchEvent(new Event('visibilitychange'));
+ check(!controls.active,'visibility changes reset controls even when a keyup is missed');
+ await new Promise(resolve=>setTimeout(resolve,320));
+ document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Control',ctrlKey:true,bubbles:true}));
+ document.querySelector('.map-delete-button').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',ctrlKey:true,bubbles:true,cancelable:true}));
+ check(!store.receivers.length && events.at(-1)==='receivers','Ctrl-Enter activates the focused delete control');
+ store.undo();controls.setActive(false);await new Promise(resolve=>setTimeout(resolve,320));controls.setActive(true);
+ document.querySelector('.map-delete-button').dispatchEvent(new KeyboardEvent('keydown',{key:' ',ctrlKey:true,bubbles:true,cancelable:true}));
+ check(!store.receivers.length,'Ctrl-Space activates without relying on browser modifier defaults');
+ store.undo();controls.setActive(true);const beforePan=events.length;
+ map.panBy([30,20],{animate:false});map.setZoom(16,{animate:false});
+ check(events.length===beforePan && document.querySelector('.map-delete-button'),'camera movement keeps controls without state notifications');
+ rmarker.setLatLng(map.containerPointToLatLng([map.getSize().x-2,4]));rmarker.fire('drag');controls.refresh();
+ const box=document.querySelector('.map-delete-button').getBoundingClientRect(),area=map.getContainer().getBoundingClientRect();
+ check(box.left>=area.left && box.right<=area.right && box.top>=area.top && box.bottom<=area.bottom,'delete hit area stays inside a top-right map edge');
+ store.addReceiver(-33.86,116.07);const first=store.receivers.at(-1).id;
+ store.addReceiver(-33.861,116.071);const second=store.receivers.at(-1).id;
+ controls.remove('receivers',first,true,new MouseEvent('click',{clientX:100,clientY:100,detail:1,cancelable:true}));
+ controls.remove('receivers',second,true,new MouseEvent('click',{clientX:200,clientY:100,detail:1,cancelable:true}));
+ check(!store.receivers.some(item=>item.id===first||item.id===second),'rapid distinct clicks are not blocked by the overlapping-object guard');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');document.querySelector('#result').dataset.passed='true';
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>
