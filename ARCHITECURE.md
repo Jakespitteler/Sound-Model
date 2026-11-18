@@ -16,7 +16,7 @@ flowchart LR
 
 The app uses Python 3.13+, uv, FastAPI, Pydantic and Uvicorn. The frontend uses plain modules
 and bundled Leaflet; it has no build step. NumPy and ContourPy speed up evaluation/extraction;
-they do not add missing propagation physics. Only imagery needs the external tile service.
+they do not add missing propagation physics. Imagery uses the external tile service; optional address lookup also contacts Photon.
 
 ## Where to look
 
@@ -340,3 +340,19 @@ flowchart TD
     Machines --> Editor[Expand only the object being edited]
     Receivers --> Editor
 ```
+
+
+## Address search adapter
+
+`POST /api/geocode` accepts bounded search text and a map-centre bias, without acoustic
+inputs. `geocoding_routes.py` maps busy/unavailable outcomes to HTTP 429/503. `geocoding.py`
+validates Photon GeoJSON, converts longitude/latitude order, and returns up to five labelled
+points with optional south/west/north/east bounds. Invalid points are discarded; unsuitable
+extents fall back to the valid point. No coordinate is clamped or fabricated.
+
+The standard-library HTTP client uses the fixed approved Photon HTTPS host, a five-second
+timeout and a 256 KiB response limit. Per-process controls allow one live call at a time,
+one start per second, a five-minute/128-entry memory cache and bounded provider cooldowns.
+Busy calls do not queue; no automatic network retry occurs. Search bodies are not placed in
+local access-log URLs or saved scenarios. Camera bias and search text still reach Photon;
+private machinery/receiver inputs do not. No Java, database or new package is installed.

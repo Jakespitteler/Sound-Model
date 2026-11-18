@@ -1,8 +1,8 @@
 # Task 028 — Address-search provider review
 
-Reviewed 18 November 2026. **Recommendation awaiting owner approval: Photon public API.**
-This is preparation for [task 028](028-address-search-autocomplete.md), not a completed
-address-search implementation. No provider is integrated by this change.
+Reviewed 18 November 2026. **Approved by the owner on 18 November 2026: Photon public API.**
+This records the provider decision for [task 028](028-address-search-autocomplete.md).
+The approved API adapter is implemented first; browser integration follows in a stacked PR.
 
 ## Comparison
 
@@ -35,7 +35,7 @@ some address data, not comprehensive coverage. A request with Origin
 Raw local research artifacts are under `/tmp/sound-model-provider-review/`; the official
 linked pages above are the source for terms and limits, not assumptions from the probes.
 
-## Proposed integration, after approval
+## Approved integration plan
 
 - One address/place field in existing map navigation. Show up to five labelled suggestions;
   retain coordinate entry, Greenbushes and local-fit actions. Do not select automatically.
@@ -68,8 +68,8 @@ must remain usable if lookup fails. Do not add an unapproved fallback provider.
 
 ## Approval and remaining checks
 
-The owner was asked to approve Photon and the proposed adapter. Approval is pending;
-implementation and acceptance checkboxes remain incomplete. The existing project rule is:
+The owner replied “Photon is fine to use” on 18 November 2026. The adapter is approved;
+full feature acceptance remains incomplete until the browser integration is verified. The existing project rule is:
 “The owner must approve new third-party technologies/dependencies before adoption”
 ([AGENTS.md](../../AGENTS.md)).
 

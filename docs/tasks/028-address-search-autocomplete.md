@@ -1,6 +1,6 @@
 # 028 — Find an address with autocomplete
 
-Status: Provider review prepared; awaiting owner approval before integration.
+Status: Photon approved; API adapter implemented, browser integration in progress.
 Requested by the owner on 17 November 2026. Related: 015 (local navigation), 027 (sidebar).
 
 ## Problem and baseline
@@ -78,6 +78,16 @@ and title before implementing it.
 
 See the [provider comparison and proposed integration](028-address-provider-review.md).
 Photon is recommended for the POC; three small live place/street probes succeeded.
-Owner approval is pending. No provider, dependency or address-search feature is integrated,
-and the acceptance checkboxes remain open. The proposed backend adapter coordinates fair
+Owner approved Photon on 18 November 2026. The standard-library API adapter is implemented;
+browser acceptance remains open until the next stacked change. No new dependency is added. The proposed backend adapter coordinates fair
 use across browser tabs; CORS itself does not require a proxy.
+
+
+### API adapter verification
+
+`POST /api/geocode` and its standard-library adapter pass 20 focused checks for parsing,
+coordinate/bounds validation, invalid input, duplicate/result limits, cache expiry/eviction,
+concurrency, cooldown and sanitized HTTP errors. Full suite: 130 passing tests; Ruff, format,
+Pyright and skill integrity pass. Live local-API probes returned Greenbushes and Bunbury
+with correct latitude/longitude conversion and optional bounds. No private scenario data
+was sent. Browser implementation and end-to-end acceptance follow in a separate stacked PR.
