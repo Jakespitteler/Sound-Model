@@ -45,6 +45,8 @@ flowchart LR
 
 **Undo / Redo** beneath the map zoom controls reverses machine and receiver placement, moves and removals.
 Keyboard shortcuts work outside text fields; history lasts for the current working scene.
+Delete directly on the map by clicking an object, then **Delete**. Hold **Ctrl** to reveal
+small red **×** controls for one-click removal; Undo restores the object.
 
 **Greenbushes mine** returns to the starting mine view. Fresh scenarios open at
 −33.8675, 116.07647 with zoom 14; saved scenarios retain their saved view.

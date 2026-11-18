@@ -371,3 +371,29 @@ The compact map navigation panel retains the coordinate form. Opening coordinate
 search suggestions after the click, avoiding layout shifts during pointer activation.
 Search attribution stays with results/selected labels, and About explains external query
 data. Search, no-match, offline and 429/503 states remain separate from acoustic failures.
+
+
+## Map object removal
+
+`MapObjectControls` owns popup actions and a separate temporary marker layer. Bindings use
+collection-qualified IDs, so reordering/renaming never changes the deletion target.
+`MapManager` clears/rebinds these alongside ordinary marker rebuilds, and refreshes labels
+and offsets after receiver/name updates. Reading `setIcon` calls therefore cannot destroy
+the separate delete controls. Dragging updates overlay positions; camera changes only
+refresh visibility/layout, with no state or acoustic notification.
+
+The control pane is 680; object popups use 720 inside the Leaflet map pane. Since outside
+navigation/guide overlays have their own stacking context, popup padding also uses the
+existing `freeMapRectangle` helper to keep the full popup in unobstructed map space.
+Ctrl controls flip inward at map edges.
+
+Control key events toggle the temporary layer; repeat keydowns cannot resurrect it after
+Escape. Blur, visibility changes and editor/dialog focus clear it. Mouse/pointer propagation
+is stopped before a destructive action; Enter/Space activation is explicit because native
+button activation with Ctrl varies. Repeated shortcut clicks within 300 ms at the same pointer location, or click-detail
+>1, are ignored to prevent double-click deletion of an underlying object.
+
+Both paths check current identity before calling `removeSource`/`removeReceiver`. These
+existing store commands handle history, dirty state, recovery and calculation lanes. A
+stale control is a no-op. Marker selection cancels placement with a presentation notification
+before opening a popup, so dismissing details cannot accidentally place another machine.

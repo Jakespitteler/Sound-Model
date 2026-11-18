@@ -48,6 +48,11 @@ Names appear in the sidebar and on map hover or keyboard focus. The map keeps it
 R-number and reading. Clear the name to restore **Receiver N**. Names can contain up to
 80 characters, may repeat, and are kept by Save/Open and recovery.
 
+To remove an object on the map, click its marker, then **Delete machine** or **Delete
+receiver**. Holding **Ctrl** shows a small red **×** on each visible object for one-click
+removal. Release Ctrl or press Escape to hide the × controls. **Undo** restores a deletion.
+Selecting an object exits placement; Ctrl-click on empty map space still repeats placement.
+
 The machine icon's number matches its sidebar entry. Hover or keyboard-focus the icon for
 its name and power; click/Enter for the evidence note. Moving a receiver updates readings,
 while moving a machine updates both readings and contours.
