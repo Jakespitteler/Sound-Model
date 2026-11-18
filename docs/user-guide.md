@@ -28,11 +28,17 @@ A **machine type** holds a name, sound power and evidence note. A **machine on t
 one instance of that type. Several instances can share a type; editing its sound power
 changes all those instances. Removing a type is prevented while it is in use.
 
-1. Choose a type, select **Place machine**, and click its position.
-2. Drag its icon to move it, or expand **Edit position** and enter coordinates.
+1. Choose a type, select **Place machine**, and click its position. To place several,
+   **Ctrl-click** each position, then click without Control to place the last machine.
+   **Escape** or **Cancel placement** exits without adding another. Placement stops at 100 machines.
+2. Drag its icon to move it, or expand its machine row and enter coordinates.
 3. Choose **Place a receiver**, then click the listening location.
-4. Read its coloured pressure level on the map or in the sidebar. Expand **Details & position**
-   to add an optional name, edit coordinates or see source contributions.
+4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
+   to add an optional name or edit coordinates. **Machine contributions** shows individual sources.
+
+On desktop, Save/Open and the workspace tabs stay above the two scrolling object lists.
+Machine rows show their sound power; receiver rows show their current reading. Expand only
+the row you need. Machine data and Model info open one at a time, retaining their drafts.
 
 Names appear in the sidebar and on map hover or keyboard focus. The map keeps its compact
 R-number and reading. Clear the name to restore **Receiver N**. Names can contain up to
