@@ -11,9 +11,12 @@
   <div class="location-bar map-navigation">
   <div id="address-search" class="address-search">
     <form id="address-form" role="search" aria-label="Find a location">
+      <div class="address-input">
       <input id="address-query" type="text" role="combobox" aria-label="Address or place" placeholder="Address or place"
         aria-autocomplete="list" aria-controls="address-results" aria-expanded="false" aria-describedby="address-status"
         autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="160">
+      <button id="clear-address" class="address-clear" type="button" aria-label="Clear address" title="Clear address" hidden>×</button>
+      </div>
       <button class="secondary compact" type="submit" aria-label="Search address">Search</button>
     </form>
     <ul id="address-results" role="listbox" aria-label="Address suggestions" hidden></ul>

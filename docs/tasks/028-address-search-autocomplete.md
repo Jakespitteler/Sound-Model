@@ -101,7 +101,7 @@ Mouse selection or Arrow Up/Down and Enter fits validated bounds or centres the 
 point. Escape/dismissal cancels pending work. Retry is explicit; provider cooldown is
 respected. Attribution remains near results and selected labels; About explains query data.
 
-`tests/browser/address-search.html` passes 15 checks, including literal text, numeric/bounds
+`tests/browser/address-search.html` passes 19 checks, including literal text, numeric/bounds
 validation, debouncing, no automatic selection, keyboard activation, stale responses even
 when abort is ignored, attribution, clearing and dismissal. Actual Chromium checks pass:
 
@@ -130,3 +130,21 @@ example below uses a fictional machine/receiver scene and controlled suggestion 
 ![Address suggestions beside the existing coordinate entry](../images/address-search.png)
 
 Browser implementation commit: `5d917c9`. Documentation evidence follows separately.
+
+
+### Follow-up: clear address and refresh PR stack
+
+The address input now has a compact × labelled Clear address. It appears while text is
+present, clears input/results/status, cancels queued/in-flight work and focuses the input.
+It does not move the camera, alter saved inputs or send acoustic requests. Late responses
+cannot reopen the cleared list. Keyboard activation works at the narrow layout too.
+
+The browser page now passes 19 checks. Actual full-app checks pass pointer/keyboard clear,
+unchanged saved status/camera, no acoustic requests, existing search selection, coordinate
+entry and recovery. Desktop, 390 px and cleared-input focus screenshots were inspected:
+`/workspace/artifacts/address-clear-*.png`, `address-cleared.png` and `check_address_clear.py`.
+All 130 pytest tests and Ruff/format/Pyright/skill checks pass.
+
+PR #36 was updated from main, preserving the newer 029/030 task briefs and the existing
+VS Code settings commit on its branch. The resolution is propagated through #40 and #42
+without rewriting their history. Review order remains #36 → #40 → #42; no PR is merged.

@@ -157,7 +157,7 @@ Save/Open/recovery checks, presentation-only request counts and inspected screen
 
 `uv run pytest tests/test_geocoding.py -q` runs 20 offline provider/API checks. No test needs
 an API key or live service. Serve the repository root as above, then open
-`/tests/browser/address-search.html`; expect **PASS: 15 checks** for query debouncing,
+`/tests/browser/address-search.html`; expect **PASS: 19 checks** for query debouncing,
 selection, stale responses, literal labels, bounds validation and dismissal.
 
 For full-app checks, intercept `/api/geocode` with controlled suggestions/failures, choose

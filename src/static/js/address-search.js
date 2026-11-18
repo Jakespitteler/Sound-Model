@@ -27,7 +27,8 @@ export class AddressSearch {
     this.panel=$('address-search').closest('.map-navigation') || $('address-search'); this.status=$('address-status');
     this.version=0; this.items=[]; this.active=-1; this.lastRequest=-Infinity; this.waitUntil=0;
     this.timer=null; this.controller=null; this.selected=false;
-    this.input.addEventListener('input',event=> {if(!event.isComposing) this.schedule();});
+    this.input.addEventListener('input',event=> {this.syncClear(); if(!event.isComposing) this.schedule();});
+    $('clear-address').addEventListener('click',()=>this.clear()); this.syncClear();
     this.input.addEventListener('compositionstart',()=>this.dismiss());
     this.input.addEventListener('compositionend',()=>this.schedule());
     this.input.addEventListener('keydown',event=>this.keydown(event));
@@ -38,6 +39,14 @@ export class AddressSearch {
     },0));
     this.panel.querySelector('.coordinate-entry')?.addEventListener('toggle',event=> {if(event.target.open) this.dismiss();});
     window.addEventListener('blur',()=>this.dismiss());
+  }
+
+  /** Show the clear action only while there is text to remove. */
+  syncClear() {$('clear-address').hidden=!this.input.value;}
+
+  /** Remove query/results and cancel pending work, preserving the camera and acoustic inputs. */
+  clear() {
+    this.input.value=''; this.selected=false; this.dismiss(); this.input.focus(); this.syncClear();
   }
 
   /** Invalidate pending work and close suggestions, without changing entered text or the camera. */
@@ -134,6 +143,6 @@ export class AddressSearch {
   /** @param {number} index Explicitly selected suggestion. */
   choose(index) {
     const item=this.items[index]; if(!item) return;
-    this.selected=true; this.dismiss(); this.input.value=item.label; this.navigate(item); this.setStatus('Location selected.');
+    this.selected=true; this.dismiss(); this.input.value=item.label; this.syncClear(); this.navigate(item); this.setStatus('Location selected.');
   }
 }

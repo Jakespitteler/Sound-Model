@@ -20,7 +20,8 @@ The action is disabled in an empty scene and caps zoom at 16 for a single locati
 It leaves room for open map controls, and never runs automatically after an edit.
 
 Type in **Address or place** and choose a suggestion, or use Arrow Down/Up and Enter.
-Typing alone never moves the map. Escape closes suggestions. Add a town or postcode when
+Typing alone never moves the map. Escape closes suggestions. The **×** inside the field
+clears the address and suggestions, leaving the map where it is. Add a town or postcode when
 results are ambiguous. **Search** can retry a failed lookup; **Go to coordinates** works
 without address lookup. Panning and zooming load imagery as
 needed, but do not request new sound calculations.
