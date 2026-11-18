@@ -70,6 +70,7 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
     record = response.json()
     identifier = record["id"]
     expected = {
+        "background_db": None,
         "acceptable_level_db": None,
         **cast(dict[str, object], original["document"]),
         "receivers": [{"id": "r", "lat": -33.85, "lng": 116.05, "name": ""}],
@@ -313,7 +314,7 @@ def test_equipment_metadata_is_plain_text_and_not_acoustic(saved_client: TestCli
         assert saved_client.post(endpoint, json=bodies[0]).json() == saved_client.post(endpoint, json=bodies[1]).json()
 
 
-@pytest.mark.parametrize("level", [None, 0, 45.5, 300])
+@pytest.mark.parametrize("level", [None, -10, 0, 45.5, 300, 500])
 def test_acceptable_level_round_trip(saved_client: TestClient, level: float | None) -> None:
     """Keep an optional reference through Save/Open and draft validation.
 
@@ -334,7 +335,7 @@ def test_acceptable_level_round_trip(saved_client: TestClient, level: float | No
     assert saved_client.post("/api/scenarios/validate", json=document).json() == document
 
 
-@pytest.mark.parametrize("level", [-0.1, 300.1, float("nan"), float("inf"), -float("inf"), "40", True])
+@pytest.mark.parametrize("level", [float("nan"), float("inf"), -float("inf"), "40", True])
 def test_invalid_acceptable_level_preserves_save(saved_client: TestClient, level: object) -> None:
     """Reject nonnumeric/nonfinite references without changing a saved scenario.
 

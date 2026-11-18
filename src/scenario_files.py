@@ -55,6 +55,7 @@ class ScenarioDocument(StrictModel):
         receivers: Listening locations.
         levels: Unique contour thresholds.
         cloud_cover: Recorded cloud percentage.
+        background_db: Optional uniform background pressure in dB(A).
         acceptable_level_db: Optional user-set reference threshold; no regulatory default.
         view: Optional map camera.
         high_contrast: White contour halos enabled.
@@ -67,7 +68,8 @@ class ScenarioDocument(StrictModel):
     receivers: list[Receiver] = Field(max_length=20)
     levels: list[float] = Field(max_length=25)
     cloud_cover: int = Field(ge=0, le=100, strict=True)
-    acceptable_level_db: float | None = Field(default=None, ge=0, le=300, strict=True)
+    background_db: float | None = Field(default=None, strict=True)
+    acceptable_level_db: float | None = Field(default=None, strict=True)
     view: MapView | None = None
     high_contrast: bool = False
     show_contours: bool = True
@@ -93,6 +95,7 @@ class ScenarioDocument(StrictModel):
             receivers=self.receivers,
             levels=self.levels,
             cloud_cover=self.cloud_cover,
+            background_db=self.background_db,
         )
         return self
 

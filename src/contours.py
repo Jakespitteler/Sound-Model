@@ -9,13 +9,12 @@ The scalar field remains a reference for numerical validation.
 import math
 
 from .acoustics import combine, inverse_mercator, mercator_y, source_level
-from .contour_engine import lines_within_scope, trace_tiles
-from .scope import SCREENING_DISTANCE_M
+from .contour_engine import trace_tiles
+from .scope import boundary_level
 from .types import Contour, ContourRequest, ContourResponse
 
 EARTH_RADIUS = 6_371_008.8
 MAX_CELLS = 640_000
-MAX_RADIUS_M = 200_000
 VERTEX_TOLERANCE_DB = 0.02
 
 type XY = tuple[float, float]
@@ -135,13 +134,18 @@ class ContourField:
             West x, south y and square side length in projected metres.
 
         Raises:
-            ValueError: If the domain exceeds a 200 km propagation radius or poles.
+            ValueError: If the domain reaches beyond supported map projection latitudes.
         """
         total = combine([s[4] for s in self.sources])
         assert total is not None
-        radius = max(2, 10 ** ((total - 10 * math.log10(4 * math.pi) - level) / 20))
-        if radius > MAX_RADIUS_M:
-            raise ValueError("Contour exceeds the 200 km model radius. Raise its dB threshold or reduce source power.")
+        log_radius = (total - 10 * math.log10(4 * math.pi) - level) / 20
+        # Check projection support before exponentiation, including extreme finite thresholds.
+        available = math.radians(85 - max(abs(math.degrees(s[2])) for s in self.sources)) * EARTH_RADIUS
+        if available <= 2 or log_radius >= math.log10(available):
+            raise ValueError(
+                "Contour domain reaches beyond supported ±85° map projection. No partial line is displayed."
+            )
+        radius = max(2, 10**log_radius)
         max_lat = max(abs(math.degrees(s[2])) for s in self.sources) + math.degrees(radius / EARTH_RADIUS)
         if max_lat >= 85:
             raise ValueError("Contour extends beyond supported ±85° latitude. Raise the threshold or move the sources.")
@@ -202,14 +206,12 @@ def build_contours(scenario: ContourRequest) -> ContourResponse:
     results: list[Contour] = []
     for level in scenario.levels:
         try:
+            if scenario.background_db is not None and level + 1e-9 < boundary_level(scenario.background_db):
+                results.append(Contour(level_db=level, lines=[], status="negligible"))
+                continue
             result = trace_level(field, level)
             if not result.lines:
                 result.status = "empty"
-            elif not lines_within_scope(field, result.lines, SCREENING_DISTANCE_M):
-                raise ValueError(
-                    "Extends beyond the 10 km screening scope from the nearest source; not displayed. "
-                    "This is an unvalidated model scope, not a physical sound cutoff."
-                )
             results.append(result)
         except ValueError as error:
             results.append(Contour(level_db=level, lines=[], status="failed", error=str(error)))

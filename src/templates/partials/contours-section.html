@@ -5,7 +5,7 @@
   <div class="acceptable-control">
     <label for="acceptable-level">Acceptable level <span class="hint">· user-set</span></label>
     <div class="acceptable-inputs"><input id="acceptable-slider" type="range" min="0" max="300" step="0.1" value="0" aria-label="Slide acceptable level" disabled>
-    <label class="level-number"><input id="acceptable-level" type="number" min="0" max="300" step="0.1" placeholder="Not set" aria-label="Acceptable level"><span>dB(A)</span></label>
+    <label class="level-number"><input id="acceptable-level" type="number" step="any" placeholder="Not set" aria-label="Acceptable level"><span>dB(A)</span></label>
     <button id="clear-acceptable" type="button" class="text-button" disabled>Clear</button></div>
     <span id="acceptable-status" class="hint" role="status"></span>
   </div>
@@ -14,7 +14,7 @@
   <form id="new-contour-form" class="contour-row new-contour-draft" hidden>
     <span class="level-swatch" aria-hidden="true"></span>
     <input id="new-contour-slider" type="range" min="0" max="300" step="0.1" value="0" aria-label="Slide new contour level" disabled>
-    <label class="level-number"><input id="new-contour-level" name="level" type="number" min="0" max="300" step="0.1" placeholder="Level" aria-label="New contour level" required><span>dB(A)</span></label>
+    <label class="level-number"><input id="new-contour-level" name="level" type="number" step="any" placeholder="Level" aria-label="New contour level" required><span>dB(A)</span></label>
     <button id="cancel-new-contour" type="button" class="danger remove-level" aria-label="Cancel new contour">×</button>
   </form>
   <button id="add-contour" class="secondary" type="button">＋ Add contour</button>

@@ -1,4 +1,5 @@
 /** @fileoverview In-memory state with explicit geometry/receiver/style/UI notifications. */
+import {boundaryLevel} from './background.js';
 import {uuid} from './utils.js';
 import {MACHINE_PRESETS} from './machine-presets.js';
 import {SOUND_REFERENCE} from './sound-reference.js';
@@ -27,6 +28,7 @@ export class ScenarioStore {
     /** @type {Object[]} Commands available to replay. */
     this.redoStack=[];
     this.acceptable_level_db = null;
+    this.background_db = null;
     this.cloud_cover = 0;
     /** @type {?string} */
     this.mode = null;
@@ -46,14 +48,17 @@ export class ScenarioStore {
   toPayload() {
     // Equipment notes stay with the browser catalogue; they are not acoustic inputs.
     const types = this.types.map(({id,name,lwa,provenance}) => ({id,name,lwa,provenance}));
-    return structuredClone({types,sources:this.sources,receivers:this.receivers,cloud_cover:this.cloud_cover});
+    return structuredClone({types,sources:this.sources,receivers:this.receivers,cloud_cover:this.cloud_cover,background_db:this.background_db});
   }
 
   /** @param {Object} document Validated versioned scenario, supplied by the local backend. */
   restore(document) {
     const acceptable=document.acceptable_level_db ?? null;
-    if (acceptable!==null && (typeof acceptable!=='number' || !Number.isFinite(acceptable) || acceptable<0 || acceptable>300) ||
+    if (acceptable!==null && (typeof acceptable!=='number' || !Number.isFinite(acceptable)) ||
       !this.fitsContourBudget(document.levels,acceptable)) throw new Error('Invalid acceptable level or too many unique contours.');
+    const background=document.background_db ?? null;
+    if (background!==null && (typeof background!=='number' || !Number.isFinite(background))) throw new Error('Invalid background level.');
+    this.background_db=background;
     this.clearHistory(); this.acceptable_level_db=acceptable;
     this.types = structuredClone(document.types);
     this.sources = structuredClone(document.sources);
@@ -69,6 +74,13 @@ export class ScenarioStore {
 
   /** @param {?string} mode Source/receiver placement, or null to cancel. */
   setMode(mode) { this.mode = mode; this.notify('ui'); }
+
+  /** @param {?number} value Uniform pressure level; null clears it. @return {boolean} Accepted. */
+  setBackground(value) {
+    if (value!==null && (typeof value!=='number' || !Number.isFinite(value))) return false;
+    if (this.background_db!==value) {this.background_db=value; this.notify('background');}
+    return true;
+  }
 
   /** @param {number} value Recorded percentage, without any acoustic correction. */
   setCloudCover(value) { this.cloud_cover = value; this.notify('metadata'); }
@@ -195,7 +207,7 @@ export class ScenarioStore {
 
   /** @param {?number} value User-set reference or null to clear. @return {boolean} Accepted. */
   setAcceptableLevel(value) {
-    if (value!==null && (typeof value!=='number' || !Number.isFinite(value) || value<0 || value>300) ||
+    if (value!==null && (typeof value!=='number' || !Number.isFinite(value)) ||
       !this.fitsContourBudget(this.contours.map(c=>c.level_db),value)) return false;
     if (this.acceptable_level_db!==value) {this.acceptable_level_db=value; this.notify('acceptable-level');}
     return true;
@@ -203,13 +215,13 @@ export class ScenarioStore {
 
   /** @return {number[]} Distinct descending thresholds, including the optional reference. */
   getContourLevels() {
-    return [...new Set([...this.contours.map(c=>c.level_db),...(this.acceptable_level_db===null ? [] : [this.acceptable_level_db])])].sort((a,b)=>b-a);
+    return [...new Set([...this.contours.map(c=>c.level_db),...(this.acceptable_level_db===null ? [] : [this.acceptable_level_db]),...(this.background_db===null ? [] : [boundaryLevel(this.background_db)])])].sort((a,b)=>b-a);
   }
 
   /** @return {import('./types.js').ContourLevel[]} One setting per geometry, flagged for the reference. */
   lineSettings() {
     return this.getContourLevels().map(level_db=>({id:this.contours.find(c=>c.level_db===level_db)?.id || 'acceptable-level',
-      level_db,acceptable:level_db===this.acceptable_level_db}));
+      level_db,background:level_db===boundaryLevel(this.background_db),acceptable:level_db===this.acceptable_level_db}));
   }
 
   /** Add a distinct threshold without substituting another value for explicit input.
@@ -218,10 +230,9 @@ export class ScenarioStore {
   addContour(requestedLevel) {
     if (this.contours.length >= 25) return false;
     if (requestedLevel!==undefined && (typeof requestedLevel!=='number' || !Number.isFinite(requestedLevel) ||
-      requestedLevel<0 || requestedLevel>300 || this.contours.some(c=>c.level_db===requestedLevel))) return false;
+      this.contours.some(c=>c.level_db===requestedLevel))) return false;
     let level=requestedLevel ?? Math.max(0, Math.min(300, Math.min(...this.contours.map(c=>c.level_db), 50) - 5));
     if (requestedLevel===undefined) while (this.contours.some(c=>c.level_db===level)) level++;
-    if (level > 300) return false;
     if (!this.fitsContourBudget([...this.contours.map(c=>c.level_db),level])) {
       if (requestedLevel!==undefined || this.acceptable_level_db===null || this.contours.some(c=>c.level_db===this.acceptable_level_db)) return false;
       level=this.acceptable_level_db;
@@ -235,7 +246,7 @@ export class ScenarioStore {
   updateContour(id, patch) {
     const contour = this.contours.find(c => c.id === id);
     if (!contour || !('level_db' in patch)) return false;
-    if ('level_db' in patch && (!Number.isFinite(patch.level_db) || patch.level_db < 0 || patch.level_db > 300 ||
+    if ('level_db' in patch && (!Number.isFinite(patch.level_db) ||
       this.contours.some(c=>c.id!==id && c.level_db===patch.level_db))) return false;
     if (!this.fitsContourBudget(this.contours.map(c=>c.id===id ? patch.level_db : c.level_db))) return false;
     contour.level_db = patch.level_db;

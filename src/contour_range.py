@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from .acoustics import at_point, combine, source_level
 from .contours import build_contours
-from .scope import SCREENING_DISTANCE_M
+from .scope import boundary_level
 from .types import ContourRequest, Receiver, Scenario
 
 
@@ -30,12 +30,9 @@ class ContourRange(BaseModel):
 def calculate_contour_range(scenario: Scenario) -> ContourRange:
     """Find a practical continuous slider interval without changing physical predictions.
 
-    Above the total-power spreading level at the existing scope distance, a
-    contour cannot extend beyond that distance from every source. Source-centre
-    evaluations provide a conservative peak, not a claim of the global maximum.
-    Rounded endpoints are checked by the normal extraction engine. If the low
-    endpoint fails its numerical/geographic guards, narrow toward a verified
-    upper endpoint. Intermediate levels can still report their own engine errors.
+    The background boundary and supported projection suggest a conservative low
+    endpoint; source-centre samples suggest a high endpoint. Both are checked by
+    the normal engine. Intermediate levels may still report independent errors.
 
     Args:
         scenario: Validated sources/types; camera, receivers and cloud are irrelevant.
@@ -55,14 +52,26 @@ def calculate_contour_range(scenario: Scenario) -> ContourRange:
         assert level is not None
         peaks.append(level)
     peak = max(peaks)
-    low = max(0.0, math.ceil((source_level(total, SCREENING_DISTANCE_M) + 0.05) * 10) / 10)
-    high = min(300.0, math.floor((peak - 0.05) * 10) / 10)
+    # With no background, probe the map projection domain rather than an acoustic radius.
+    projection_radius = math.radians(85 - max(abs(s.lat) for s in scenario.sources)) * 6_371_008.8 / 2
+    projection_floor = source_level(total, max(2, projection_radius))
+    floor = (
+        max(boundary_level(scenario.background_db), projection_floor)
+        if scenario.background_db is not None
+        else projection_floor
+    )
+    if floor >= peak:
+        return ContourRange(
+            status="unavailable", reason="All machinery levels produce a negligible increase over background."
+        )
+    low = math.ceil((floor + 0.05) * 10) / 10
+    high = math.floor((peak - 0.05) * 10) / 10
     unavailable = ContourRange(status="unavailable", reason="No useful slider interval; enter a level directly.")
     if high <= low:
         return unavailable
 
     def produces_line(level: float) -> bool:
-        """Verify one threshold using unchanged extraction and scope checks.
+        """Verify one threshold using normal extraction and background checks.
 
         Args:
             level: Proposed slider threshold.
