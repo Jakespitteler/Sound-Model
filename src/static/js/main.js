@@ -1,4 +1,5 @@
 /** @fileoverview Bind state, UI and two independent request lanes. No camera fetches. */
+import {AddressSearch} from './address-search.js';
 import {$} from './utils.js';
 import {ScenarioStore} from './state.js';
 import {GeometryCache, RequestLane} from './api.js';
@@ -13,6 +14,11 @@ import {DraftRecovery} from './draft-recovery.js';
 
 const store = new ScenarioStore();
 const manager = new MapManager(store);
+new AddressSearch(()=>manager.map.getCenter(),place=> {
+  store.setMode(null); manager.map.stop(); manager.map.closePopup();
+  if(place.bounds) manager.map.fitBounds([[place.bounds[0],place.bounds[1]],[place.bounds[2],place.bounds[3]]],{padding:[20,20],maxZoom:16,animate:false});
+  else manager.map.setView([place.lat,place.lng],16,{animate:false});
+});
 const cache = new GeometryCache();
 const geometryLane = new RequestLane(), receiverLane = new RequestLane(), rangeLane=new RequestLane();
 const sliderRanges=new Map();
