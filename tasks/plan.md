@@ -39,7 +39,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Address navigation | [028](../docs/tasks/028-address-search-autocomplete.md) | Implemented for review; Photon lookup and camera navigation verified in stacked API/browser PRs |
 | Map object removal | [029](../docs/tasks/029-map-object-deletion.md) | Implemented for review; popup and Ctrl-× deletion verified with history/recovery |
 | Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Implemented for review; persistent names beside readings, stable marker nodes and compact controls |
-| Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
+| Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Investigation complete; proposed geometry-estimate policy awaits owner choice before code |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Owner may remove printing as scope creep; no report code before decision |
 
