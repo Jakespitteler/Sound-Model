@@ -1,6 +1,6 @@
 # 028 — Find an address with autocomplete
 
-Status: Photon approved; API adapter implemented, browser integration in progress.
+Status: Implemented and verified; ready for review.
 Requested by the owner on 17 November 2026. Related: 015 (local navigation), 027 (sidebar).
 
 ## Problem and baseline
@@ -50,9 +50,9 @@ ideas beyond this lookup workflow. This brief does not implement or approve a se
 
 ## Acceptance
 
-- [ ] With the approved provider, typing a query shows distinguishable suggestions; clicking or keyboard-selecting one moves the map to its returned location. Coordinate navigation remains available and the controls fit the desktop layout without horizontal overflow at 390 px.
-- [ ] Delayed/out-of-order responses cannot replace newer results. Loading, empty, failed and invalid-coordinate responses have clear states; keyboard focus and Escape dismissal work. Requests respect provider terms and required attribution is shown.
-- [ ] Search/navigation causes zero prediction, contour or contour-range requests and preserves all machines, receivers and inputs. Existing explicit Save/Open and recovery semantics remain intact; provider approval and applicable terms are recorded.
+- [x] With the approved provider, typing a query shows distinguishable suggestions; clicking or keyboard-selecting one moves the map to its returned location. Coordinate navigation remains available and the controls fit the desktop layout without horizontal overflow at 390 px.
+- [x] Delayed/out-of-order responses cannot replace newer results. Loading, empty, failed and invalid-coordinate responses have clear states; keyboard focus and Escape dismissal work. Requests respect provider terms and required attribution is shown.
+- [x] Search/navigation causes zero prediction, contour or contour-range requests and preserves all machines, receivers and inputs. Existing explicit Save/Open and recovery semantics remain intact; provider approval and applicable terms are recorded.
 
 ## Verification
 
@@ -79,8 +79,8 @@ and title before implementing it.
 See the [provider comparison and proposed integration](028-address-provider-review.md).
 Photon is recommended for the POC; three small live place/street probes succeeded.
 Owner approved Photon on 18 November 2026. The standard-library API adapter is implemented;
-browser acceptance remains open until the next stacked change. No new dependency is added. The proposed backend adapter coordinates fair
-use across browser tabs; CORS itself does not require a proxy.
+browser acceptance is recorded below. No new dependency is added. The backend adapter
+coordinates fair use across browser tabs; CORS itself does not require a proxy.
 
 
 ### API adapter verification
@@ -90,4 +90,43 @@ coordinate/bounds validation, invalid input, duplicate/result limits, cache expi
 concurrency, cooldown and sanitized HTTP errors. Full suite: 130 passing tests; Ruff, format,
 Pyright and skill integrity pass. Live local-API probes returned Greenbushes and Bunbury
 with correct latitude/longitude conversion and optional bounds. No private scenario data
-was sent. Browser implementation and end-to-end acceptance follow in a separate stacked PR.
+was sent. Browser implementation and end-to-end acceptance are in the next stacked PR.
+
+
+### Browser integration and acceptance — 18 November 2026
+
+Address/place search now shares a compact panel with the existing coordinate entry. Typing
+waits for a pause, requests only the local adapter, and never navigates automatically.
+Mouse selection or Arrow Up/Down and Enter fits validated bounds or centres the returned
+point. Escape/dismissal cancels pending work. Retry is explicit; provider cooldown is
+respected. Attribution remains near results and selected labels; About explains query data.
+
+`tests/browser/address-search.html` passes 15 checks, including literal text, numeric/bounds
+validation, debouncing, no automatic selection, keyboard activation, stale responses even
+when abort is ignored, attribution, clearing and dismissal. Actual Chromium checks pass:
+
+- Keyboard and mouse selection with saved camera coordinates/bounds read back from the API.
+- Preserved machine, receiver, catalogue, level and cloud inputs; zero prediction, contour
+  or contour-range calls during typing, result selection, dismissal and coordinate navigation.
+- Out-of-order responses, empty/invalid locations, offline, HTTP 503/429 and explicit retry;
+  no automatic request loop after an error. Save/Open camera state and browser recovery work.
+- 1440 px desktop and 390 px layout screenshots inspected with suggestions and errors open;
+  no horizontal page overflow.
+
+Live browser searches selected Greenbushes and Bunbury successfully through the approved
+backend adapter. These public place probes do not validate exhaustive address coverage.
+Satellite imagery was unavailable during capture; the grid and tile warning remained usable.
+Windows and screen-reader speech have not been manually tested.
+
+Full suite: 130 pytest tests; Ruff, formatting, Pyright, skill integrity and diff checks pass.
+The API slice is commit `b2c2093` in #40, based on provider review #36. The browser PR stacks
+on `agent/address-search-api`; review/merge #36, then #40, then the browser PR, retargeting
+each dependent PR after its base lands. No merge or deployment is performed.
+
+Reproduction artifacts: `/workspace/artifacts/check_address_search.py`,
+`check_address_live.py`, `address-search-*.png` and `address-live-*.png`. The checked-in
+example below uses a fictional machine/receiver scene and controlled suggestion fixtures.
+
+![Address suggestions beside the existing coordinate entry](../images/address-search.png)
+
+Browser implementation commit: `5d917c9`. Documentation evidence follows separately.

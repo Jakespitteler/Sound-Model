@@ -11,6 +11,7 @@ flowchart LR
     API --> Physics[Scalar receiver model]
     API --> Contours[NumPy and ContourPy geometry]
     API --> Files[Local scenario JSON files]
+    API -->|Optional address query and camera bias| Photon[Photon geocoding service]
     Browser -->|Satellite tiles only| Imagery[Esri imagery service]
 ```
 
@@ -356,3 +357,17 @@ one start per second, a five-minute/128-entry memory cache and bounded provider 
 Busy calls do not queue; no automatic network retry occurs. Search bodies are not placed in
 local access-log URLs or saved scenarios. Camera bias and search text still reach Photon;
 private machinery/receiver inputs do not. No Java, database or new package is installed.
+
+
+`address-search.js` is an editable combobox bound to the local address endpoint, with a
+500 ms typing pause, request spacing, aborts and version checks. It renders text-only
+suggestions and ignores late responses even when cancellation is not honoured. Keyboard
+focus stays in the input; aria-activedescendant identifies the highlighted option. Only
+explicit mouse/keyboard selection invokes the navigation callback in `main.js`, which
+fits returned bounds or centres a point. No acoustic store mutation is made. Existing
+camera dirty/recovery tracking applies; search history and result lists are not saved.
+
+The compact map navigation panel retains the coordinate form. Opening coordinates closes
+search suggestions after the click, avoiding layout shifts during pointer activation.
+Search attribution stays with results/selected labels, and About explains external query
+data. Search, no-match, offline and 429/503 states remain separate from acoustic failures.

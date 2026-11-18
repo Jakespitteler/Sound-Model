@@ -2,7 +2,7 @@
 
 Reviewed 18 November 2026. **Approved by the owner on 18 November 2026: Photon public API.**
 This records the provider decision for [task 028](028-address-search-autocomplete.md).
-The approved API adapter is implemented first; browser integration follows in a stacked PR.
+The approved API adapter and browser integration are implemented as separate stacked PRs.
 
 ## Comparison
 
@@ -69,11 +69,11 @@ must remain usable if lookup fails. Do not add an unapproved fallback provider.
 ## Approval and remaining checks
 
 The owner replied “Photon is fine to use” on 18 November 2026. The adapter is approved;
-full feature acceptance remains incomplete until the browser integration is verified. The existing project rule is:
+the browser integration and full feature checks are recorded in task 028. The existing project rule is:
 “The owner must approve new third-party technologies/dependencies before adoption”
 ([AGENTS.md](../../AGENTS.md)).
 
-After approval, test actual street-address selection, keyboard/mouse interaction, stale
+Verification requirements: test actual address/place selection, keyboard/mouse interaction, stale
 responses, malformed coordinates/bounds, errors and throttling with offline fixtures. Then
 verify two live locations, screenshots at desktop/390 px, preserved inputs and zero sound
 requests on search/navigation. No runtime test is claimed for this documentation-only review.

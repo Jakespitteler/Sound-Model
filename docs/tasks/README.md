@@ -27,7 +27,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 11 | [022 Special acceptable-level contour](022-acceptable-level-contour.md) | Implemented; ready for review after 025 |
 | 12 | [023 Ctrl-click repeat placement](023-control-repeat-placement.md) | Implemented; ready for review |
 | 13 | [027 Desktop sidebar usability](027-desktop-sidebar-usability.md) | Implemented; ready for review |
-| 14 | [028 Address search with autocomplete](028-address-search-autocomplete.md) | Photon approved; API adapter ready, browser integration in progress |
+| 14 | [028 Address search with autocomplete](028-address-search-autocomplete.md) | Implemented; API and browser PRs stacked for review |
 | 15 | [029 Delete map objects in two clicks](029-map-object-deletion.md) | Ready; object popup then Delete |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Agree a defensible policy before code |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Compare required data/methods; agree one small increment |

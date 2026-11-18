@@ -151,3 +151,17 @@ Serve the repository root with `python -m http.server 8796 --bind 127.0.0.1`, th
 covering compact results, literal names, drafts, disclosures, warnings and keyboard tabs.
 This fixture does not replace full-app checks. Task 027 records desktop workflow counts,
 Save/Open/recovery checks, presentation-only request counts and inspected screenshots.
+
+
+## Address search checks
+
+`uv run pytest tests/test_geocoding.py -q` runs 20 offline provider/API checks. No test needs
+an API key or live service. Serve the repository root as above, then open
+`/tests/browser/address-search.html`; expect **PASS: 15 checks** for query debouncing,
+selection, stale responses, literal labels, bounds validation and dismissal.
+
+For full-app checks, intercept `/api/geocode` with controlled suggestions/failures, choose
+results using keyboard and mouse, and inspect saved camera values. Count prediction,
+contour and range calls during search: all must remain unchanged. Task 028 records the
+actual browser integration and live-service checks. Never use private site addresses
+or machinery/receiver data for provider probes.

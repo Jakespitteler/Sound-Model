@@ -20,7 +20,8 @@ uv run uvicorn src.main:app --host 127.0.0.1 --port 8767 --reload
 
 Open <http://127.0.0.1:8767> in Edge, Chrome or Firefox. No Node.js or frontend build is
 required. `--reload` restarts the backend after code edits; navigating the map does not
-recalculate sound. Satellite imagery needs access to `server.arcgisonline.com`.
+recalculate sound. Satellite imagery needs access to `server.arcgisonline.com`; optional
+address search uses `photon.komoot.io`.
 
 ## Build your first scenario
 
@@ -48,7 +49,8 @@ Keyboard shortcuts work outside text fields; history lasts for the current worki
 **Greenbushes mine** returns to the starting mine view. Fresh scenarios open at
 −33.8675, 116.07647 with zoom 14; saved scenarios retain their saved view.
 **Fit local area** frames nearby objects around the object nearest the current map centre,
-keeping every pair within 10 km. It changes only the view. **Go to coordinates** navigates elsewhere. **Machine data** holds the equipment catalogue
+keeping every pair within 10 km. It changes only the view. Type an **Address or place**, then choose a suggestion to move the map. Arrow keys and
+Enter also select a result. **Go to coordinates** remains available. **Machine data** holds the equipment catalogue
 and editable estimate notes. On desktop, Save and tabs stay at the top while machine and
 receiver lists scroll separately. Expand an object row to edit it; Machine data and Model info
 share the advanced-settings space.
