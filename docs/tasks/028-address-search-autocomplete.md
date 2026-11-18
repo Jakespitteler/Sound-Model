@@ -1,6 +1,6 @@
 # 028 — Find an address with autocomplete
 
-Status: Ready for provider review; approve the service before integration.
+Status: Provider review prepared; awaiting owner approval before integration.
 Requested by the owner on 17 November 2026. Related: 015 (local navigation), 027 (sidebar).
 
 ## Problem and baseline
@@ -22,7 +22,7 @@ for autocomplete, usage limits, attribution, privacy, and key/account requiremen
 what typed queries leave the app and obtain the owner's approval of the selected service.
 A free forward-geocoding endpoint is not automatically permitted for autocomplete. Do not
 choose a paid service or add a dependency by implication. Use existing vanilla JavaScript
-and FastAPI; add a backend proxy only if the provider requires it. Never commit credentials
+and FastAPI; add a backend adapter only where credentials or provider usage controls justify it. Never commit credentials
 or expose a secret key in browser code. Keep provider access separate from the map renderer.
 
 Debounce queries, respect the approved provider's minimum query length/rate policy and
@@ -72,3 +72,12 @@ change the navigation markup/styles and, only if required, a FastAPI route. Aim 
 five implementation files and split the work if it grows. Record the approved provider,
 implementation commit, checks and inspected screenshots here. Announce task 028 by number
 and title before implementing it.
+
+
+## Provider-review handoff — 18 November 2026
+
+See the [provider comparison and proposed integration](028-address-provider-review.md).
+Photon is recommended for the POC; three small live place/street probes succeeded.
+Owner approval is pending. No provider, dependency or address-search feature is integrated,
+and the acceptance checkboxes remain open. The proposed backend adapter coordinates fair
+use across browser tabs; CORS itself does not require a proxy.

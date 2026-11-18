@@ -36,7 +36,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Optional equipment metadata | [019](../docs/tasks/019-equipment-metadata-contract.md), then [020](../docs/tasks/020-equipment-metadata-editor.md) | Both implemented for review; merge saved-data contract before collapsed editor |
 | Requested map controls | [021](../docs/tasks/021-acceptable-level-contract.md), [025](../docs/tasks/025-acceptable-level-browser-state.md), then [022](../docs/tasks/022-acceptable-level-contour.md); [023](../docs/tasks/023-control-repeat-placement.md) | Acceptable-level contract/state/line implemented for review; Ctrl repeat placement implemented for review |
 | Sidebar usability | [027](../docs/tasks/027-desktop-sidebar-usability.md) | Implemented for review; verified fewer scroll gestures with unchanged workflow click count |
-| Address navigation | [028](../docs/tasks/028-address-search-autocomplete.md) | Review a free autocomplete-capable geocoder; owner approves service before integration; camera changes only |
+| Address navigation | [028](../docs/tasks/028-address-search-autocomplete.md) | Provider review prepared; approve Photon before integration; camera changes only |
 | Map object removal | [029](../docs/tasks/029-map-object-deletion.md) | Two clicks: select object, then Delete; reuse history and recovery |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
