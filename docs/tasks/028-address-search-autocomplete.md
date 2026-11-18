@@ -1,6 +1,6 @@
 # 028 — Find an address with autocomplete
 
-Status: Provider review prepared; awaiting owner approval before integration.
+Status: Photon approved; implementation and verification are in stacked PRs #40 and #42.
 Requested by the owner on 17 November 2026. Related: 015 (local navigation), 027 (sidebar).
 
 ## Problem and baseline
@@ -78,6 +78,6 @@ and title before implementing it.
 
 See the [provider comparison and proposed integration](028-address-provider-review.md).
 Photon is recommended for the POC; three small live place/street probes succeeded.
-Owner approval is pending. No provider, dependency or address-search feature is integrated,
-and the acceptance checkboxes remain open. The proposed backend adapter coordinates fair
+Owner approved Photon on 18 November 2026. This provider-review branch adds no runtime
+feature; implementation and acceptance evidence are in PRs #40 and #42. The proposed backend adapter coordinates fair
 use across browser tabs; CORS itself does not require a proxy.

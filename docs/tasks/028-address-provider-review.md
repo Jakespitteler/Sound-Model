@@ -1,6 +1,6 @@
 # Task 028 — Address-search provider review
 
-Reviewed 18 November 2026. **Recommendation awaiting owner approval: Photon public API.**
+Reviewed 18 November 2026. **Photon approved by the owner on 18 November 2026.**
 This is preparation for [task 028](028-address-search-autocomplete.md), not a completed
 address-search implementation. No provider is integrated by this change.
 
@@ -68,8 +68,9 @@ must remain usable if lookup fails. Do not add an unapproved fallback provider.
 
 ## Approval and remaining checks
 
-The owner was asked to approve Photon and the proposed adapter. Approval is pending;
-implementation and acceptance checkboxes remain incomplete. The existing project rule is:
+The owner approved Photon and the proposed adapter on 18 November 2026.
+Implementation and acceptance evidence are recorded in the separate API (#40) and browser
+(#42) PRs; this provider-review PR contains documentation only. The existing project rule is:
 “The owner must approve new third-party technologies/dependencies before adoption”
 ([AGENTS.md](../../AGENTS.md)).
 
