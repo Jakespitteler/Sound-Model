@@ -44,9 +44,13 @@ On desktop, Save/Open and the workspace tabs stay above the two scrolling object
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and Model info open one at a time, retaining their drafts.
 
-Names appear in the sidebar and on map hover or keyboard focus. The map keeps its compact
-R-number and reading. Clear the name to restore **Receiver N**. Names can contain up to
-80 characters, may repeat, and are kept by Save/Open and recovery.
+Names stay visible beside coloured readings on the map and in the sidebar. Named map
+badges include an R-number to distinguish repeated names. Clear the name to restore
+**Receiver N**. Names can contain up to 80 characters, may repeat, and are kept by
+Save/Open and recovery. Long map names use at most two lines; hover or keyboard-focus
+the badge to read the full name. Names remain visible while a reading is pending or unavailable.
+
+![Receiver names beside their readings](images/persistent-receiver-names.png)
 
 To remove an object on the map, click its marker, then **Delete machine** or **Delete
 receiver**. Holding **Ctrl** shows a small red **×** on each visible object for one-click
