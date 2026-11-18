@@ -161,7 +161,7 @@
 .map-navigation #address-form { display:flex; gap:8px; margin:0; align-items:center; }
 .map-navigation .address-input { position:relative; flex:1; min-width:0; }
 .map-navigation #address-query { min-width:0; width:100%; margin:0; font-size:12px; padding-right:32px !important; }
-.map-navigation #clear-address { position:absolute; right:3px; top:3px; bottom:3px; width:28px; padding:0; background:none; color:var(--muted); font-size:20px; border-radius:3px; }
+.map-navigation #clear-address { position:absolute; right:3px; top:3px; bottom:3px; width:28px; padding:0; background:none; color:var(--muted); display:grid; place-items:center; line-height:1; border-radius:3px; }
 .map-navigation .coordinate-entry { margin-top:10px; }
 .map-navigation #location-form { flex-wrap:wrap; }
 .map-navigation #address-results { padding:0; margin:10px 0 0; list-style:none; max-height:28vh; overflow-y:auto; }
