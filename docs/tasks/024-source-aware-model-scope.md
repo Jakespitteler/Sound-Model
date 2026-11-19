@@ -116,3 +116,24 @@ Author reviewed the diff and screenshots; no independent reviewer was used. Owne
 merge remain required. Implementation: `dffef64` (runtime, tests and browser fixture), followed by a wording
 correction to the slider-unavailable message; it avoids claiming that sampled source peaks
 prove the entire field negligible.
+
+
+## Follow-up: distinguish overall increase from audibility — 19 November 2026
+
+Owner requested the recommended clarification before moving to task 026. Map and sidebar
+statuses now say **Negligible overall increase**; the dotted contour explicitly labels the
++0.1 dB overall increase. The compact background summary distinguishes that increase from
+the machinery-only contour level. About retains the explanation that this is not a maximum
+hearing distance. No frequency data or audibility verdict is invented; no calculation,
+request, save schema or source/receiver data changes.
+
+Verification: 24 HTTP tests passed; receiver-map-names 17, background-boundary 15 and
+acceptable-label-priority 10 browser checks passed. The full-app background workflow passed
+again, including changed background, saved/recovered values, uncapped input and zero acoustic
+requests on presentation-only edits. Desktop and 390 px screenshots were captured and
+inspected; labels remain compact with no horizontal page overflow. Satellite tiles remained
+unavailable; existing edge/overlap limitations remain.
+
+![Clear overall-increase label](../images/overall-increase-label.png)
+
+[Narrow screenshot](../images/overall-increase-label-mobile.png). Author review only.

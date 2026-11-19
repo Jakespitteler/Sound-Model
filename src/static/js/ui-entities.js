@@ -117,7 +117,7 @@ export class EntitiesUI {
                     `<li>${this.store.sources.findIndex(source=>source.id===c.id)+1}. ${escapeHtml(c.name)} · ${c.distance_m.toFixed(0)} m · ${c.level_db.toFixed(1)} dB(A)${c.provenance === 'example' ? ' · estimate' : ''}</li>`
                   ).join('')}</ul></details>` : ''),
                 `<strong data-receiver-title>${escapeHtml(receiverLabel(r,i))}</strong>` +
-                `<span class="result${result?.status==='negligible' ? ' is-negligible' : ''}" style="color:${soundColor(result?.level_db ?? null)}">${!result ? 'Calculating…' : result.status === 'negligible' ? 'Negligible increase' : formatDb(result.level_db)}</span>` +
+                `<span class="result${result?.status==='negligible' ? ' is-negligible' : ''}" style="color:${soundColor(result?.level_db ?? null)}">${!result ? 'Calculating…' : result.status === 'negligible' ? 'Negligible overall increase' : formatDb(result.level_db)}</span>` +
                 `${result?.near_field || result?.includes_distant_sources ? `<span class="entity-warning">${[result.near_field ? 'Within 1 m of a machine' : '',result.includes_distant_sources ? 'Includes distant sources' : ''].filter(Boolean).join(' · ')}</span>` : ''}`
               )}</div>`
             );

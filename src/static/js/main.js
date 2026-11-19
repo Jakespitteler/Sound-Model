@@ -140,7 +140,7 @@ function replayPlacement(redo) {
 function syncBackground() {
   $('background-level').value=store.background_db===null ? '' : String(store.background_db);
   const boundary=boundaryLevel(store.background_db);
-  $('background-status').textContent=boundary===null ? 'Enter background to set the outer boundary.' : `Outer boundary: ${boundary.toFixed(1)} dB(A) · +0.1 dB over background`;
+  $('background-status').textContent=boundary===null ? 'Enter background to show the overall-increase boundary.' : `Overall increase: +0.1 dB at ${boundary.toFixed(1)} dB(A) machinery`;
 }
 $('background-level').onchange=()=> {
   const input=$('background-level');

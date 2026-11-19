@@ -94,12 +94,12 @@ export class MapManager {
       const index=this.store.receivers.findIndex(receiver=>receiver.id===id);
       const label=receiverLabel(this.store.receivers[index],index);
       const reading=this.receiverReadings?.[id];
-      const description=this.receiverFailed ? 'unavailable' : !reading ? 'calculating' : reading.status==='negligible' ? 'negligible increase over background (less than 0.1 dB)' : reading.level_db===null
+      const description=this.receiverFailed ? 'unavailable' : !reading ? 'calculating' : reading.status==='negligible' ? 'negligible overall increase over background (less than 0.1 dB)' : reading.level_db===null
         ? 'no source contribution' : `${reading.level_db.toFixed(1)} dB(A) predicted source contribution`;
       const root=marker.getElement(), badge=root?.querySelector('.receiver-marker');
       if(badge) {
         const hasLevel=!this.receiverFailed && reading?.level_db!=null && reading.status!=='negligible';
-        const value=this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.status==='negligible' ? 'Negligible increase' : reading.level_db===null ? 'No sources' : reading.level_db.toFixed(1);
+        const value=this.receiverFailed ? 'Unavailable' : !reading ? '…' : reading.status==='negligible' ? 'Negligible overall increase' : reading.level_db===null ? 'No sources' : reading.level_db.toFixed(1);
         const name=badge.querySelector('.receiver-name'); name.textContent=label;
         const reference=badge.querySelector('.receiver-id'); reference.textContent=`R${index+1}`; reference.hidden=!this.store.receivers[index].name;
         badge.querySelector('.receiver-value').textContent=value;

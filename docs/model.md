@@ -75,7 +75,7 @@ boundary_level = background_level + 10 log10(10 ** (0.1 / 10) - 1)
 ```
 
 A dotted contour at that exact machinery level marks a **0.1 dB increase**. Lower machinery
-contours are labelled **Negligible increase** and not drawn. Receivers below the boundary
+contours are labelled **Negligible overall increase** and not drawn. Receivers below the boundary
 show the same phrase instead of numeric totals or contribution breakdowns. Numeric readings
 and other contours continue to describe machinery alone; background is never added to the
 reported machinery level. At the threshold, the increase is 0.1 dB; below it, it is less.

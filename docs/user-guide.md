@@ -98,7 +98,7 @@ white halos. **Show lines** hides/shows them without changing the calculation.
 | --- | --- |
 | Numeric receiver reading | Treat it as a screening machine contribution, excluding background |
 | No sources | Place a machine; this does not mean the site has zero ambient noise |
-| Negligible increase | Machinery adds less than 0.1 dB to the entered background |
+| Negligible overall increase | Machinery adds less than 0.1 dB to the entered background |
 | No crossing | That threshold has no line for the current field |
 | Failed contour | Open its reason; other successful levels remain visible |
 | Unavailable or startup error | Read the displayed error; use Retry when offered |
@@ -113,7 +113,7 @@ level for the whole scenario; zero is a valid level, while blank means not set. 
 not supply a guessed default. Save/Open and recovery retain your value.
 
 A dotted outer contour marks where all machines together add **0.1 dB** to background.
-Receivers beyond it show **Negligible increase**. Lower contour levels remain in your list
+Receivers beyond it show **Negligible overall increase**. Lower contour levels remain in your list
 with that status, and reappear if the background or machines change. The automatic boundary
 is derived, so it does not need another editable contour row. A failed boundary is identified
 in contour error details; successful other levels remain visible.
@@ -123,7 +123,7 @@ increase does not guarantee that machinery cannot be heard. Clear background to 
 filter off. There is no fixed receiver-distance cutoff or numeric contour-level cap;
 calculation budgets and supported map projection can still cause individual line failures.
 
-![Adaptive outer boundary and receiver states](images/background-boundary.png)
+![Adaptive outer boundary and receiver states](images/overall-increase-label.png)
 
 ### Set an acceptable-level reference
 

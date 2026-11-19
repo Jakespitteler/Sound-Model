@@ -131,13 +131,13 @@ export class ContoursUI {
       row.classList.toggle('contour-failed',result?.status==='failed');
       if (result?.status==='failed' || result?.status==='empty' || result?.status==='negligible') {
         const status = document.createElement('span'); status.className='contour-level-status';
-        status.textContent=result.status==='failed' ? 'Failed' : result.status==='negligible' ? 'Negligible increase' : 'No crossing';
+        status.textContent=result.status==='failed' ? 'Failed' : result.status==='negligible' ? 'Negligible overall increase' : 'No crossing';
         status.title=result.error || 'No contour at this level for the current sources.';
         row.append(status);
       }
     }
     const acceptable=this.results.find(c=>c.level_db===this.store.acceptable_level_db);
-    $('acceptable-status').textContent=acceptable?.status==='failed' ? 'Failed' : acceptable?.status==='empty' ? 'No crossing' : acceptable?.status==='negligible' ? 'Negligible increase' : this.sliderRange?.status==='ok' ? `${this.store.acceptable_level_db===null ? 'Drag to set · ' : 'Slider: '}${this.sliderRange.min_db}–${this.sliderRange.max_db} dB(A)` : this.sliderRange?.reason || (this.store.sources.length ? 'Finding slider range…' : 'Place a machine to enable the slider.');
+    $('acceptable-status').textContent=acceptable?.status==='failed' ? 'Failed' : acceptable?.status==='empty' ? 'No crossing' : acceptable?.status==='negligible' ? 'Negligible overall increase' : this.sliderRange?.status==='ok' ? `${this.store.acceptable_level_db===null ? 'Drag to set · ' : 'Slider: '}${this.sliderRange.min_db}–${this.sliderRange.max_db} dB(A)` : this.sliderRange?.reason || (this.store.sources.length ? 'Finding slider range…' : 'Place a machine to enable the slider.');
     $('acceptable-status').title=acceptable?.error || '';
     const failures=this.results.filter(c=>c.status==='failed');
     const prefix=c=>c.level_db===boundaryLevel(this.store.background_db) ? 'Outer boundary · ' : c.level_db===this.store.acceptable_level_db ? 'Acceptable level · ' : '';

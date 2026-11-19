@@ -233,7 +233,7 @@ def test_about_explains_reference_levels_and_scope(client: TestClient) -> None:
     assert response.status_code == 200
     assert "Decibels can be negative" in response.text
     assert "0.1 dB" in response.text
-    assert "Negligible increase" in response.text
+    assert "Negligible overall increase" in response.text
     assert "no fixed receiver-distance cutoff" in response.text
     assert "not evidence" in response.text
     assert "choose Restore" in response.text
