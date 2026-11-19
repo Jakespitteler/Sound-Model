@@ -2,8 +2,9 @@
 
 [Documentation index](../README.md) · [Current model](../model.md) · [Project rules](../../AGENTS.md)
 
-The goal is to assess and manage the risk of machinery disturbing nearby town receivers.
-The app should support an honest assessment, not work towards a predetermined inaudibility result.
+The owner selected machinery **audibility from town locations** as the POC focus. Keep the
+workflow simple and the evidence honest; the current calculations are not a validated
+audibility assessment or a predetermined inaudibility result.
 
 ## POC work queue
 
@@ -30,6 +31,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 14 | [028 Address search with autocomplete](028-address-search-autocomplete.md) | Implemented; API and browser PRs stacked for review |
 | 15 | [029 Delete objects from the map](029-map-object-deletion.md) | Implemented; ready for review |
 | 16 | [030 Persistent receiver names on the map](030-persistent-receiver-map-names.md) | Implemented; ready for review |
+| 17 | [031 Site measurement pins](031-site-measurement-pins.md) | Ready; record and compare only, no calibration |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Implemented; adaptive background boundary ready for review |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend/editor ready for review |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Complete — removed from the POC by owner |
@@ -48,6 +50,9 @@ No new dependencies, services or regulatory criteria are approved by these brief
 - **Latest additions:** an optional user-set acceptable contour and Ctrl-click repeat
   placement are requested. Replacing distance-only scope needs a defensible policy (024),
   not a claim that the present model can establish audibility.
+- **Site measurements:** approved first slice is recording pressure-level pins and cautious
+  comparisons. Meter capabilities may be unknown; stationary and moving tests are possible.
+  No automatic source calibration, background subtraction or measurement heatmap is approved.
 - **Accuracy:** contour reuse may avoid repeated work, but must not simplify geometry,
   omit sources or change the physical/numerical model.
 

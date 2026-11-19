@@ -19,6 +19,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 - Reuse contours without changing equations, source contributions, geometry or accuracy.
 - Add bounded placement undo/redo; do not build persistent or collaborative history.
 - The owner declined portable JSON export/import. Only source-reference and operating-mode metadata is approved for equipment.
+- Site-measurement pins are approved for recording/comparison only; calibration remains later.
 - Printing was removed from the POC by the owner (016); no report implementation is planned.
 
 ## Work order and checkpoints
@@ -41,6 +42,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Implemented for review; persistent names beside readings, stable marker nodes and compact controls |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Implemented for review; approved 0.1 dB background-relative boundary |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend then editor PRs |
+| Site observations | [031](../docs/tasks/031-site-measurement-pins.md) | Record/compare pressure measurements; retain unknowns, no automatic calibration |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.
