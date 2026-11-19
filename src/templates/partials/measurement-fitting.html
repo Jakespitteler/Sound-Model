@@ -12,7 +12,7 @@
       <p class="hint">One equivalent source at this centre. Use readings outside the marked area; interior readings remain recorded. This simple model does not describe noise within the area.</p>
       <label id="replace-fit-sources-label" class="fit-confirm"><input name="replace" type="checkbox">Replace all active sources with this area estimate to avoid counting them twice. Measurements and receivers stay.</label>
     </div>
-    <label>Operating activity / site state<input name="activity" maxlength="200" placeholder="Match the activity recorded on the selected readings" required></label>
+    <label>Operating activity / site state<input name="activity" list="fit-activities" maxlength="200" placeholder="Match the activity recorded on the selected readings" required></label><datalist id="fit-activities"></datalist>
     <p id="fit-background" class="hint"></p>
     <label class="fit-confirm"><input name="background_confirmed" type="checkbox" required>The background represents these tests on a comparable averaging basis.</label>
     <p class="hint">Choose at least two Fit readings and one separate Check reading from the same operating conditions. Only Fit readings determine the estimate.</p>

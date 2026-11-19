@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8"><title>Fitting workflow review checks</title>
+<link rel="stylesheet" href="../../src/static/vendor/leaflet/leaflet.css">
+<div id="map" style="width:800px;height:400px"></div><div id="editor"></div><pre id="result">Running…</pre>
+<script src="../../src/static/vendor/leaflet/leaflet.js"></script>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {FittingUI} from '../../src/static/js/ui-fitting.js';
+import {fitPreview} from '../../src/static/js/fit-preview.js';
+let count=0;
+const check=(condition,message)=>{if(!condition)throw Error(message);count++;};
+const settle=()=>new Promise(resolve=>setTimeout(resolve,30));
+try {
+ document.querySelector('#editor').innerHTML=await (await fetch('../../src/templates/partials/measurement-fitting.html')).text();
+ const store=new ScenarioStore(),type=store.types[0];
+ store.types.push({id:'area-type',name:'Area',kind:'area',lwa:110,provenance:'example'});
+ store.sources=[{id:'area-first',type_id:'area-type',lat:0,lng:0},{id:'long-source-uuid',type_id:type.id,lat:0,lng:0}];
+ store.measurements=[1,2,3].map(i=>({id:'m'+i,name:'',lat:0,lng:i*.01,level_db:60,activity:'Steady idle'}));
+ store.setBackground(30);
+ const manager={map:L.map('map').setView([0,0],10)};
+ const ui=new FittingUI(store,manager,()=>{}),form=document.querySelector('#fit-form'),fields=form.elements;
+ ui.root.open=true;
+ const set=(field,value)=>{fields[field].value=value;fields[field].dispatchEvent(new Event('input',{bubbles:true}));};
+ check(fields.source_id.options.length===2,'area sources excluded from machine calibration picker');
+ check(fields.source_id.options[1].textContent===`2. ${type.name}`,'picker uses map numbering including skipped area sources');
+ check(!fields.source_id.options[1].textContent.includes('uuid'),'opaque internal ID is not user-facing');
+ check(fields.activity.list.options.length===1 && fields.activity.list.options[0].value==='Steady idle','deduplicated recorded activities offered');
+ set('mode','area');store.setMode('fit-area');set('mode','machine');
+ check(store.mode===null,'switching away from area cancels map placement');
+ store.setMode('source');set('activity','Steady idle');
+ check(store.mode==='source','unrelated machine placement mode is preserved');
+ store.setMode(null);
+ check(fields.lat.disabled && !fields.source_id.disabled,'hidden area fields do not block machine validation');
+ set('source_id','long-source-uuid');set('activity','   ');
+ check(!fields.activity.checkValidity(),'whitespace-only activity rejected before API request');
+ set('activity','Steady idle');check(fields.activity.checkValidity(),'corrected activity clears validation error');
+ set('mode','area');set('area_name','   ');
+ check(!fields.area_name.checkValidity(),'whitespace-only area name rejected before preview');
+ set('area_name','North area');check(fields.area_name.checkValidity(),'corrected area name clears error');
+ set('mode','machine');check(fields.area_name.disabled && fields.source_id.required,'returning to machine restores correct required controls');
+ let requests=0;
+ window.fetch=async()=>{requests++;return {ok:true,json:async()=>({ready:true,reason:'Preview',lwa:110,spread_db:0,centre:{lat:0,lng:0},rows:[]})};};
+ fields.background_confirmed.checked=true;
+ set('activity','   ');await ui.calculate();check(requests===0,'invalid activity never reaches model');
+ set('activity','Steady idle');await ui.calculate();check(requests===0 && document.querySelector('#fit-error').textContent.includes('two Fit'),'insufficient fit/check selection is actionable locally');
+ [...document.querySelectorAll('#fit-selections select')].forEach((select,index)=>select.value=index<2?'fit':'check');
+ await ui.calculate();check(requests===1 && !document.querySelector('#apply-fit').hidden,'valid existing workflow still produces applicable preview');
+ set('activity','Changed');check(document.querySelector('#apply-fit').hidden && ui.preview===null,'activity correction cannot leave stale Apply available');
+ const html=fitPreview({ready:false,reason:'Review',rows:[{id:'m1',role:'fit',reason:'Unknown'},{id:'m3',role:'check',reason:'Unknown'}]},store.measurements);
+ const preview=document.createElement('div');preview.innerHTML=html;
+ check(preview.textContent.includes('Measurement 1') && preview.textContent.includes('Measurement 3'),'unnamed preview readings match original measurement numbers, including skipped records');
+ store.measurements[0].activity='<img src=x onerror=alert(1)>';store.notify('measurements');
+ check(!document.querySelector('#fit-activities img') && [...fields.activity.list.options].some(o=>o.value.includes('<img')),'activity suggestions display literal text');
+ check([...document.querySelectorAll('#fit-selections select')].map(s=>s.value).join(',')==='fit,fit,check','refreshing suggestions retains selected roles');
+ await settle();manager.map.remove();
+ document.querySelector('#result').textContent=`PASS: ${count} checks`;
+} catch(error) {document.querySelector('#result').textContent='FAIL: '+error.stack;throw error;}
+</script>

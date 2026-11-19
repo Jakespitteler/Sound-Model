@@ -42,7 +42,7 @@ export class FittingUI {
   /** Refresh keyed options without losing roles selected for other records. */
   choices() {
     const select=this.form.elements.source_id,previous=select.value;
-    select.innerHTML='<option value="">Choose machine</option>'+this.store.sources.filter(s=>this.store.typeFor(s).kind!=='area').map(s=>`<option value="${e(s.id)}">${e(this.store.typeFor(s).name)} · ${e(s.id.slice(0,4))}</option>`).join('');
+    select.innerHTML='<option value="">Choose machine</option>'+this.store.sources.flatMap((s,index)=>this.store.typeFor(s).kind==='area'?[]:[`<option value="${e(s.id)}">${index+1}. ${e(this.store.typeFor(s).name)}</option>`]).join('');
     select.value=previous;
     const holder=$('fit-selections');
     for(const row of [...holder.children]) if(!this.store.measurements.some(m=>m.id===row.dataset.fitReading)) row.remove();
@@ -52,12 +52,17 @@ export class FittingUI {
         row.innerHTML=`<span></span><select aria-label="Use measurement ${index+1}"><option value="skip">Don't use</option><option value="fit">Fit</option><option value="check">Check only</option></select>`;holder.append(row);}
       row.querySelector('span').textContent=`${item.name || 'Measurement '+(index+1)} · ${item.level_db.toFixed(1)} dB`;
     });
+    const activities=[...new Set(this.store.measurements.map(item=>(item.activity || '').trim()).filter(Boolean))];
+    $('fit-activities').innerHTML=activities.map(activity=>`<option value="${e(activity)}"></option>`).join('');
     $('fit-empty').hidden=!!this.store.measurements.length;this.syncMode();
   }
 
   /** Expose only the selected workflow's fields. */
   syncMode() {
     const area=this.form.elements.mode.value==='area';
+    if(!area && this.store.mode==='fit-area') this.store.setMode(null);
+    this.form.elements.activity.setCustomValidity(this.form.elements.activity.value.trim()?'':'Enter the operating activity.');
+    this.form.elements.area_name.setCustomValidity(!area || this.form.elements.area_name.value.trim()?'':'Enter an area name.');
     $('fit-machine-fields').hidden=area;$('fit-area-fields').hidden=!area;
     $('fit-machine').required=!area;$('fit-machine').disabled=area;
     for(const input of $('fit-area-fields').querySelectorAll('input:not([type=checkbox])')) {input.required=area;input.disabled=!area;}
