@@ -26,6 +26,11 @@ try {
   layer.setVisible(false);check(!map.hasLayer(layer.group),'visibility toggle still hides lines and labels');
   layer.setVisible(true);front();map.setZoom(15);
  }
+ layer.render([{level_db:28.7,status:'ok',lines:[ring]}],[{id:'shared',level_db:28.7,acceptable:true,background:true}]);
+ const shared=document.querySelector('.acceptable-label').textContent;
+ check(shared.includes('28.7 dB(A)'),'shared background boundary retains absolute acceptable threshold');
+ check(shared.includes('Negligible overall increase') && shared.includes('+0.1 dB'),'shared label keeps relative increase distinct from absolute threshold');
+ front();
  document.querySelector('#result').textContent=`PASS: ${checks.length} checks`;document.querySelector('#result').dataset.passed='true';
 } catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
 </script>

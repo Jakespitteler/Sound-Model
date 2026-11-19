@@ -77,7 +77,11 @@ export class ContourLayer {
       }
       const anchor = lines[0][Math.floor(lines[0].length / 4)];
       const label = document.createElement('span');
-      label.textContent = `${contour.acceptable ? 'Acceptable level — user-set · ' : ''}${contour.background ? 'Negligible overall increase · +0.1 dB' : contour.level_db.toFixed(1)+' dB(A)'}`;
+      const descriptions=[];
+      if (contour.acceptable) descriptions.push('Acceptable level — user-set');
+      if (!contour.background || contour.acceptable) descriptions.push(`${contour.level_db.toFixed(1)} dB(A)`);
+      if (contour.background) descriptions.push('Negligible overall increase','+0.1 dB');
+      label.textContent = descriptions.join(' · ');
       label.style.color = color;
       const tooltip = L.tooltip({pane:contour.acceptable ? 'acceptable-labels' : 'contour-labels',permanent:true,direction:'center',className:contour.acceptable ? 'contour-label acceptable-label' : 'contour-label',opacity:1,interactive:false})
         .setLatLng([anchor[1],anchor[0]]).setContent(label).addTo(this.group);
