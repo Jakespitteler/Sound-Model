@@ -2,7 +2,9 @@
 
 [Current model](model.md) · [Task 026](tasks/026-feasible-propagation-effects.md)
 
-**Feasibility review — 19 November 2026.** No new propagation or audibility method is
+**Feasibility review — 19 November 2026.** The owner subsequently selected the optional
+[band-data foundation](frequency-band-contract.md), now implemented separately. The proposals
+below preserve the original review context. No audibility or atmospheric method is
 implemented by this review. The current calculation remains independent point-source
 spreading, with the owner-approved 0.1 dB overall-increase display boundary.
 

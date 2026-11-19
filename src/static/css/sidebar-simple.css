@@ -79,3 +79,26 @@ details[open] > .entity-summary::before { content:'▾'; }
 
 .sidebar .level-number input[type=number] { width:76px; flex:none; }
 .entity-summary .result.is-negligible { font-size:12px; line-height:1.35; }
+
+.band-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.band-grid label { min-width:0; font-size:11px; }
+.source-bands,.background-bands,.receiver-bands { margin:12px 0; }
+.band-table-wrap { overflow-x:auto; }
+.band-table { width:100%; border-collapse:collapse; font-size:11px; }
+.band-table th,.band-table td { padding:6px 3px; text-align:right; border-bottom:1px solid var(--line); }
+.band-table th:first-child { text-align:left; }
+.band-table .band-status td { text-align:left; font-size:10px; color:var(--muted); padding-top:0; }
+
+/* Expanded cards use the sidebar viewport rather than multiple clipped list boxes. */
+.close-sidebar-editor { position:sticky; top:-16px; z-index:5; display:block; width:100%; margin:0 0 12px; padding:9px 12px; background:var(--surface); border:1px solid var(--line); color:var(--teal); text-align:left; box-shadow:0 3px 8px #254b3914; }
+@media(min-width:651px) {
+  .sidebar.expanded-editor { display:block; overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
+  .sidebar.expanded-editor #scenario-panel { display:block; }
+  .sidebar.expanded-editor #scenario-panel > section,
+  .sidebar.expanded-editor #scenario-panel > section:has(> #sources) { display:block; }
+  .sidebar.expanded-editor #scenario-panel .items,
+  .sidebar.expanded-editor #scenario-panel .catalogue-section,
+  .sidebar.expanded-editor .model-settings,
+  .sidebar.expanded-editor #contours-panel,
+  .sidebar.expanded-editor .message { max-height:none; overflow:visible; scrollbar-gutter:auto; }
+}

@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from .acoustics import at_point
 from .assets import FrontendFiles
+from .bands import at_receiver_bands
 from .contour_range import ContourRange, calculate_contour_range
 from .contours import build_contours
 from .geocoding_routes import router as geocoding_router
@@ -64,6 +65,13 @@ def predict(scenario: Scenario) -> Prediction:
     }
     return Prediction(
         receivers=receivers,
+        band_results={
+            point.id: at_receiver_bands(point, scenario.sources, types, scenario.background_spectrum)
+            for point in scenario.receivers
+        }
+        if scenario.background_spectrum is not None
+        or any(types[s.type_id].spectrum is not None for s in scenario.sources)
+        else {},
         cloud_cover=scenario.cloud_cover,
         cloud_correction_db=None,
         example_data=any(types[source.type_id].provenance == "example" for source in scenario.sources),

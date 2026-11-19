@@ -35,8 +35,8 @@ try {
  const summary=document.querySelector('[data-receiver-card] summary');
  check(summary.querySelector('.result').textContent.includes('46.2'),'compact summary shows computed number');
  check(summary.querySelector('.entity-warning').textContent.includes('Within 1 m') && summary.querySelector('.entity-warning').textContent.includes('distant'),'important flags remain in collapsed summary');
- ui.renderReceivers({[receiver.id]:{status:'out_of_scope',level_db:null,nearest_source_m:20000,contributions:[]}});
- check(document.querySelector('[data-receiver-card] summary').textContent.includes('Outside model scope'),'outside-scope status remains visible');
+ ui.renderReceivers({[receiver.id]:{status:'negligible',level_db:null,nearest_source_m:20000,contributions:[]}});
+ check(document.querySelector('[data-receiver-card] summary').textContent.includes('Negligible overall increase'),'negligible-overall-increase status remains visible');
  check(document.querySelector('[data-remove-source]') && document.querySelector('[data-remove-receiver]'),'removal remains available in editors');
  setupSidebar();
  document.querySelector('.catalogue-library summary').click();await new Promise(resolve=>setTimeout(resolve,10));

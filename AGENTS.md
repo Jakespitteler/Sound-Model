@@ -5,7 +5,9 @@
 Read `README.md`, the relevant section of `ARCHITECURE.md`, and the files/tests involved in
 the task. Assessment work and proposed improvements are tracked in `docs/tasks/README.md`.
 Before starting a task, tell the owner its number and title.
-Keep changes focused and preserve existing user work. The owner must approve unimplemented
+Keep changes focused and preserve existing user work. This is a single-purpose POC: keep
+the machinery/map/receiver workflow simple and pleasant to use. Additional controls and
+complexity must directly support the owner's goal; usability should not distract from it. The owner must approve unimplemented
 ideas before new task briefs are added. Existing broad backlog themes are not implementation
 approval; confirm the selected scope before starting a new feature.
 

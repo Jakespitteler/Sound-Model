@@ -2,6 +2,7 @@
  * UI controller for Section 01 (Machine Catalogue) and Section 05 (Cloud Cover).
  */
 
+import {spectrumFields,readSpectrum} from './band-ui.js';
 import { $, escapeHtml } from './utils.js';
 
 /** Machine catalogue forms, selection and cloud metadata controls. */
@@ -41,7 +42,10 @@ export class CatalogueUI {
         const input=form.elements.namedItem(field);
         if ([...input.value.trim()].length>limit) {input.setCustomValidity(`Use ${limit} characters or fewer.`); input.reportValidity(); return;}
       }
+      let spectrum;
+      try {spectrum=readSpectrum(form);} catch(error) {return this.say(error.message);}
       this.store.updateMachineType(form.dataset.editType, {
+        spectrum,
         name,
         lwa: Number(data.get('lwa')),
         provenance: String(data.get('provenance')),
@@ -76,7 +80,7 @@ export class CatalogueUI {
           `<option value="measured" ${t.provenance === 'measured' ? 'selected' : ''}>Measured</option></select></label></div>` +
           `<label>Source reference (optional)<input name="source_reference" placeholder="Manufacturer sheet section 4" value="${escapeHtml(t.source_reference || '')}"></label>` +
           `<label>Operating mode (optional)<input name="operating_mode" placeholder="Loaded / travelling" value="${escapeHtml(t.operating_mode || '')}"></label>` +
-          `<label>Source / assumption note<textarea name="note" maxlength="2000" rows="3">${escapeHtml(t.note || "")}</textarea></label><button class="secondary" type="submit">Save type</button></form></details></div>`,
+          `<label>Source / assumption note<textarea name="note" maxlength="2000" rows="3">${escapeHtml(t.note || "")}</textarea></label><details class="source-bands"><summary>Frequency data (optional)</summary>${spectrumFields(t.spectrum,true)}</details><button class="secondary" type="submit">Save type</button></form></details></div>`,
       )
       .join('');
 

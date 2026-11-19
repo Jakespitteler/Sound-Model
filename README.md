@@ -78,6 +78,9 @@ Default contours match the guide: **30, 40, 60, 80 and 100 dB(A)**. A failed con
 its level/reason while successful levels remain visible. Colours describe levels, not compliance.
 Under **Contours**, set an optional **Acceptable level** to draw a dashed reference labelled
 “user-set”. It starts blank, shares matching thresholds, and is saved with the scenario.
+**Frequency data** is optional: enter unweighted equipment/background octave bands inside
+Machine data and Model info, then expand a receiver's **Frequency comparison**. These
+comparisons do not alter contours or establish audibility; leave unknown data blank.
 Cloud cover is recorded only. Negative decibels are possible because zero dB is a reference,
 not zero sound. Read [how the model works](docs/model.md) or open **About** in the app.
 

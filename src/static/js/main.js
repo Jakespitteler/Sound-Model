@@ -1,4 +1,5 @@
 /** @fileoverview Bind state, UI and two independent request lanes. No camera fetches. */
+import {bindBackgroundSpectrum} from './band-ui.js';
 import {boundaryLevel} from './background.js';
 import {AddressSearch} from './address-search.js';
 import {$} from './utils.js';
@@ -25,7 +26,7 @@ const geometryLane = new RequestLane(), receiverLane = new RequestLane(), rangeL
 const sliderRanges=new Map();
 /** @type {import('./types.js').ContourGeometry[]} Last valid current geometry. */
 let geometry = [];
-let receiverResults = {};
+let receiverResults = {}, bandResults={};
 let receiverFailed = false, geometryFailed = false, rangeFailed=false;
 /** Keep independent request errors visible regardless of which lane finishes first. */
 function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed || rangeFailed); }
@@ -33,6 +34,7 @@ function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed ||
 const say = message => { $('message').textContent = message; };
 const catalogue = new CatalogueUI(store,say), entities = new EntitiesUI(store,say), contours = new ContoursUI(store,say);
 catalogue.bind(); entities.bind(); contours.bind(); renderSoundGuide(); setupSidebar();
+const syncBackgroundSpectrum=bindBackgroundSpectrum(store,say);
 
 /** @param {Error} error Failure displayed with an explicit retry. */
 function failed(error) {
@@ -46,7 +48,7 @@ function refreshReceivers() {
   }
   receiverLane.schedule('/api/predict',store.toPayload(),{
     start:()=> {receiverFailed=false; updateRetry(); entities.renderReceivers(); manager.setReceiverReadings(null);},
-    success:data=> {receiverFailed=false; updateRetry(); receiverResults=data.receivers; entities.renderReceivers(receiverResults); manager.setReceiverReadings(receiverResults);},
+    success:data=> {receiverFailed=false; updateRetry(); receiverResults=data.receivers; bandResults=data.band_results || {}; entities.renderReceivers(receiverResults,bandResults); manager.setReceiverReadings(receiverResults);},
     error:error=> {
       entities.renderReceivers();
       document.querySelectorAll('#receivers .result').forEach(e=> {e.textContent='Unavailable';});
@@ -165,6 +167,8 @@ store.subscribe(reason=> {
   manager.syncModeUI();
   if (['geometry','catalogue','background','restore'].includes(reason)) refreshSliderRange();
   if (reason==='background' || reason==='restore') syncBackground();
+  if (reason==='restore') syncBackgroundSpectrum();
+  if (reason==='spectra') refreshReceivers();
   if (reason==='acceptable-level') contours.syncAcceptable();
   if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}

@@ -11,6 +11,7 @@ dated change records explain how the project reached it.
 | Find modules, data flows and API boundaries | [Architecture](../ARCHITECURE.md) |
 | Run checks or troubleshoot startup | [Developer guide](development.md) |
 | Understand the background-boundary decision | [Scope review and approved decision](scope-policy-review.md) |
+| Enter optional band evidence and interpret receiver comparisons | [Band contract](frequency-band-contract.md) and [user guide](user-guide.md#optional-frequency-band-evidence) |
 | Compare feasible model upgrades and audibility prerequisites | [Model feasibility review](model-feasibility.md) |
 | Choose an approved POC task | [Task backlog](tasks/README.md) |
 | Use or update the installed agent skills | [Agent Skills integration](../.agents/README.md) |

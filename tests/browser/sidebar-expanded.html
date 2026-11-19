@@ -1,0 +1,54 @@
+<!doctype html><meta charset="utf-8"><title>Expanded sidebar editors</title>
+<link rel="stylesheet" href="../../src/static/css/tokens.css"><link rel="stylesheet" href="../../src/static/css/base.css"><link rel="stylesheet" href="../../src/static/css/layout.css"><link rel="stylesheet" href="../../src/static/css/sidebar.css"><link rel="stylesheet" href="../../src/static/css/contours.css"><link rel="stylesheet" href="../../src/static/css/sidebar-simple.css">
+<main><aside class="sidebar"><div class="sidebar-header"><h1>Scenario</h1><button id="scenario-tab">Scenario</button><button id="contours-tab">Contours</button></div>
+<div id="scenario-panel"><section><select id="place-type"></select><button id="place-source">Place</button><span id="source-count"></span><div id="sources" class="items"></div></section>
+<section><button id="place-receiver">Receiver</button><span id="receiver-count"></span><div id="receivers" class="items"></div></section>
+<section class="catalogue-section"><details class="catalogue-library"><summary>Machine data <span id="catalogue-count"></span></summary><div id="types"></div></details></section></div>
+<div id="contours-panel" hidden>Contours</div><details class="model-settings"><summary>Model info</summary><input id="draft" value="Draft"></details><button id="demo">Example</button></aside><div><pre id="result">Running…</pre></div></main>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {CatalogueUI} from '../../src/static/js/ui-catalogue.js';
+import {EntitiesUI} from '../../src/static/js/ui-entities.js';
+import {setupSidebar} from '../../src/static/js/sidebar.js';
+const checks=[];
+/** @param {boolean} claim Outcome. @param {string} label Behaviour. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+/** @return {Promise<void>} Allow native toggle delivery, layout and focus mode to settle. */
+const settle=()=>new Promise(resolve=>setTimeout(resolve,70));
+try {
+ const store=new ScenarioStore();for(let i=0;i<20;i++)store.addSource(store.types[0].id,0,0);
+ store.addReceiver(0,.01);const ui=new EntitiesUI(store,()=>{});ui.renderSources();ui.renderReceivers({});
+ new CatalogueUI(store,()=>{}).render();setupSidebar();
+ const sidebar=document.querySelector('.sidebar'),sources=document.querySelector('#sources'),close=sidebar.querySelector('.close-sidebar-editor');
+ const events=[];store.subscribe(reason=>events.push(reason));
+ check(!sidebar.classList.contains('expanded-editor') && close.hidden,'compact lists are the initial view');
+ sources.scrollTop=130;const offset=sources.scrollTop;
+ const source=sources.querySelector('details');source.querySelector('summary').click();await settle();
+ check(sidebar.classList.contains('expanded-editor') && !close.hidden,'opening an object grants full sidebar space');
+ for(const selector of ['#sources','#receivers','.catalogue-section','.model-settings'])check(getComputedStyle(document.querySelector(selector)).overflowY==='visible',`${selector} has no nested scroll box while editing`);
+ let box=source.closest('.item-card').getBoundingClientRect();
+ check(box.top>=close.getBoundingClientRect().bottom && box.bottom<=innerHeight-12,'small opened card is fully visible');
+ source.querySelector('[name=lat]').value='0.125';close.click();await settle();
+ check(!sidebar.classList.contains('expanded-editor') && sources.scrollTop===offset,`closing restores compact list scroll position (${sources.scrollTop}/${offset})`);
+ check(source.querySelector('[name=lat]').value==='0.125','closing preserves unsubmitted coordinates');
+ const library=document.querySelector('.catalogue-library');library.querySelector('summary').click();await settle();
+ const type=document.querySelector('.type-card');type.querySelector('details > summary').click();await settle();
+ const reference=type.querySelector('[name=source_reference]');reference.value='Unsubmitted reference';
+ type.querySelector('.source-bands > summary').click();await settle();
+ check(type.querySelectorAll('[data-band-index]').length===9,'frequency fields are reachable within the complete product');
+ box=type.querySelector('button[type=submit]').getBoundingClientRect();
+ check(box.bottom<=innerHeight-12,'opening frequency fields also reveals the save action');
+ close.click();await settle();check(reference.value==='Unsubmitted reference','catalogue drafts survive closing');
+ const model=document.querySelector('.model-settings');model.querySelector('summary').click();await settle();
+ check(!library.open && model.open,'advanced settings remain mutually exclusive');
+ close.click();await settle();
+ const receiver=document.querySelector('[data-receiver-card] > details');receiver.querySelector('summary').click();await settle();
+ document.querySelector('#contours-tab').click();await settle();
+ check(!sidebar.classList.contains('expanded-editor'),'hidden workspace editors do not force expanded layout');
+ document.querySelector('#scenario-tab').click();await settle();check(sidebar.classList.contains('expanded-editor'),'returning workspace restores its open editor');
+ store.receivers=[];ui.renderReceivers({});await settle();
+ check(!sidebar.classList.contains('expanded-editor') && close.hidden,'removing an open card leaves no orphan editor mode');
+ check(events.length===0,'disclosure, closing and workspace navigation cause no acoustic state changes');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>

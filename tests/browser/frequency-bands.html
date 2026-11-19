@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8"><title>Optional frequency-band foundation</title>
+<form id="editor"></form><pre id="result">Running…</pre>
+<script type="module">
+import {spectrumFields,readSpectrum,bandComparison} from '../../src/static/js/band-ui.js';
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {GeometryCache} from '../../src/static/js/api.js';
+const checks=[];
+/** @param {boolean} claim Expected behaviour. @param {string} label Description. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+try {
+ const form=document.querySelector('#editor');form.innerHTML=spectrumFields(null,true);
+ check(form.querySelectorAll('[data-band-index]').length===9,'fixed nine-band grid');
+ check(readSpectrum(form)===null,'blank editor is not a fabricated spectrum');
+ form.querySelector('[data-band-index="0"]').value='0';form.querySelector('[data-band-index="1"]').value='-20';
+ form.querySelector('[data-band-period]').value='60';
+ const partial=readSpectrum(form);
+ check(partial.levels[0]===0 && partial.levels[1]===-20 && partial.levels[2]===null,'zero, negative and missing are distinct');
+ check(partial.weighting==='Z' && partial.metric==='Leq' && partial.period_s===60,'explicit unweighted energy-average basis');
+ partial.reference='<img src=x onerror=alert(1)>';form.innerHTML=spectrumFields(partial,true);
+ check(!form.querySelector('img') && form.querySelector('[data-band-reference]').value===partial.reference,'reference text stays literal');
+ const store=new ScenarioStore(),events=[];store.subscribe(reason=>events.push(reason));
+ const id=store.types[0].id,original=store.types[0].lwa;store.addSource(id,0,0);events.length=0;
+ const cache=new GeometryCache(),before=cache.key(store.toPayload(),40);
+ store.updateMachineType(id,{spectrum:partial});
+ check(events.join(',')==='spectra','source spectral edits have their own receiver-only lane');
+ check(store.types[0].lwa===original && cache.key(store.toPayload(),40)===before,'spectra do not modify LwA or geometry cache signature');
+ const payload=store.toPayload();check(payload.types[0].spectrum.levels[2]===null,'unknown bands retained in acoustic snapshot');
+ events.length=0;store.updateMachineType(id,{spectrum:{...partial,reference:'Changed reference'}});
+ check(events.join(',')==='equipment-metadata','reference-only edit is not acoustic');
+ store.setBackgroundSpectrum(partial);check(store.toPayload().background_spectrum.period_s===60,'background evidence is explicit scenario data');
+ const markup=bandComparison([{frequency_hz:1000,machine_db:45,background_db:40,difference_db:5,status:'ok'},
+   {frequency_hz:2000,machine_db:null,background_db:40,difference_db:null,status:'missing_source_data',missing_sources:['s']}]);
+ form.innerHTML=markup;
+ check(form.textContent.includes('+5.0') && form.textContent.includes('Unknown'),'comparison keeps signed differences and unknowns');
+ check(form.textContent.includes('Missing machine data') && form.textContent.includes('not audibility'),'no audibility verdict from a band margin');
+ const doc={...store.toPayload(),types:store.types,levels:[40],cloud_cover:0};
+ const restored=new ScenarioStore();restored.restore(doc);
+ check(restored.background_spectrum.levels[2]===null && restored.types[0].spectrum.levels[0]===0,'restore retains partial evidence');
+ delete doc.background_spectrum;doc.types=doc.types.map(({spectrum,...legacy})=>legacy);restored.restore(doc);
+ check(restored.background_spectrum===null && !restored.types[0].spectrum,'legacy scene gets no guessed bands');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>

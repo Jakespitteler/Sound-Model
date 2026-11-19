@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, Field, model_validator
 
-from .types import ContourRequest, MachineType, Receiver, Source, StrictModel
+from .types import ContourRequest, MachineType, Receiver, Source, Spectrum, StrictModel
 
 
 class SavedMachine(MachineType):
@@ -55,6 +55,7 @@ class ScenarioDocument(StrictModel):
         receivers: Listening locations.
         levels: Unique contour thresholds.
         cloud_cover: Recorded cloud percentage.
+        background_spectrum: Optional unweighted background evidence.
         background_db: Optional uniform background pressure in dB(A).
         acceptable_level_db: Optional user-set reference threshold; no regulatory default.
         view: Optional map camera.
@@ -68,6 +69,7 @@ class ScenarioDocument(StrictModel):
     receivers: list[Receiver] = Field(max_length=20)
     levels: list[float] = Field(max_length=25)
     cloud_cover: int = Field(ge=0, le=100, strict=True)
+    background_spectrum: Spectrum | None = None
     background_db: float | None = Field(default=None, strict=True)
     acceptable_level_db: float | None = Field(default=None, strict=True)
     view: MapView | None = None
@@ -88,7 +90,7 @@ class ScenarioDocument(StrictModel):
             raise ValueError("At most 25 unique levels including the acceptable level are supported.")
         ContourRequest(
             types=[
-                MachineType.model_validate(t.model_dump(include={"id", "name", "lwa", "provenance"}))
+                MachineType.model_validate(t.model_dump(include={"id", "name", "lwa", "provenance", "spectrum"}))
                 for t in self.types
             ],
             sources=self.sources,
@@ -96,6 +98,7 @@ class ScenarioDocument(StrictModel):
             levels=self.levels,
             cloud_cover=self.cloud_cover,
             background_db=self.background_db,
+            background_spectrum=self.background_spectrum,
         )
         return self
 

@@ -349,9 +349,20 @@ Receiver contributions have a separate disclosure so they do not separate names 
 coordinates. State and calculation lanes are unchanged.
 
 `sidebar.js` hides existing workspace panels rather than replacing them. Machine data and
-Model info share advanced-settings space; opening one closes the other without removing
+Model info remain mutually exclusive; opening one closes the other without removing
 form nodes or committing drafts. Disclosure, tab selection and list scrolling do not notify
 the acoustic store or request predictions.
+
+On desktop, opening a visible root editor applies `expanded-editor` to the sidebar. The
+same form nodes remain in place, but capped list/catalogue/settings scroll boxes become
+ordinary content under one viewport-height sidebar scroller. Explicit summary clicks reveal
+whole cards when they fit; nested frequency editors also include their save action. Longer
+forms align at the top. This reveal is driven by user activation, not prediction refreshes.
+A sticky Close editor action closes root disclosures and restores compact list offsets.
+Offsets are captured before native disclosure expansion can change browser scroll anchoring.
+Toggle/DOM observation keeps the mode correct after renderer updates; hidden workspaces do
+not force expanded mode. Narrow screens retain document flow. No acoustic notifications,
+form clones or new dependencies are involved.
 
 ```mermaid
 flowchart TD
@@ -420,3 +431,27 @@ Both paths check current identity before calling `removeSource`/`removeReceiver`
 existing store commands handle history, dirty state, recovery and calculation lanes. A
 stale control is a no-op. Marker selection cancels placement with a presentation notification
 before opening a popup, so dismissing details cannot accidentally place another machine.
+
+
+## Optional frequency-band foundation
+
+`Spectrum` is nullable on machine types and the scenario's `background_spectrum`, with the
+same optional fields in version-1 saves. It carries nine fixed unweighted octave levels,
+unknowns as null, positive/unknown energy-average duration, fixed Z/Leq basis and user evidence.
+No default spectrum or A-weighting coefficient is introduced. Existing overall equations and
+geometry signatures ignore these fields.
+
+`bands.py` evaluates receivers independently using the existing distance/spreading/energy
+helpers. Each band requires every active source's level and compatible known duration. The
+background comparison additionally requires matching background duration. Missing sources
+are identified rather than omitted; unmatched basis yields no difference. No-source and
+numeric-failure states are explicit. The 1 m near-field flag survives. `Prediction.band_results`
+is a separate per-receiver collection; existing `receivers` and contour output are unchanged.
+
+`band-ui.js` supplies shared source/background fields and a neutral comparison table. Source
+fields live in the existing catalogue editor; background fields in Model info. `spectra`
+notifications refresh only the receiver lane; a reference-only source edit remains metadata.
+Background updates do not rebuild source editors or lose unrelated drafts. Open receiver band
+details survive pending results. Save/recovery snapshots retain full evidence; old scenes
+restore null profiles. All acoustic data remains local to the backend; Photon receives no bands.
+See the [contract](docs/frequency-band-contract.md) for units, statuses and validation.

@@ -40,9 +40,14 @@ changes all those instances. Removing a type is prevented while it is in use.
 4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
    to add an optional name or edit coordinates. **Machine contributions** shows individual sources.
 
-On desktop, Save/Open and the workspace tabs stay above the two scrolling object lists.
+On desktop, Save/Open and the workspace tabs stay above the two compact object lists.
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and Model info open one at a time, retaining their drafts.
+
+Opening an editor gives it the full sidebar height and one scroll area. Cards that fit in
+the window are brought fully into view; longer forms scroll naturally. **Close editor**
+returns to the compact lists and their previous scroll positions. Closing preserves field
+drafts; use the form's Save/Move action to apply unsubmitted changes.
 
 Names stay visible beside coloured readings on the map and in the sidebar. Named map
 badges include an R-number to distinguish repeated names. Clear the name to restore
@@ -140,6 +145,34 @@ checked with the current model, background and geometry engine; they are not a c
 environmental validation. Numeric entry accepts any finite dB(A) value, and a source change does
 not silently change your chosen value. Per-level extraction failures can still be reported.
 Save/Open and recovery retain the setting. Show lines and High contrast apply to it too.
+
+## Optional frequency-band evidence
+
+Use this only when you have suitable band data. If all you have is an overall dB(A) value,
+leave the band fields blank; do not copy that value into every band or invent a spectrum.
+
+1. In **Machine data → Estimate notes & edit → Frequency data (optional)**, enter unweighted
+   octave-band **sound power** for that machine type. The profile applies to all instances
+   of that type. Record the energy-average duration, assumed/measured classification and
+   a source/operating reference, then **Save type**.
+2. In **Model info → Background frequency data (optional)**, enter unweighted band
+   **pressure** levels with their duration and evidence reference, then **Save background
+   bands**. This one background spectrum applies throughout the scenario.
+3. Expand a receiver and open **Frequency comparison**. The table shows unweighted receiver
+   band pressures, background pressures and signed machinery-minus-background differences.
+
+Blank bands are unknown, while zero and negative dB values are valid levels. Missing source
+bands or durations prevent a complete total for that band. Background comparisons require
+matching durations; also check that measurements represent suitable operating conditions.
+Unknown/mismatched data stays labelled rather than becoming a partial sum or a false zero.
+
+Band data does **not** replace the existing overall LwA/background values, change contours,
+or calculate an audibility boundary. Unweighted bands are not silently converted to dB(A).
+A positive difference does not prove audible and a negative difference does not prove inaudible.
+Save/Open and recovery retain the evidence, including partial profiles; old scenes have none.
+Expanded editors/results use the sidebar viewport rather than small nested scroll panels.
+
+![Receiver band comparison](images/frequency-receiver-comparison.png)
 
 ## Save and reopen
 

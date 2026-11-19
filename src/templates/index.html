@@ -47,6 +47,9 @@
         <input id="cloud" aria-label="Cloud cover" type="range" min="0" max="100" step="1" value="0">
         <div class="range-labels"><span>Clear sky</span><span>Overcast</span></div>
         <p>Recorded with the scenario; not yet used in the calculation.</p>
+        <details class="background-bands"><summary>Background frequency data (optional)</summary>
+          <form id="background-band-form"><div id="background-band-fields"></div><button type="submit" class="secondary compact">Save background bands</button></form>
+        </details>
       </details>
       <p id="message" class="message" role="status" aria-live="polite"></p>
       <button id="retry" class="secondary compact retry" type="button" hidden>Retry calculations</button>
