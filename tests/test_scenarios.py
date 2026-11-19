@@ -70,6 +70,7 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
     record = response.json()
     identifier = record["id"]
     expected = {
+        "measurements": [],
         "background_spectrum": None,
         "background_db": None,
         "acceptable_level_db": None,

@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, Field, model_validator
 
+from .measurements import Measurement
 from .types import ContourRequest, MachineType, Receiver, Source, Spectrum, StrictModel
 
 
@@ -49,6 +50,7 @@ class ScenarioDocument(StrictModel):
     """Versioned browser scenario with notes and presentation state.
 
     Attributes:
+        measurements: Optional field observations, independent of simulated source links.
         version: Persisted schema version; unknown versions are rejected.
         types: Equipment catalogue including source notes.
         sources: Placed machines.
@@ -63,6 +65,7 @@ class ScenarioDocument(StrictModel):
         show_contours: Global contour visibility.
     """
 
+    measurements: list[Measurement] = Field(default_factory=list[Measurement], max_length=100)
     version: Literal[1] = 1
     types: list[SavedMachine] = Field(max_length=50)
     sources: list[Source] = Field(max_length=100)
@@ -83,6 +86,8 @@ class ScenarioDocument(StrictModel):
         Returns:
             Valid document with no silent repair or discarded source metadata.
         """
+        if len({m.id for m in self.measurements}) != len(self.measurements):
+            raise ValueError("Measurement IDs must be unique.")
         unique_levels = set(self.levels)
         if self.acceptable_level_db is not None:
             unique_levels.add(self.acceptable_level_db)

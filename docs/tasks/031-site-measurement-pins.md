@@ -1,6 +1,6 @@
 # 031 — Record and compare site measurements
 
-Status: Ready when selected; task creation approved on 19 November 2026.
+Status: Implementation in progress; backend contract complete, editor/comparisons follow.
 Related: 026 (optional band foundation), 027 (simple expanded editors), 003/005 (parked
 measurement/validation themes). This brief adds one bounded POC feature, not those wider themes.
 
@@ -108,3 +108,18 @@ no source-power/background/contour changes and no camera/disclosure-triggered so
 Capture and inspect the actual open editor and comparison/unsupported states. No real field
 measurements are supplied yet; do not invent them. Record commits, commands, evidence and
 remaining limitations here when implemented.
+
+
+## Backend slice — 19 November 2026
+
+The owner selected task 031. [The measurement contract](../measurement-contract.md) defines
+observations, historical model context and the independent direct-comparison endpoint. It
+keeps source/pressure quantities separate, preserves deleted-source observations and defaults
+old scenes to an empty collection. The backend does not use the observed pressure to fit or
+change any model quantity. Current source operating labels are context, not a new noise model.
+
+Backend checks: **182 pytest tests passed**; independent intensity and equal-source energy
+references, inapplicable tests, changed/missing/mode context, negligible results, negative/zero
+readings, invalid/duplicate data and saved/legacy records. Ruff and Pyright passed. No new
+technology or real field readings were added. The compatible data/API slice is separate from
+the map/editor integration; owner review and merge remain required.
