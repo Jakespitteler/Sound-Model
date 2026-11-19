@@ -217,9 +217,13 @@ def fit_measurements(request: FitRequest) -> FitResult:
     if not math.isfinite(power) or not 0 <= power <= 300:
         result.reason = "Fitted emission is outside the supported 0–300 dB sound-power input range."
         return result
+    spread = max(powers) - min(powers)
+    if not math.isfinite(spread):
+        result.reason = "Selected readings exceed the numerical dynamic range for this fit."
+        return result
     result.ready = True
     result.lwa = power
-    result.spread_db = max(powers) - min(powers)
+    result.spread_db = spread
     result.reason = (
         "Equivalent point-source estimate. Check readings do not influence the fit; "
         "review their differences before applying."

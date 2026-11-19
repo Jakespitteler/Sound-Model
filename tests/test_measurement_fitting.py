@@ -208,3 +208,14 @@ def test_background_confirmation_and_caution() -> None:
     request.background_confirmed = True
     request.measurements[0].level_db = 36
     assert "sensitive" in fit_measurements(request).rows[0].reason
+
+
+def test_extreme_finite_readings_fail_without_nonfinite_output() -> None:
+    """Retain finite inputs but reject an unrepresentable training spread explicitly."""
+    request = fitting()
+    request.background_db = -1.7e308
+    request.measurements[0].level_db = -1e308
+    request.measurements[1].level_db = 1e308
+    result = fit_measurements(request)
+    assert not result.ready and "dynamic range" in result.reason
+    assert "Infinity" not in result.model_dump_json()
