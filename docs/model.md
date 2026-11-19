@@ -126,3 +126,14 @@ background evidence and calculates receiver-only geometry comparisons. Overall d
 values cannot reconstruct a spectrum. A hearing-distance estimate additionally needs a
 suitable propagation and detection/masking method, validated for its conditions. The existing
 negligible-overall-increase contour remains a display comparison, not that boundary.
+
+
+## Measurement-derived emissions
+
+A separate [fitting workflow](measurement-fitting.md) can estimate one effective source
+power from background-corrected stationary LAeq readings. Isolated tests support one machine;
+combined site readings support a user-marked equivalent area centre. This adjusts an input,
+not the propagation equation. Selected check readings are kept out of the fit. The fitted
+power can absorb unmodeled local effects, so it is not a direct sound-power measurement and
+may extrapolate poorly towards town. No maximum sustained level or audibility conclusion is
+inferred. Ordinary record/compare actions remain read-only.

@@ -1,6 +1,10 @@
 # 031 — Record and compare site measurements
 
 Status: Implemented; backend and editor PRs stacked for review.
+
+This brief records the original record/compare-only slice. Later owner-approved
+[032](032-machine-measurement-calibration.md) and [033](033-operating-area-estimate.md) add a
+separate explicit fitting workflow; recording itself remains read-only.
 Related: 026 (optional band foundation), 027 (simple expanded editors), 003/005 (parked
 measurement/validation themes). This brief adds one bounded POC feature, not those wider themes.
 

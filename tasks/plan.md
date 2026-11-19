@@ -2,9 +2,9 @@
 
 [Canonical task queue](../docs/tasks/README.md) · [Project rules](../AGENTS.md)
 
-Updated 17 November 2026 after the owner's task-by-task review. The scope is a small proof
+Updated 19 November 2026 after the owner's task-by-task review. The scope is a small proof
 of concept, balancing usability and assessment foundations without building a full assessment
-platform. This plan prepares work for agents; no queued feature is implemented by this change.
+platform. This plan records the approved work; current implementation states are in the linked briefs.
 Task states and acceptance checkboxes live only in the linked task briefs, not a second todo list.
 
 ## Decisions
@@ -19,7 +19,8 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 - Reuse contours without changing equations, source contributions, geometry or accuracy.
 - Add bounded placement undo/redo; do not build persistent or collaborative history.
 - The owner declined portable JSON export/import. Only source-reference and operating-mode metadata is approved for equipment.
-- Site-measurement pins are approved for recording/comparison only; calibration remains later.
+- Site-measurement pins retain their record/compare workflow. Later approved tasks 032–033
+  add deliberate machine/combined-area fitting with background correction and held-back checks.
 - Printing was removed from the POC by the owner (016); no report implementation is planned.
 
 ## Work order and checkpoints
@@ -42,6 +43,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Implemented for review; persistent names beside readings, stable marker nodes and compact controls |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Implemented for review; approved 0.1 dB background-relative boundary |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend then editor PRs |
+| Derived emissions | [032](../docs/tasks/032-machine-measurement-calibration.md), [033](../docs/tasks/033-operating-area-estimate.md) | Implemented in stacked fitting/editor slices; preview/apply only, no new propagation physics |
 | Site observations | [031](../docs/tasks/031-site-measurement-pins.md) | Implemented in stacked data/editor PRs; retain unknowns, no automatic calibration |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 

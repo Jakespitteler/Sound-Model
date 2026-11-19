@@ -90,7 +90,9 @@ in-app **Estimate notes** page records their origin.
 
 Open **Measurements** to record a pressure reading at a map location. Test details are
 optional; suitable stationary tests show the measured total beside the current machinery
-estimate. Records are saved with the scenario; they never calibrate the model. See the
+estimate. Records are saved with the scenario. **Build an estimate from readings** offers a separate
+preview/apply workflow for an isolated machine or a combined operating area, with held-back
+check readings. See the
 [measurement workflow](docs/user-guide.md#record-site-measurements).
 
 ## Keep your work

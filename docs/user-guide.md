@@ -263,6 +263,49 @@ machines contribute to that estimate. The measured total can include background 
 activity, so these two numbers are not a model-error score. Measurements never adjust powers,
 contours or background automatically. Moving/maximum/unknown tests remain recorded without
 a numerical comparison. Source edits or removal make the comparison unavailable and retain
-the captured model context. There is no calibration or audibility verdict.
+the captured model context. This read-only comparison does not calibrate the model or give an
+audibility verdict. To derive an estimate deliberately, use the separate workflow below.
 
 ![Stationary reading beside the current machinery estimate](images/task-031/measurement-stationary.png)
+
+## Build an estimate from measurements
+
+Under **Measurements → Build an estimate from readings**, choose a workflow:
+
+| Choice | Use it when | Result after Apply |
+| --- | --- | --- |
+| Calibrate one machine | Stationary tests isolate that machine at its recorded position | A derived emission for that placed machine; original type and other instances stay unchanged |
+| Combined operating area | Several machines operate together, or individual equipment is unknown | One combined source at your marked centre; individual machines need not be placed |
+
+1. Record LAeq averages, duration and the same activity/site-state label on the readings.
+   For machine tests, link the machine and set **Other machinery → Selected machine was
+   isolated**. If you cannot isolate it, choose Other machinery contributing or Unsure and
+   use the area workflow. Unknown/max/pass-by observations remain recorded.
+2. Enter a representative background level in the scenario. Confirm it represents these
+   tests on a comparable averaging basis. The app cannot establish this from one number.
+3. For an area, enter a name, **Mark area centre on map**, and enter a radius. The dashed
+   circle marks the operating footprint. Use outside readings to fit/check; interior readings
+   remain useful context. If sources already exist, explicitly confirm their replacement
+   to avoid counting the same machinery twice.
+4. Select at least two **Fit** readings and a separate **Check only** reading at distinct
+   locations. Others stay Don't use. More points at different distances and directions are
+   helpful; similar operating conditions matter more than simply collecting many points.
+5. **Preview estimate** shows corrected pressure, predictions and their differences. Check
+   readings do not determine the fitted emission. Review disagreements; the app does not
+   invent a pass/fail threshold or declare the model accurate.
+6. **Apply reviewed estimate** changes the emission used by existing receivers and contours.
+   Original observations remain unchanged. Save the scenario to retain the resulting state.
+   **Machine data → Recorded measurement fit** shows the snapshot behind a derived estimate.
+
+Background correction subtracts sound energy, not dB numbers. Readings less than 3 dB above
+background are too sensitive to use for this fit; 3–10 dB separation carries a caution. If a
+selected reading is unsuitable, the preview explains why. Change its role to Don't use to
+exclude it explicitly. Recording a reading never applies calibration automatically.
+
+The area uses one equivalent point, not a detailed distribution of machines. Its circle
+adds no attenuation, and predictions inside the area are especially unsuitable. Both fits
+use the existing open-space model: missing ground, terrain and weather effects may influence
+the fitted emission and extrapolation. A fit does not establish the maximum sustained sound
+at town or prove inaudibility. See the [fitting method](measurement-fitting.md).
+
+![Reviewed machine estimate and independent check](images/task-032/fit-machine-preview.png)

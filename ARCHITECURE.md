@@ -486,3 +486,32 @@ results; context/location changes request affected missing results. Late respons
 replace a newer scene or rebuild active editor fields. Neither measured pressure nor comparison
 results feed source power, contours or calibration. See the
 [measurement contract](docs/measurement-contract.md) for exact fields and eligibility.
+
+
+## Explicit measurement fitting
+
+`measurement_fitting.py` is a separate read-only preview endpoint. It background-corrects
+eligible selected LAeq readings and fits one fixed source by least squares in pressure dB;
+held-back check rows never affect power. Machine mode requires confirmed isolation and
+matching recorded context. Area mode uses a user-marked equivalent centre/circular footprint
+and outside observations, with no individual source required.
+
+`ui-fitting.js` owns roles, map-centre selection, footprint rendering and preview invalidation;
+`fit-preview.js` renders escaped read-only results both in previews and saved catalogue evidence.
+Form/scene edits abort and version-invalidate pending responses. Only explicit Apply calls
+`ScenarioStore.applyMeasurementFit`, atomically creating a derived catalogue entry for one
+instance or replacing active sources with one labeled area source after confirmation.
+Accepted observations, background and receiver/contour settings remain unchanged. Existing
+prediction/cache lanes then consume ordinary source coordinates and effective LwA. No fitted
+metadata is sent to those lanes. Save/Open/recovery retain the detached fitting evidence;
+manual later edits do not rewrite its historical inputs/results.
+
+```mermaid
+flowchart LR
+    Readings[Recorded observations and fit/check roles] --> Preview[POST measurement fit]
+    Preview --> Results[Read-only results]
+    Results --> Review[User reviews and applies]
+    Review --> Derived[Derived catalogue entry and source]
+    Derived --> Existing[Existing receiver / contour lanes]
+    Derived --> Files[Save / Open / recovery with fit evidence]
+```

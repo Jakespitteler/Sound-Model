@@ -233,3 +233,20 @@ locations, cached points, drafts, source deletion and legacy restore. Include th
 frequency, background, history and foreground fixtures when changing shared state/renderers.
 Task 031 records the full-app Save/Open/recovery, real delayed-response draft preservation,
 request-count checks and inspected open-editor/comparison screenshots.
+
+
+## Measurement-fitting checks
+
+`uv run pytest tests/test_measurement_fitting.py tests/test_measurements.py tests/test_scenarios.py`
+checks independent energy correction, known-power recovery, held-back independence, unknown/
+mixed context, background sensitivity, distinct locations, source-free areas, legacy schemas,
+finite/extreme inputs and evidence round trips. With the static repository server running,
+open `/tests/browser/measurement-fitting.html`; expect **PASS: 17 checks** for atomic apply,
+instance isolation, copied evidence, unchanged other inputs, deliberate source replacement,
+area routing into the existing acoustic payload, metadata stripping and escaped previews.
+
+Run the 12 measurement/shared-state fixtures listed in task 032 as regressions. Full-app
+checks should include real preview/Apply clicks, mixed rejection, a delayed stale response,
+background/input invalidation, Save/Open/recovery and recorded catalogue evidence. Inspect
+open preview, error and narrow layouts. Tasks 032–033 hold actual check counts and screenshots;
+synthetic fits do not replace field validation.

@@ -31,7 +31,9 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 14 | [028 Address search with autocomplete](028-address-search-autocomplete.md) | Implemented; API and browser PRs stacked for review |
 | 15 | [029 Delete objects from the map](029-map-object-deletion.md) | Implemented; ready for review |
 | 16 | [030 Persistent receiver names on the map](030-persistent-receiver-map-names.md) | Implemented; ready for review |
-| 17 | [031 Site measurement pins](031-site-measurement-pins.md) | Implemented; backend and editor PRs stacked for review, no calibration |
+| 17 | [031 Site measurement pins](031-site-measurement-pins.md) | Implemented; record/compare foundation |
+| 18 | [032 Machine measurement calibration](032-machine-measurement-calibration.md) | Implemented; reviewed fit/apply, original data retained |
+| 19 | [033 Combined operating-area estimate](033-operating-area-estimate.md) | Implemented; one equivalent source, no individual machines required |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Implemented; adaptive background boundary ready for review |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend/editor ready for review |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Complete — removed from the POC by owner |
@@ -52,7 +54,9 @@ No new dependencies, services or regulatory criteria are approved by these brief
   not a claim that the present model can establish audibility.
 - **Site measurements:** approved first slice is recording pressure-level pins and cautious
   comparisons. Meter capabilities may be unknown; stationary and moving tests are possible.
-  No automatic source calibration, background subtraction or measurement heatmap is approved.
+  Later approval adds explicit preview/apply fitting (032–033) with representative-background
+  energy correction, isolation metadata and held-back checks. Automatic calibration, predicted
+  subtraction of other machines and measurement heatmaps remain excluded.
 - **Accuracy:** contour reuse may avoid repeated work, but must not simplify geometry,
   omit sources or change the physical/numerical model.
 

@@ -3,7 +3,9 @@
 [Task 031](tasks/031-site-measurement-pins.md) · [Model](model.md)
 
 Measurements are recorded sound pressure, independent of source sound power and hypothetical
-receivers. They never fit source emissions or change propagation, background or contours.
+receivers. Recording them never changes source emissions, propagation, background or contours.
+The separately approved [fitting workflow](measurement-fitting.md) can derive an emission
+only after an explicit preview/apply action.
 No measurements, meter capabilities or averaging conditions are invented.
 
 ## Saved record
@@ -13,6 +15,7 @@ Version-1 scenes accept `measurements`, defaulting to an empty list for older fi
 validation. A record requires a stable `id`, coordinates and a finite `level_db`.
 
 Optional fields: `name`, `activity`, `meter`, `note`, `duration_s` (positive or unknown),
+`isolation` (`unknown`, `isolated`, `mixed`, default Unknown),
 `metric` (`unknown`, `LAeq`, `LAmax`) and `test_kind` (`unknown`, `stationary`, `moving`,
 `startup`). Zero/negative pressure levels are valid; unknown metric/duration is not zero.
 LAmax is a maximum designation, never silently converted to a sustained average.
