@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><title>Measurement fit application checks</title><pre id="result">Running…</pre>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {fitPreview} from '../../src/static/js/fit-preview.js';
+let count=0;
+const check=(condition,message)=>{if(!condition) throw Error(message);count++;};
+try {
+ const store=new ScenarioStore(),id=store.types[0].id;
+ store.sources=[{id:'s1',type_id:id,lat:0,lng:0},{id:'s2',type_id:id,lat:1,lng:1}];
+ store.receivers=[{id:'r',name:'Town',lat:0.1,lng:0.1}];store.measurements=[{id:'m',name:'Original',level_db:60,lat:0,lng:0.01}];
+ store.setBackground(30);
+ const original=structuredClone(store.types[0]),observations=JSON.stringify(store.measurements),receivers=JSON.stringify(store.receivers),contours=JSON.stringify(store.contours);
+ const request={mode:'machine',source_id:'s1',activity:'Idle',background_db:30,fit_ids:['a','b'],check_ids:['c']};
+ const result={ready:true,lwa:111,centre:{lat:0,lng:0},rows:[],spread_db:1};
+ let notices=[];store.subscribe(reason=>notices.push(reason));
+ check(!store.applyMeasurementFit(request,{...result,ready:false},''),'unavailable preview cannot apply');
+ check(!store.applyMeasurementFit(request,{...result,lwa:Infinity},''),'nonfinite emission cannot apply');
+ check(notices.length===0,'rejected applications are atomic');
+ check(store.applyMeasurementFit(request,result,''),'machine preview applies');
+ check(store.sources[1].type_id===id && store.types.find(t=>t.id===id).lwa===original.lwa,'shared catalogue and other instance retained');
+ const derived=store.typeFor(store.sources[0]);
+ check(derived.lwa===111 && derived.fitting.request.check_ids[0]==='c','derived type retains reviewed roles');
+ check(derived.spectrum===null && derived.provenance==='example','no measured-spectrum or certified-power claim invented');
+ request.activity='mutated';result.lwa=20;
+ check(derived.fitting.request.activity==='Idle' && derived.fitting.result.lwa===111,'evidence detached from transient preview objects');
+ check(JSON.stringify(store.measurements)===observations && JSON.stringify(store.receivers)===receivers && JSON.stringify(store.contours)===contours && store.background_db===30,'observation, receiver, contour and background inputs unchanged');
+ const area={...request,mode:'area',source_id:null,radius_m:30},ready={...result,lwa:110};
+ check(!store.applyMeasurementFit(area,ready,'Area'),'area cannot double count existing sources without explicit replacement');
+ check(store.applyMeasurementFit(area,ready,'Area',true),'explicit area replacement applies');
+ check(store.sources.length===1 && store.typeFor(store.sources[0]).kind==='area','one combined source replaces modeled machines');
+ const fresh=new ScenarioStore();fresh.measurements=structuredClone(store.measurements);
+ check(fresh.applyMeasurementFit(area,ready,'No-machine area'),'area estimate needs no placed machine');
+ check(fresh.sources.length===1 && fresh.toPayload().sources.length===1,'area participates in existing prediction/contour pipeline');
+ check(!('fitting' in fresh.toPayload().types.at(-1)),'fit evidence excluded from ordinary acoustic payloads');
+ const text=fitPreview({ready:false,reason:'<script>',rows:[{id:'m',role:'check',reason:'<img>',eligible:false}]},store.measurements);
+ const container=document.createElement('div');container.innerHTML=text;
+ check(!container.querySelector('img,script') && container.textContent.includes('<script>'),'preview escapes labels and reasons');
+ check(container.textContent.includes('Check only') && container.textContent.includes('—'),'unavailable check retained without a false zero');
+ document.querySelector('#result').textContent=`PASS: ${count} checks`;
+} catch(error) {document.querySelector('#result').textContent='FAIL: '+error.stack;throw error;}
+</script>

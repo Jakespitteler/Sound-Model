@@ -70,12 +70,14 @@ export class EntitiesUI {
   /** Render placed machine cards with numeric coordinate editing. */
   renderSources() {
     $('source-count').textContent = String(this.store.sources.length);
+    const title=$('source-count').previousElementSibling;
+    if(title?.tagName==='H2') title.textContent=this.store.sources.some(s=>this.store.typeFor(s).kind==='area')?'Noise sources':'Machines';
     $('sources').innerHTML = this.store.sources.length
       ? this.store.sources
           .map(
             (s, i) =>
               `<div class="item-card">${this.positionForm(s, 'sources',
-                `<button class="danger entity-remove" type="button" data-remove-source="${s.id}" aria-label="Remove machine ${i + 1}">Remove machine</button>`,
+                `<button class="danger entity-remove" type="button" data-remove-source="${s.id}" aria-label="Remove ${this.store.typeFor(s).kind==='area'?'area estimate':'machine'} ${i + 1}">Remove ${this.store.typeFor(s).kind==='area'?'area estimate':'machine'}</button>`,
                 `<strong>${i + 1}. ${escapeHtml(this.store.typeFor(s).name)}</strong>` +
                 `<span class="source-power">${this.store.typeFor(s).lwa.toFixed(1)} <small>dB(A) LwA</small></span>`)}</div>`,
           )

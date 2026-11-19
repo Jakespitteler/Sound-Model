@@ -212,7 +212,7 @@ export class ScenarioStore {
   /** @param {Object} record Field observation with known position/pressure. @return {?string} Stable ID. */
   addMeasurement(record) {
     if(this.measurements.length>=100 || !Number.isFinite(record.level_db)) return null;
-    const item={name:'',metric:'unknown',test_kind:'unknown',duration_s:null,source_id:null,source_context:null,activity:'',meter:'',note:'',...structuredClone(record),id:uuid()};
+    const item={isolation:'unknown',name:'',metric:'unknown',test_kind:'unknown',duration_s:null,source_id:null,source_context:null,activity:'',meter:'',note:'',...structuredClone(record),id:uuid()};
     this.measurements.push(item);this.notify('measurements');return item.id;
   }
 
@@ -224,6 +224,26 @@ export class ScenarioStore {
 
   /** @param {string} id Observation to remove, independently of simulated objects/history. */
   removeMeasurement(id) {this.measurements=this.measurements.filter(m=>m.id!==id);this.notify('measurements');}
+
+  /** Apply a reviewed estimate atomically, retaining originals in its evidence snapshot.
+   * @param {Object} request Fitting inputs. @param {Object} result Successful preview.
+   * @param {string} name Area name. @param {boolean} replaceSources Explicit area replacement.
+   * @return {boolean} Whether the reviewed change was accepted. */
+  applyMeasurementFit(request,result,name,replaceSources=false) {
+    if(!result.ready || !Number.isFinite(result.lwa) || result.lwa<0 || result.lwa>300 || this.types.length>=50) return false;
+    const source=this.sources.find(s=>s.id===request.source_id),area=request.mode==='area';
+    if(!area && !source || area && (this.sources.length && !replaceSources || !name.trim())) return false;
+    const original=area ? {} : this.typeFor(source),id=uuid();
+    const type={...structuredClone(original),id,name:area ? name.trim() : original.name,lwa:result.lwa,
+      provenance:'example',spectrum:null,kind:area ? 'area' : original.kind || 'generic',
+      operating_mode:request.activity,source_reference:'Measurement-derived geometric estimate',
+      note:`Measurement-derived estimate for ${request.activity}. ${request.fit_ids.length} fit readings; ${request.check_ids.length} independent check readings. Background ${request.background_db} dB(A). Full-space point-source fit; not validated sound power.`,
+      fitting:{request:structuredClone(request),result:structuredClone(result),model:'full-space-log-fit-v1'}};
+    this.types.push(type);
+    if(area) this.sources=[{id:uuid(),type_id:id,...result.centre}];
+    else source.type_id=id;
+    this.clearHistory();this.setMode(null);this.notify('catalogue');return true;
+  }
 
   /** @param {number[]} levels Ordinary levels. @param {?number} [acceptable] Reference level.
    * @return {boolean} Whether all unique levels fit the API budget. */

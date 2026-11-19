@@ -1,5 +1,6 @@
 /** @fileoverview Small original SVG symbols; no icon library or untrusted SVG input. */
 const ART = {
+  area:'<circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>',
   haul:'<path d="M2 8h11l3 5h5v6H2zM4 8V5h10l-1 3M16 13v-4h3l3 4"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="20" r="2"/>',
   excavator:'<path d="M3 16h10v4H3zM5 16v-6h6v6M11 11l4-7 4 2 2 8-4 2-2-3"/><path d="M2 21h13"/>',
   loader:'<path d="M3 17V9h7v8M10 13l5 4 5-2v5h-6M3 17h12"/><circle cx="6" cy="20" r="2"/><circle cx="14" cy="20" r="2"/>',

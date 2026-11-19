@@ -1,0 +1,26 @@
+<details id="measurement-fit" class="fit-editor">
+  <summary>Build an estimate from readings</summary>
+  <form id="fit-form">
+    <label>Estimate<select name="mode"><option value="machine">Calibrate one machine</option><option value="area">Combined operating area</option></select></label>
+    <div id="fit-machine-fields"><label>Machine<select id="fit-machine" name="source_id" required></select></label>
+      <p class="hint">Use isolated-machine tests. Applying creates an estimated version for this placed machine only.</p></div>
+    <div id="fit-area-fields" hidden>
+      <label>Area name<input name="area_name" maxlength="80" placeholder="e.g. North work area"></label>
+      <button id="mark-fit-area" type="button" class="secondary compact">Mark area centre on map</button>
+      <div class="two-columns"><label>Centre latitude<input name="lat" type="number" min="-85" max="85" step="any"></label><label>Centre longitude<input name="lng" type="number" min="-180" max="180" step="any"></label></div>
+      <label>Area radius · metres<input id="fit-radius" name="radius" type="number" min="1" step="any"></label>
+      <p class="hint">One equivalent source at this centre. Use readings outside the marked area; interior readings remain recorded. This simple model does not describe noise within the area.</p>
+      <label id="replace-fit-sources-label" class="fit-confirm"><input name="replace" type="checkbox">Replace all active sources with this area estimate to avoid counting them twice. Measurements and receivers stay.</label>
+    </div>
+    <label>Operating activity / site state<input name="activity" maxlength="200" placeholder="Match the activity recorded on the selected readings" required></label>
+    <p id="fit-background" class="hint"></p>
+    <label class="fit-confirm"><input name="background_confirmed" type="checkbox" required>The background represents these tests on a comparable averaging basis.</label>
+    <p class="hint">Choose at least two Fit readings and one separate Check reading from the same operating conditions. Only Fit readings determine the estimate.</p>
+    <p id="fit-empty" class="hint">Add measurements first. Unknown or mixed-machine tests cannot calibrate a single machine.</p>
+    <div id="fit-selections"></div>
+    <button id="preview-fit" type="submit" class="secondary">Preview estimate</button>
+    <p id="fit-error" role="status" aria-live="polite"></p>
+    <div id="fit-result" tabindex="-1" aria-live="polite"></div>
+    <button id="apply-fit" type="button" class="primary" hidden>Apply reviewed estimate</button>
+  </form>
+</details>

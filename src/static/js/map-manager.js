@@ -239,7 +239,7 @@ export class MapManager {
         ? 'Click to place · Ctrl-click to place multiple · Esc to cancel'
         : mode === 'receiver'
           ? 'Click the map to place a receiver'
-          : mode === 'measurement' ? 'Click the map to mark a measured location' : 'Pan to explore · drag markers to move';
+          : mode === 'fit-area' ? 'Click the centre of the operating area' : mode === 'measurement' ? 'Click the map to mark a measured location' : 'Pan to explore · drag markers to move';
     $('cancel-mode').hidden = !mode;
     $('map').classList.toggle('place-mode', Boolean(mode));
   }

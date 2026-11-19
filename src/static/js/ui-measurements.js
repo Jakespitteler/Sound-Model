@@ -67,6 +67,7 @@ export class MeasurementUI {
       <label>Meter reading type<select name="metric">${options([['unknown','Unknown'],['LAeq','LAeq — average'],['LAmax','LAmax — maximum']],item.metric || 'unknown')}</select></label></div>
       <details><summary>Test details (optional)</summary>
       <p class="hint">Link a machine only when its modeled setup represents this test.</p><label>Machine<select name="source_id">${this.sourceOptions(item.source_id,item)}</select></label>
+      <label>Other machinery<select name="isolation">${options([['unknown','Unsure'],['isolated','Selected machine was isolated'],['mixed','Other machinery contributing']],item.isolation || 'unknown')}</select></label>
       <label>Operating activity<input name="activity" maxlength="200" value="${e(item.activity || '')}" placeholder="e.g. steady idle or loaded pass"></label>
       <div class="two-columns"><label>Test<select name="test_kind">${options([['unknown','Unknown'],['stationary','Stationary / steady'],['moving','Moving / pass-by'],['startup','Startup / brief event']],item.test_kind || 'unknown')}</select></label>
       <label>Duration · seconds<input name="duration_s" type="number" min="0.000001" step="any" value="${item.duration_s ?? ''}" placeholder="Unknown"></label></div>
@@ -116,7 +117,7 @@ export class MeasurementUI {
     const item={name:String(data.get('name')).trim(),level_db:Number(data.get('level_db')),metric:String(data.get('metric')),test_kind:String(data.get('test_kind')),
       duration_s:data.get('duration_s')===''?null:Number(data.get('duration_s')),source_id,
       source_context:source_id ? current?.source_id===source_id ? current.source_context : this.context(source_id) : null,
-      activity:String(data.get('activity')).trim(),meter:String(data.get('meter')).trim(),note:String(data.get('note')).trim(),lat:Number(data.get('lat')),lng:Number(data.get('lng'))};
+      isolation:String(data.get('isolation')),activity:String(data.get('activity')).trim(),meter:String(data.get('meter')).trim(),note:String(data.get('note')).trim(),lat:Number(data.get('lat')),lng:Number(data.get('lng'))};
     if(id==='draft') {this.draft=null;const created=this.store.addMeasurement(item);if(created) this.open(created);}
     else {this.store.updateMeasurement(id,item);this.open(id);}
     this.say('Measurement recorded. Model inputs were not changed.');
