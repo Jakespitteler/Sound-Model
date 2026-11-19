@@ -40,7 +40,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Map object removal | [029](../docs/tasks/029-map-object-deletion.md) | Implemented for review; popup and Ctrl-× deletion verified with history/recovery |
 | Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Implemented for review; persistent names beside readings, stable marker nodes and compact controls |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Implemented for review; approved 0.1 dB background-relative boundary |
-| Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
+| Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Feasibility review complete; select optional band evidence/baseline slice before implementation |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Owner may remove printing as scope creep; no report code before decision |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.

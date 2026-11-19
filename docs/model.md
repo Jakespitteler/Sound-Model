@@ -116,3 +116,12 @@ are not acceptable-noise criteria.
 For due diligence, agree criteria and receivers, obtain appropriate source/background data,
 select a suitable propagation method, validate against independent measurements, and have
 the assessment reviewed. The [existing assessment themes](tasks/README.md) describe that work.
+
+
+## What would support an audibility boundary?
+
+The [feasibility review](model-feasibility.md) compares the missing effects and recommends
+optional equipment/background frequency-band evidence as a first foundation. Overall dB(A)
+values cannot reconstruct a spectrum. A hearing-distance estimate additionally needs a
+suitable propagation and detection/masking method, validated for its conditions. The existing
+negligible-overall-increase contour remains a display comparison, not that boundary.
