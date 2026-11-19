@@ -28,6 +28,7 @@ export class ScenarioStore {
     /** @type {Object[]} Commands available to replay. */
     this.redoStack=[];
     this.acceptable_level_db = null;
+    this.background_spectrum = null;
     this.background_db = null;
     this.cloud_cover = 0;
     /** @type {?string} */
@@ -47,8 +48,8 @@ export class ScenarioStore {
   /** @return {import('./types.js').Scenario} Detached request snapshot. */
   toPayload() {
     // Equipment notes stay with the browser catalogue; they are not acoustic inputs.
-    const types = this.types.map(({id,name,lwa,provenance}) => ({id,name,lwa,provenance}));
-    return structuredClone({types,sources:this.sources,receivers:this.receivers,cloud_cover:this.cloud_cover,background_db:this.background_db});
+    const types = this.types.map(({id,name,lwa,provenance,spectrum}) => ({id,name,lwa,provenance,...(spectrum ? {spectrum} : {})}));
+    return structuredClone({types,sources:this.sources,receivers:this.receivers,cloud_cover:this.cloud_cover,background_spectrum:this.background_spectrum,background_db:this.background_db});
   }
 
   /** @param {Object} document Validated versioned scenario, supplied by the local backend. */
@@ -58,6 +59,7 @@ export class ScenarioStore {
       !this.fitsContourBudget(document.levels,acceptable)) throw new Error('Invalid acceptable level or too many unique contours.');
     const background=document.background_db ?? null;
     if (background!==null && (typeof background!=='number' || !Number.isFinite(background))) throw new Error('Invalid background level.');
+    this.background_spectrum=structuredClone(document.background_spectrum ?? null);
     this.background_db=background;
     this.clearHistory(); this.acceptable_level_db=acceptable;
     this.types = structuredClone(document.types);
@@ -74,6 +76,9 @@ export class ScenarioStore {
 
   /** @param {?string} mode Source/receiver placement, or null to cancel. */
   setMode(mode) { this.mode = mode; this.notify('ui'); }
+
+  /** @param {?Object} spectrum Accepted optional unweighted evidence. */
+  setBackgroundSpectrum(spectrum) {this.background_spectrum=structuredClone(spectrum);this.notify('spectra');}
 
   /** @param {?number} value Uniform pressure level; null clears it. @return {boolean} Accepted. */
   setBackground(value) {
@@ -95,7 +100,9 @@ export class ScenarioStore {
   updateMachineType(id, patch) {
     const type=this.types.find(t=>t.id===id);
     const acoustic=['name','lwa','provenance'].some(field=>field in patch && patch[field]!==type[field]);
-    Object.assign(type,patch); this.notify(acoustic ? 'geometry' : 'equipment-metadata');
+    const signature=spectrum=>JSON.stringify([!!spectrum,spectrum?.levels ?? null,spectrum?.period_s ?? null]);
+    const spectral='spectrum' in patch && signature(patch.spectrum)!==signature(type.spectrum);
+    Object.assign(type,patch); this.notify(acoustic ? 'geometry' : spectral ? 'spectra' : 'equipment-metadata');
   }
 
   /** @param {string} id Unused type ID. Deleting a type invalidates both history stacks. */

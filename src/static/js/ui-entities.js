@@ -2,6 +2,7 @@
  * UI controller for placed sound sources (Section 02) and receivers (Section 04).
  */
 
+import {bandComparison} from './band-ui.js';
 import { $, escapeHtml, formatDb } from './utils.js';
 import {receiverLabel} from './state.js';
 import {soundColor} from './sound-style.js';
@@ -15,6 +16,7 @@ export class EntitiesUI {
   constructor(store, say) {
     this.store = store;
     this.say = say;
+    this.bandOpen = new Set();
   }
 
   /** Attach delegated form handlers once, before any state renders. */
@@ -95,8 +97,12 @@ export class EntitiesUI {
   /**
    * @param {Object<string, import("./types.js").Reading>} [results] Current direct readings.
    */
-  renderReceivers(results) {
+  renderReceivers(results, bandResults={}) {
     const open=new Set([...$('receivers').querySelectorAll('[data-receiver-card]:has(details[open])')].map(card=>card.dataset.receiverCard));
+    for (const card of $('receivers').querySelectorAll('[data-receiver-card]')) {
+      const bands=card.querySelector('.receiver-bands');
+      if(bands) {if(bands.open) this.bandOpen.add(card.dataset.receiverCard); else this.bandOpen.delete(card.dataset.receiverCard);}
+    }
     const active=document.activeElement;
     const editing=active?.dataset.receiverName;
     const selection=editing ? [active.selectionStart,active.selectionEnd,active.value] : null;
@@ -112,6 +118,7 @@ export class EntitiesUI {
                 `${result?.status === 'negligible' ? '<p>Machinery adds less than 0.1 dB to the scenario background.</p>' : ''}` +
                 `${result?.near_field ? '<p>Within 1 m: numerical limit applies.</p>' : ''}` +
                 `<label>Name (optional)<input type="text" data-receiver-name="${escapeHtml(r.id)}" aria-label="Name for receiver ${i+1}" placeholder="e.g. Town boundary" value="${escapeHtml(r.name || '')}"></label>` +
+                bandComparison(bandResults[r.id]) +
                 (result?.contributions.length
                   ? `<details class="receiver-contributions"><summary>Machine contributions</summary><ul class="contributions">${result.contributions.map(c =>
                     `<li>${this.store.sources.findIndex(source=>source.id===c.id)+1}. ${escapeHtml(c.name)} · ${c.distance_m.toFixed(0)} m · ${c.level_db.toFixed(1)} dB(A)${c.provenance === 'example' ? ' · estimate' : ''}</li>`
@@ -126,6 +133,7 @@ export class EntitiesUI {
       : '<p class="empty">Receiver readings appear here.</p>';
     for (const card of $('receivers').querySelectorAll('[data-receiver-card]')) {
       if (open.has(card.dataset.receiverCard)) card.querySelector('details').open=true;
+      if (this.bandOpen.has(card.dataset.receiverCard) && card.querySelector('.receiver-bands')) card.querySelector('.receiver-bands').open=true;
     }
     if (editing) {
       const input=$('receivers').querySelector(`[data-receiver-name="${CSS.escape(editing)}"]`);
