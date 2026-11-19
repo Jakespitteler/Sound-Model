@@ -21,6 +21,8 @@ export class ScenarioStore {
     this.sources = [];
     /** @type {import('./types.js').Receiver[]} */
     this.receivers = [];
+    /** @type {import('./types.js').Measurement[]} */
+    this.measurements = [];
     /** @type {import('./types.js').ContourLevel[]} */
     this.contours = SOUND_REFERENCE.map(item=>item.level).sort((a,b)=>b-a).map(level_db => ({id:uuid(), level_db}));
     /** @type {Object[]} Completed placement commands, oldest first. */
@@ -65,6 +67,7 @@ export class ScenarioStore {
     this.types = structuredClone(document.types);
     this.sources = structuredClone(document.sources);
     this.receivers = structuredClone(document.receivers);
+    this.measurements = structuredClone(document.measurements ?? []);
     this.contours = document.levels.map(level_db=>({id:uuid(),level_db})).sort((a,b)=>b.level_db-a.level_db);
     this.cloud_cover = document.cloud_cover;
     this.mode = null;
@@ -205,6 +208,22 @@ export class ScenarioStore {
 
   /** @param {string} id Receiver to remove. */
   removeReceiver(id) {this.editPlacement('receivers',id,null);}
+
+  /** @param {Object} record Field observation with known position/pressure. @return {?string} Stable ID. */
+  addMeasurement(record) {
+    if(this.measurements.length>=100 || !Number.isFinite(record.level_db)) return null;
+    const item={name:'',metric:'unknown',test_kind:'unknown',duration_s:null,source_id:null,source_context:null,activity:'',meter:'',note:'',...structuredClone(record),id:uuid()};
+    this.measurements.push(item);this.notify('measurements');return item.id;
+  }
+
+  /** @param {string} id Observation ID. @param {Object} patch Accepted observation fields. */
+  updateMeasurement(id,patch) {
+    const item=this.measurements.find(m=>m.id===id);if(!item) return;
+    Object.assign(item,structuredClone(patch),{id});this.notify('measurements');
+  }
+
+  /** @param {string} id Observation to remove, independently of simulated objects/history. */
+  removeMeasurement(id) {this.measurements=this.measurements.filter(m=>m.id!==id);this.notify('measurements');}
 
   /** @param {number[]} levels Ordinary levels. @param {?number} [acceptable] Reference level.
    * @return {boolean} Whether all unique levels fit the API budget. */

@@ -60,7 +60,7 @@ export class ScenarioFilesUI {
   /** @return {Object} Detached, versioned document with all notes and current map settings. */
   snapshot() {
     const centre=this.manager.map.getCenter();
-    return structuredClone({version:1,types:this.store.types,sources:this.store.sources,receivers:this.store.receivers,
+    return structuredClone({version:1,measurements:this.store.measurements,types:this.store.types,sources:this.store.sources,receivers:this.store.receivers,
       background_spectrum:this.store.background_spectrum,background_db:this.store.background_db,acceptable_level_db:this.store.acceptable_level_db,levels:this.store.contours.map(c=>c.level_db),cloud_cover:this.store.cloud_cover,
       view:{lat:centre.lat,lng:((centre.lng+180)%360+360)%360-180,zoom:this.manager.map.getZoom()},
       high_contrast:$('contour-contrast').checked,show_contours:$('show-overlay').checked});

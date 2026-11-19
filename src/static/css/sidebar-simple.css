@@ -102,3 +102,13 @@ details[open] > .entity-summary::before { content:'▾'; }
   .sidebar.expanded-editor #contours-panel,
   .sidebar.expanded-editor .message { max-height:none; overflow:visible; scrollbar-gutter:auto; }
 }
+
+.measurement-settings { flex:none; padding:10px 0; border-bottom:1px solid var(--line); }
+.measurement-location { width:120px; height:40px; }
+.measurement-pin { display:flex; align-items:center; gap:7px; padding:6px 8px; height:40px; border:2px solid #55539a; border-radius:3px; background:#fff; color:#454284; box-shadow:0 1px 5px #233b4b25; }
+.measurement-pin small { display:block; font-size:8px; font-weight:400; }
+.measurement-pin strong { font-size:14px; }
+.measurement-comparison { padding:9px; margin:10px 0; background:#f3f4fa; border-left:3px solid #6863a4; font-size:12px; }
+.measurement-comparison p { margin:6px 0; }
+.measurement-form { margin-top:10px; }
+.measurement-actions { display:flex; gap:10px; align-items:center; margin-top:12px; }

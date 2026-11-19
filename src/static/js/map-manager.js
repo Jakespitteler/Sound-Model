@@ -56,7 +56,7 @@ export class MapManager {
 
   /** @return {import('./local-area.js').MapObject[]} All locations with collection-qualified identities. */
   mapObjects() {
-    return ['sources','receivers'].flatMap(collection=>this.store[collection].map(item=>({...item,collection})));
+    return ['sources','receivers','measurements'].flatMap(collection=>(this.store[collection] || []).map(item=>({...item,collection})));
   }
 
   /** Fit the 10 km pairwise group nearest the current map centre, keeping all sources in the acoustic scenario.
@@ -224,7 +224,7 @@ export class MapManager {
         if (event.originalEvent?.ctrlKey && this.store.sources.length>count && this.store.sources.length<100) {
           this.store.setMode('source');
         }
-      } else {
+      } else if(this.store.mode==='receiver') {
         this.store.addReceiver(lat, lng);
       }
     });
@@ -232,14 +232,14 @@ export class MapManager {
 
   /** Reflect the active placement mode without replacing forms or markers. */
   syncModeUI() {
-    $('fit-local-area').disabled=!(this.store.sources.length || this.store.receivers.length);
+    $('fit-local-area').disabled=!(this.store.sources.length || this.store.receivers.length || this.store.measurements?.length);
     const mode = this.store.mode;
     $('mode-label').textContent =
       mode === 'source'
         ? 'Click to place · Ctrl-click to place multiple · Esc to cancel'
         : mode === 'receiver'
           ? 'Click the map to place a receiver'
-          : 'Pan to explore · drag markers to move';
+          : mode === 'measurement' ? 'Click the map to mark a measured location' : 'Pan to explore · drag markers to move';
     $('cancel-mode').hidden = !mode;
     $('map').classList.toggle('place-mode', Boolean(mode));
   }

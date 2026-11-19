@@ -12,6 +12,7 @@ import {ContoursUI} from './ui-contours.js';
 import {renderSoundGuide} from './sound-guide.js';
 import {setupSidebar} from './sidebar.js';
 import {ScenarioFilesUI} from './scenario-files.js';
+import {MeasurementUI} from './ui-measurements.js';
 import {DraftRecovery} from './draft-recovery.js';
 
 const store = new ScenarioStore();
@@ -33,6 +34,7 @@ function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed ||
 /** @param {string} message Human-readable feedback. */
 const say = message => { $('message').textContent = message; };
 const catalogue = new CatalogueUI(store,say), entities = new EntitiesUI(store,say), contours = new ContoursUI(store,say);
+new MeasurementUI(store,manager,say);
 catalogue.bind(); entities.bind(); contours.bind(); renderSoundGuide(); setupSidebar();
 const syncBackgroundSpectrum=bindBackgroundSpectrum(store,say);
 

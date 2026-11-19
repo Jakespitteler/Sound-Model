@@ -5,7 +5,7 @@ import {$} from './utils.js';
 export function setupSidebar() {
   // Share the limited advanced-settings space without discarding either form's drafts.
   setupExpandedEditors();
-  const settings=[document.querySelector('.catalogue-library'),document.querySelector('.model-settings')];
+  const settings=[document.querySelector('.catalogue-library'),document.querySelector('.model-settings'),document.querySelector('.measurement-settings')].filter(Boolean);
   settings.forEach(panel=>panel.addEventListener('toggle',()=> {
     if (panel.open) settings.filter(other=>other!==panel).forEach(other=> {other.open=false;});
   }));
@@ -37,7 +37,7 @@ function setupExpandedEditors() {
   const sidebar=document.querySelector('.sidebar');
   if(!sidebar) return; // Small standalone tab fixtures do not include the app layout.
   const desktop=matchMedia('(min-width:651px)');
-  const roots='.catalogue-library,.model-settings,.item-card > details';
+  const roots='.catalogue-library,.model-settings,.measurement-settings,.item-card > details';
   const button=document.createElement('button');
   button.type='button';button.className='close-sidebar-editor';button.textContent='Close editor';button.hidden=true;
   sidebar.prepend(button);
@@ -66,7 +66,7 @@ function setupExpandedEditors() {
     sync();if(!active || !visible(details)) return;
     const card=details.matches(roots) || details.parentElement.matches('.type-card') ? details.closest('.type-card,.item-card') || details : details;
     const bounds=sidebar.getBoundingClientRect(),rect=card.getBoundingClientRect();
-    const submit=details.matches('.source-bands') ? details.closest('form')?.querySelector('button[type=submit]') : null;
+    const submit=details.closest('form')?.querySelector('button[type=submit]');
     const end=Math.max(rect.bottom,submit?.getBoundingClientRect().bottom ?? rect.bottom);
     const top=bounds.top+button.getBoundingClientRect().height+24,bottom=bounds.bottom-16;
     let distance=0;
