@@ -141,6 +141,34 @@ environmental validation. Numeric entry accepts any finite dB(A) value, and a so
 not silently change your chosen value. Per-level extraction failures can still be reported.
 Save/Open and recovery retain the setting. Show lines and High contrast apply to it too.
 
+## Optional frequency-band evidence
+
+Use this only when you have suitable band data. If all you have is an overall dB(A) value,
+leave the band fields blank; do not copy that value into every band or invent a spectrum.
+
+1. In **Machine data → Estimate notes & edit → Frequency data (optional)**, enter unweighted
+   octave-band **sound power** for that machine type. The profile applies to all instances
+   of that type. Record the energy-average duration, assumed/measured classification and
+   a source/operating reference, then **Save type**.
+2. In **Model info → Background frequency data (optional)**, enter unweighted band
+   **pressure** levels with their duration and evidence reference, then **Save background
+   bands**. This one background spectrum applies throughout the scenario.
+3. Expand a receiver and open **Frequency comparison**. The table shows unweighted receiver
+   band pressures, background pressures and signed machinery-minus-background differences.
+
+Blank bands are unknown, while zero and negative dB values are valid levels. Missing source
+bands or durations prevent a complete total for that band. Background comparisons require
+matching durations; also check that measurements represent suitable operating conditions.
+Unknown/mismatched data stays labelled rather than becoming a partial sum or a false zero.
+
+Band data does **not** replace the existing overall LwA/background values, change contours,
+or calculate an audibility boundary. Unweighted bands are not silently converted to dB(A).
+A positive difference does not prove audible and a negative difference does not prove inaudible.
+Save/Open and recovery retain the evidence, including partial profiles; old scenes have none.
+Advanced editors/results scroll inside the existing desktop panels.
+
+![Receiver band comparison](images/frequency-receiver-comparison.png)
+
 ## Save and reopen
 
 ```mermaid

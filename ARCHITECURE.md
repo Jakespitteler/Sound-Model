@@ -420,3 +420,27 @@ Both paths check current identity before calling `removeSource`/`removeReceiver`
 existing store commands handle history, dirty state, recovery and calculation lanes. A
 stale control is a no-op. Marker selection cancels placement with a presentation notification
 before opening a popup, so dismissing details cannot accidentally place another machine.
+
+
+## Optional frequency-band foundation
+
+`Spectrum` is nullable on machine types and the scenario's `background_spectrum`, with the
+same optional fields in version-1 saves. It carries nine fixed unweighted octave levels,
+unknowns as null, positive/unknown energy-average duration, fixed Z/Leq basis and user evidence.
+No default spectrum or A-weighting coefficient is introduced. Existing overall equations and
+geometry signatures ignore these fields.
+
+`bands.py` evaluates receivers independently using the existing distance/spreading/energy
+helpers. Each band requires every active source's level and compatible known duration. The
+background comparison additionally requires matching background duration. Missing sources
+are identified rather than omitted; unmatched basis yields no difference. No-source and
+numeric-failure states are explicit. The 1 m near-field flag survives. `Prediction.band_results`
+is a separate per-receiver collection; existing `receivers` and contour output are unchanged.
+
+`band-ui.js` supplies shared source/background fields and a neutral comparison table. Source
+fields live in the existing catalogue editor; background fields in Model info. `spectra`
+notifications refresh only the receiver lane; a reference-only source edit remains metadata.
+Background updates do not rebuild source editors or lose unrelated drafts. Open receiver band
+details survive pending results. Save/recovery snapshots retain full evidence; old scenes
+restore null profiles. All acoustic data remains local to the backend; Photon receives no bands.
+See the [contract](docs/frequency-band-contract.md) for units, statuses and validation.

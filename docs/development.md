@@ -200,3 +200,14 @@ receiver-map-names fixture checks the negligible label alongside persistent name
 checks the independent energy relation, all-source combination before classification, distant
 receivers, >200 km lines, negative/extreme finite levels, save compatibility and invalid values.
 Task 024 records full-app Save/Open/recovery, request counts and inspected screenshots.
+
+
+## Frequency-band checks
+
+`uv run pytest tests/test_bands.py -q` checks independent energy references, completeness,
+period compatibility, saved evidence and unchanged overall output. Serve the repository root
+and open `/tests/browser/frequency-bands.html`; expect **PASS: 14 checks** for optional inputs,
+units/basis, literal references, receiver-only notifications, cache isolation and restore.
+Also run equipment-metadata (6), sidebar-entities (15), background-boundary (15), receiver-map-names
+(17), map-deletion (21), repeat-placement (14), placement-history (23), acceptable-label-priority
+(13) and contour-cache (16) after changing the shared store or entity renderers.
