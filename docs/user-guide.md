@@ -278,6 +278,7 @@ Under **Measurements → Build an estimate from readings**, choose a workflow:
 | Combined operating area | Several machines operate together, or individual equipment is unknown | One combined source at your marked centre; individual machines need not be placed |
 
 1. Record LAeq averages, duration and the same activity/site-state label on the readings.
+   The fitting activity field suggests labels already recorded on your measurements.
    For machine tests, link the machine and set **Other machinery → Selected machine was
    isolated**. If you cannot isolate it, choose Other machinery contributing or Unsure and
    use the area workflow. Unknown/max/pass-by observations remain recorded.
@@ -290,7 +291,8 @@ Under **Measurements → Build an estimate from readings**, choose a workflow:
 4. Select at least two **Fit** readings and a separate **Check only** reading at distinct
    locations. Others stay Don't use. More points at different distances and directions are
    helpful; similar operating conditions matter more than simply collecting many points.
-5. **Preview estimate** shows corrected pressure, predictions and their differences. Check
+5. **Preview estimate** shows corrected pressure, predictions and their differences. Unnamed
+   rows retain their measurement numbers; machine choices match their map numbers. Check
    readings do not determine the fitted emission. Review disagreements; the app does not
    invent a pass/fail threshold or declare the model accurate.
 6. **Apply reviewed estimate** changes the emission used by existing receivers and contours.

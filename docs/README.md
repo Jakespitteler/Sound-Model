@@ -32,6 +32,9 @@ This is a POC, not an environmental-assessment platform. Missing capabilities ar
 commitments. Only the owner-approved small slices in the backlog are active candidates;
 export/import and broader assessment work are not being added to the POC.
 
+[Measurement workflow review](measurement-workflow-review.md) records the latest fitting
+interaction fixes and their verification.
+
 ## Historical change records
 
 These records preserve their original scope, measurements and limitations. Their test counts

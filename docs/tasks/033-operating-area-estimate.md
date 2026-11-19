@@ -49,3 +49,13 @@ The equivalent-point centre is fixed by the user, not fitted. It does not infer 
 of sound within the boundary. Separate check readings expose differences without claiming
 physical accuracy; no terrain, atmospheric or ground model is added. No real site evidence
 or independent reviewer was available. Owner review and merge remain required.
+
+
+## Workflow review follow-up
+
+[Review findings and verification](../measurement-workflow-review.md) document the
+owner-requested usability/bug review above the feature PRs. Commit `ba2890a` corrects mode
+cancellation, preview identities, map-numbered selection and activity entry. No physical
+model, background policy or stored measurement data changed. All 214 Python tests and 225
+browser checks passed; desktop/narrow validation and preview screenshots were inspected.
+Author review only; human review/merge remains required.

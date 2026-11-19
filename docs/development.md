@@ -250,3 +250,14 @@ checks should include real preview/Apply clicks, mixed rejection, a delayed stal
 background/input invalidation, Save/Open/recovery and recorded catalogue evidence. Inspect
 open preview, error and narrow layouts. Tasks 032–033 hold actual check counts and screenshots;
 synthetic fits do not replace field validation.
+
+
+### Fitting workflow review checks
+
+Serve the repository root and open `/tests/browser/fitting-workflow.html`; expect **PASS: 19 checks**.
+This exercises the real fitting editor with a local fake preview response, covering mode
+cancellation, map-numbered choices, activity suggestions, whitespace validation, preserved
+roles, escaped values and original measurement numbering. It complements the existing
+17-check application fixture and numerical tests. The
+[workflow review](measurement-workflow-review.md) records real API/browser interactions,
+a condition-inversion regression check and inspected screenshots. No test dependency added.
