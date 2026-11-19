@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, Field, model_validator
 
+from .measurement_fitting import FitEvidence
 from .measurements import Measurement
 from .types import ContourRequest, MachineType, Receiver, Source, Spectrum, StrictModel
 
@@ -18,6 +19,7 @@ class SavedMachine(MachineType):
     """Machine data and its human-readable evidence/assumption metadata.
 
     Attributes:
+        fitting: Optional reviewed measurement-derived estimate and complete input snapshot.
         note: User's source or estimate note, retained across save/open.
         use: Optional description of the machine's operation.
         kind: Built-in illustration category, or generic for custom equipment.
@@ -25,6 +27,7 @@ class SavedMachine(MachineType):
         operating_mode: Optional operating condition associated with the input level.
     """
 
+    fitting: FitEvidence | None = None
     source_reference: str = Field(default="", max_length=500)
     operating_mode: str = Field(default="", max_length=200)
     note: str = Field(default="", max_length=2000)

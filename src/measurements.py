@@ -30,6 +30,7 @@ class Measurement(Position):
         id: Stable observation identifier.
         name: Optional display label.
         level_db: Finite observed pressure level, with metric kept explicit.
+        isolation: Whether other machinery was sufficiently absent for an individual fit.
         metric: Known A-weighted average/maximum, or unknown meter designation.
         test_kind: Stationary steady test, pass-by, startup/event or unknown.
         duration_s: Known observation duration, otherwise unknown.
@@ -43,6 +44,7 @@ class Measurement(Position):
     id: str = Field(min_length=1, max_length=80)
     name: str = Field(default="", max_length=80)
     level_db: float = Field(strict=True)
+    isolation: Literal["unknown", "isolated", "mixed"] = "unknown"
     metric: Literal["unknown", "LAeq", "LAmax"] = "unknown"
     test_kind: Literal["unknown", "stationary", "moving", "startup"] = "unknown"
     duration_s: float | None = Field(default=None, gt=0, strict=True)
