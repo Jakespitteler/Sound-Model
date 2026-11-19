@@ -105,3 +105,52 @@ Implementation commit: `cb198e0`. Documentation and screenshot evidence follow s
 
 Review stack: this branch includes task 023 (#32); the sidebar PR targets
 `agent/control-repeat-placement`. Merge #32 first, then retarget this PR to main.
+
+
+## Follow-up — full-height expanded editors, 19 November 2026
+
+The owner reported small catalogue/receiver cards clipped inside multiple scroll boxes and
+could not find frequency controls. The supplied screenshot matches main's older type form;
+frequency editors remain in pending task 026 PR #52. This fix starts from that complete
+product branch so its frequency controls are available for review.
+
+Expanded desktop editors now use one sidebar viewport scroller instead of capped 25–30 vh
+advanced panels and nested list scrolling. Explicitly opened cards are revealed in full
+when they fit; longer forms use the full available height. Opening frequency fields also
+reveals Save. A sticky **Close editor** returns to compact lists and restores their original
+scroll positions. Native form nodes/drafts remain in place. Prediction refreshes do not
+reveal/reposition editors; hidden workspace editors and deleted cards do not leave orphaned
+expanded mode. Mobile keeps ordinary document flow. No acoustic calculation or data contract
+changes and no dependency was added.
+
+Verification:
+
+- **160 pytest tests passed**, Ruff check/format and Pyright passed.
+- New `sidebar-expanded.html`: **17 checks passed**, including the browser scroll-anchoring
+  case that initially prevented restoration of a previously scrolled machine list.
+- Existing relevant fixtures: **154 checks passed** (frequency 14, equipment metadata 6,
+  compact sidebar 15, background 15, receiver names 17, deletion 21, repeat placement 14,
+  history 23, acceptable-label priority 13, contour cache 16); **171 browser checks total**.
+- Full-app fictional scene at **1556×852** confirmed complete excavator card, nine-band fields
+  plus Save, complete background editor and receiver coordinate card; source/reference and
+  coordinate drafts survived closing/reopening and switching advanced panels. No nested
+  vertical scroll regions in the expanded lists/settings; zero acoustic requests from those
+  interactions. Keyboard opening/closing and focus return checked at 1024×768; 390 px
+  remained free of horizontal page overflow. No page errors.
+- Desktop and narrow screenshots captured and inspected. Satellite imagery was unavailable
+  in the workspace, so captures use the existing grid fallback. Forms taller than the window
+  still require one sidebar scroll; textareas retain their normal text editing behaviour.
+
+![Whole excavator card](../images/sidebar-full-card.png)
+
+[Frequency fields and Save](../images/sidebar-frequency-editor.png) ·
+[Background editor](../images/sidebar-background-full.png) ·
+[Receiver editor](../images/sidebar-receiver-full.png) ·
+[Small desktop](../images/sidebar-small-desktop.png) ·
+[Narrow layout](../images/sidebar-expanded-mobile.png)
+
+Author reviewed the diff, interactions and screenshots; no independent reviewer. Owner review
+and merge are required. This is a bounded follow-up to the existing POC workflow, not a new
+settings system. Implementation: `4685a30`. The owner also reiterated the single-purpose POC constraint;
+shared guidance records simplicity as a design requirement without treating the proposed
+product-goal wording as agreed.

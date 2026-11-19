@@ -349,9 +349,20 @@ Receiver contributions have a separate disclosure so they do not separate names 
 coordinates. State and calculation lanes are unchanged.
 
 `sidebar.js` hides existing workspace panels rather than replacing them. Machine data and
-Model info share advanced-settings space; opening one closes the other without removing
+Model info remain mutually exclusive; opening one closes the other without removing
 form nodes or committing drafts. Disclosure, tab selection and list scrolling do not notify
 the acoustic store or request predictions.
+
+On desktop, opening a visible root editor applies `expanded-editor` to the sidebar. The
+same form nodes remain in place, but capped list/catalogue/settings scroll boxes become
+ordinary content under one viewport-height sidebar scroller. Explicit summary clicks reveal
+whole cards when they fit; nested frequency editors also include their save action. Longer
+forms align at the top. This reveal is driven by user activation, not prediction refreshes.
+A sticky Close editor action closes root disclosures and restores compact list offsets.
+Offsets are captured before native disclosure expansion can change browser scroll anchoring.
+Toggle/DOM observation keeps the mode correct after renderer updates; hidden workspaces do
+not force expanded mode. Narrow screens retain document flow. No acoustic notifications,
+form clones or new dependencies are involved.
 
 ```mermaid
 flowchart TD

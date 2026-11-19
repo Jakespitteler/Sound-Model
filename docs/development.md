@@ -211,3 +211,13 @@ units/basis, literal references, receiver-only notifications, cache isolation an
 Also run equipment-metadata (6), sidebar-entities (15), background-boundary (15), receiver-map-names
 (17), map-deletion (21), repeat-placement (14), placement-history (23), acceptable-label-priority
 (13) and contour-cache (16) after changing the shared store or entity renderers.
+
+
+## Expanded desktop editor checks
+
+Serve the repository root and open `/tests/browser/sidebar-expanded.html` at a desktop
+viewport such as 1556×852. Expect **PASS: 17 checks** for viewport-sized cards, frequency/save
+visibility, one scroll area, original list offsets, retained drafts, hidden workspace handling,
+renderer removal and zero presentation-only state notifications. Existing sidebar/entity,
+frequency, history and foreground fixtures remain relevant. Task 027 records real-app
+screenshots and keyboard/narrow-window checks.

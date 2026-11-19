@@ -46,7 +46,7 @@ function setupExpandedEditors() {
     offsets=[...sidebar.querySelectorAll('#sources,#receivers,.catalogue-section,.model-settings,#contours-panel')].map(element=>[element,element.scrollTop]);
     offsetsCaptured=true;
   };
-  /** @param {Element} details Disclosure to check. @return {boolean} Visible open editor root. */
+  /** @param {HTMLDetailsElement} details Disclosure to check. @return {boolean} Visible open editor root. */
   const visible=details=>details.open && !details.closest('[hidden]') && !details.parentElement.closest('details:not([open])');
   /** Sync from actual disclosures, including dynamically refreshed receiver cards. */
   const sync=()=> {

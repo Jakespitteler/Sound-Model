@@ -40,9 +40,14 @@ changes all those instances. Removing a type is prevented while it is in use.
 4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
    to add an optional name or edit coordinates. **Machine contributions** shows individual sources.
 
-On desktop, Save/Open and the workspace tabs stay above the two scrolling object lists.
+On desktop, Save/Open and the workspace tabs stay above the two compact object lists.
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and Model info open one at a time, retaining their drafts.
+
+Opening an editor gives it the full sidebar height and one scroll area. Cards that fit in
+the window are brought fully into view; longer forms scroll naturally. **Close editor**
+returns to the compact lists and their previous scroll positions. Closing preserves field
+drafts; use the form's Save/Move action to apply unsubmitted changes.
 
 Names stay visible beside coloured readings on the map and in the sidebar. Named map
 badges include an R-number to distinguish repeated names. Clear the name to restore
@@ -165,7 +170,7 @@ Band data does **not** replace the existing overall LwA/background values, chang
 or calculate an audibility boundary. Unweighted bands are not silently converted to dB(A).
 A positive difference does not prove audible and a negative difference does not prove inaudible.
 Save/Open and recovery retain the evidence, including partial profiles; old scenes have none.
-Advanced editors/results scroll inside the existing desktop panels.
+Expanded editors/results use the sidebar viewport rather than small nested scroll panels.
 
 ![Receiver band comparison](images/frequency-receiver-comparison.png)
 
