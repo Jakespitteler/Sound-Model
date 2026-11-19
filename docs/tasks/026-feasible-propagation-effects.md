@@ -1,6 +1,6 @@
 # 026 — Select feasible improvements to the POC sound model
 
-Status: Feasibility review complete; proposed first increment awaits owner selection and data.
+Status: Band foundation selected; backend contract implemented, optional editor follows.
 Requested by the owner on 17 November 2026, alongside reducing developer-facing UI copy.
 Related: 024 (credible display scope), parked themes 002–005 (evidence and validation).
 
@@ -30,7 +30,7 @@ projected implementation small and preserve the current model as an explicit bas
 
 - [x] A short option matrix states required data, method, limits, reference evidence and effort for each effect, distinguishing feasible POC slices from parked work.
 - [x] One recommended increment has a clear input/output contract and independent analytical/reference validation cases, including an omitted-effect baseline and representative failure/boundary cases.
-- [ ] The owner agrees which slice proceeds before it is implemented; any new library, dataset or service receives separate approval. Scope 024 remains a display-confidence decision, not a replacement for missing physics.
+- [x] The owner agrees which slice proceeds before it is implemented; any new library, dataset or service receives separate approval. Scope 024 remains a display-confidence decision, not a replacement for missing physics.
 
 ## Verification
 
@@ -79,3 +79,21 @@ on doubling distance and +3.010300 dB for equal-source energy addition. These ar
 checks, not a validated masking model. Existing prediction code was unchanged by the review.
 86 local documentation links resolve; `git diff --check` passed. Author review only;
 implementation selection and any method/technology approval remain with the owner.
+
+
+## Owner selection and implementation — 19 November 2026
+
+The owner explicitly selected **Proceed with the frequency-band foundation**: optional
+machine sound-power bands, background pressure bands and receiver comparisons, with existing
+contours unchanged. No new technology was needed. Printing was separately removed from the POC.
+
+The [band contract](../frequency-band-contract.md) defines the fixed unweighted grid,
+measurement quantities, unknown values, averaging basis, signed comparisons and unchanged
+legacy path. The backend and persistence slice is separated from its optional browser editor.
+The review's earlier pending-selection statements above are historical, superseded by this
+record; no measured spectra or validated audibility method have been acquired.
+
+Backend evidence: 160 pytest tests passed, including independent 100 m/doubled-distance and
+equal-source energy references, all-source completeness, temporal compatibility, finite-input
+validation, save round-trips and unchanged overall receiver/contour outputs. Ruff and Pyright
+passed. Reference metadata is user evidence, not certification. No independent reviewer.

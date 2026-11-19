@@ -1,6 +1,6 @@
 """Pydantic request, domain, and response schemas for the Sound-Model API."""
 
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -17,6 +17,26 @@ class StrictModel(BaseModel):
     """
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False, str_strip_whitespace=True)
+
+
+class Spectrum(StrictModel):
+    """Optional unweighted octave evidence on a fixed 31.5 Hz–8 kHz grid.
+
+    Attributes:
+        levels: Nine finite band levels, with None for unknown measurements.
+        period_s: Leq averaging duration in seconds; None means unknown basis.
+        weighting: Z/unweighted only; A-weighted band inputs are not interchangeable.
+        metric: Energy-average levels only; maxima are not silently averaged.
+        provenance: Whether the spectral evidence is assumed or measured.
+        reference: Plain-text source and operating-condition reference.
+    """
+
+    levels: list[Annotated[float, Field(strict=True)] | None] = Field(min_length=9, max_length=9)
+    period_s: float | None = Field(default=None, gt=0, strict=True)
+    weighting: Literal["Z"] = "Z"
+    metric: Literal["Leq"] = "Leq"
+    provenance: Literal["example", "measured"] = "example"
+    reference: str = Field(default="", max_length=500)
 
 
 class Position(StrictModel):
@@ -39,12 +59,14 @@ class MachineType(StrictModel):
         name: Human-readable equipment label displayed in the UI and outputs.
         lwa: A-weighted sound power level ($L_{wA}$) in dB(A) within ``[0, 300]``.
         provenance: Indicates whether ``lwa`` is an illustrative example or measured data.
+        spectrum: Optional unweighted sound-power bands, separate from LwA.
     """
 
     id: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=80)
     lwa: float = Field(ge=0, le=300)
     provenance: Literal["example", "measured"] = "example"
+    spectrum: Spectrum | None = None
 
 
 class Source(Position):
@@ -82,6 +104,7 @@ class Scenario(StrictModel):
         types: Catalogue of available machine types (up to 50 entries).
         sources: Active noise sources placed on the map (up to 100 entries).
         receivers: Discrete receiver points to evaluate (up to 20 entries).
+        background_spectrum: Optional unweighted background pressure bands.
         background_db: Optional uniform background pressure in dB(A); never guessed.
         cloud_cover: Recorded sky cloud cover percentage within ``[0, 100]``.
     """
@@ -89,6 +112,7 @@ class Scenario(StrictModel):
     types: list[MachineType] = Field(default_factory=list[MachineType], max_length=50)
     sources: list[Source] = Field(default_factory=list[Source], max_length=100)
     receivers: list[Receiver] = Field(default_factory=list[Receiver], max_length=20)
+    background_spectrum: Spectrum | None = None
     background_db: float | None = Field(default=None, strict=True)
     cloud_cover: int = Field(default=0, ge=0, le=100, strict=True)
 
@@ -153,11 +177,36 @@ class Point(BaseModel):
     includes_distant_sources: bool = False
 
 
+class BandReading(BaseModel):
+    """One unweighted frequency comparison; never an audibility classification.
+
+    Attributes:
+        frequency_hz: Fixed octave centre.
+        machine_db: Complete compatible all-source band pressure, or unknown.
+        background_db: Entered band background pressure, or unknown.
+        difference_db: Machine minus background for compatible averaging periods.
+        status: Data completeness, temporal compatibility or numeric failure.
+        missing_sources: Source IDs whose band or averaging basis is unknown.
+        near_field: Whether a source is inside the 1 m numerical clamp.
+    """
+
+    frequency_hz: float
+    machine_db: float | None = None
+    background_db: float | None = None
+    difference_db: float | None = None
+    status: Literal[
+        "ok", "missing_source_data", "missing_background", "incompatible_basis", "no_sources", "unavailable"
+    ]
+    missing_sources: list[str] = Field(default_factory=list)
+    near_field: bool = False
+
+
 class Prediction(BaseModel):
     """Direct receiver results, independent of viewport and contour rendering.
 
     Attributes:
         receivers: Results keyed by receiver ID.
+        band_results: Optional unweighted comparisons, independently keyed by receiver ID.
         cloud_cover: Recorded cloud percentage; no numerical correction applies.
         cloud_correction_db: Always None until a meteorological model is validated.
         example_data: Whether an active source uses example sound power data.
@@ -165,6 +214,7 @@ class Prediction(BaseModel):
     """
 
     receivers: dict[str, Point]
+    band_results: dict[str, list[BandReading]] = Field(default_factory=dict)
     cloud_cover: int
     cloud_correction_db: None
     example_data: bool
