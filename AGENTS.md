@@ -36,9 +36,11 @@ uv run python scripts/check_agent_skills.py
 - Machinery noise combines by adding independent-source energy. Do not introduce coherent
   phase cancellation or invented cloud/weather corrections. Distinguish LwA emission from
   LpA receiver pressure. Preserve evidence notes and mark guesses explicitly.
-- The 10 km display scope is a presentation policy, not a physical sound cutoff or validated
-  propagation range. The owner has requested review of that distance-only policy; do not invent attenuation
-  or audibility thresholds to replace it. The app cannot establish inaudibility or compliance.
+- Background relevance uses the owner's 0.1 dB increase rule after summing all sources.
+  Background is one optional scenario-wide pressure level; do not invent a default. There
+  is no fixed acoustic distance cutoff or numeric contour-threshold cap. Keep calculation
+  budgets/projection failures explicit. The separate 10 km pairwise camera rule is unchanged.
+  Negligible increase is not proof of inaudibility or compliance; do not invent attenuation.
 - Preserve per-level contour error isolation. Camera movement and visual changes must not
   trigger acoustic predictions. For UI fixes, reproduce the actual interaction and inspect
   screenshots with the relevant hover, focus, error or selection state open.

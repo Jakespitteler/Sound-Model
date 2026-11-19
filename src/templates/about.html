@@ -16,9 +16,14 @@
 <section><h2>Several machines combine</h2>
 <p>Two independent 60 dB(A) contributions at a receiver combine to about <strong>63 dB(A)</strong>. Contours join locations with the same combined level.</p></section>
 <section><h2>Understand the limits</h2>
-<p>The calculation currently assumes open space. Terrain, barriers, ground and atmospheric effects, operating cycles and background noise are not yet included. Recorded cloud cover does not change the result.</p>
+<p>The calculation currently assumes open space. Terrain, barriers, ground and atmospheric effects, and operating cycles are not yet included. Recorded cloud cover does not change the result.</p>
 <p>A calculated level is <strong>not evidence</strong> that a machine can be heard above local background noise. Check important results against site data.</p>
-<details><summary>Distance limits and negative values</summary><p>The current display hides results beyond <strong>10 km</strong> from the nearest machine. This is a model display limit, not a distance at which sound stops.</p><p><strong>Decibels can be negative</strong> because zero dB is a reference level, not silence. A negative value is a small predicted contribution.</p></details></section>
+<details><summary>Distance and negative values</summary><p>There is no fixed receiver-distance cutoff. Contours may fail if the map projection or calculation budget cannot represent the complete line; other levels remain available.</p><p><strong>Decibels can be negative</strong> because zero dB is a reference level, not silence. A negative value is a small predicted contribution.</p></details></section>
+<section><h2>Background and the outer boundary</h2>
+<p>Enter one background noise level for your scenario. Use a measurement or record your assumption; the app does not choose a background value for you.</p>
+<p>The dotted <strong>Negligible overall increase</strong> contour marks where all machines together add <strong>0.1 dB</strong> to background. Beyond it, receivers show <strong>Negligible overall increase</strong> and lower contours are hidden. The boundary moves when machines or background change.</p>
+<p>Other contours and numeric receiver readings show the machinery contribution, excluding background. A negligible broadband increase does not guarantee that a distinctive tone cannot be heard. Compare compatible A-weighted measurements and averaging periods.</p>
+<details><summary>How background is combined</summary><p><code>Increase = 10 log10(1 + 10^((machinery − background) / 10))</code></p><p>The outer contour is about 16.3 dB below background. This is a display setting, not a legal limit or a propagation correction. With background blank, the filter is off. Extreme powers such as 300 dB remain experimental arithmetic, outside ordinary machinery modelling.</p></details></section>
 <section><h2>Keep your scenario</h2>
 <p><strong>Save</strong> keeps a named copy on the computer running the app. <strong>Open</strong> returns to it.</p>
 <p>If unsaved edits are found, choose Restore to recover the browser draft. Recovery does not update named saves automatically and is not a backup.</p></section>

@@ -1,4 +1,5 @@
 /** @fileoverview Bind state, UI and two independent request lanes. No camera fetches. */
+import {boundaryLevel} from './background.js';
 import {AddressSearch} from './address-search.js';
 import {$} from './utils.js';
 import {ScenarioStore} from './state.js';
@@ -64,7 +65,7 @@ function displayGeometry(results) {
   const empty=geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
   const examples=store.sources.some(s=>store.typeFor(s).provenance==='example');
   $('calculation-status').textContent=store.sources.length ?
-    `${store.sources.length} sources · combined noise${examples?' · example data':''}${failures.length?' · '+failures.length+' failed level(s)':''}${empty.length?' · No crossing at '+empty.join(', '):''}` : 'Add a source to begin';
+    `${store.sources.length} sources · geometry estimate${examples?' · example data':''}${store.sources.some(s=>store.typeFor(s).lwa===300)?' · Extreme input: machinery model unsupported':''}${failures.length?' · '+failures.length+' failed level(s)':''}${empty.length?' · No crossing at '+empty.join(', '):''}` : 'Add a source to begin';
 }
 
 /** Reuse exact current-source levels and request only missing ones; every edit still versions the lane. */
@@ -135,6 +136,18 @@ function replayPlacement(redo) {
   const label=redo ? store.redo() : store.undo();
   if (label) say(`${redo ? 'Redid' : 'Undid'}: ${label.toLowerCase()}.`);
 }
+/** Keep the scenario-wide background field and adaptive boundary summary in sync. */
+function syncBackground() {
+  $('background-level').value=store.background_db===null ? '' : String(store.background_db);
+  const boundary=boundaryLevel(store.background_db);
+  $('background-status').textContent=boundary===null ? 'Enter background to show the overall-increase boundary.' : `Overall increase: +0.1 dB at ${boundary.toFixed(1)} dB(A) machinery`;
+}
+$('background-level').onchange=()=> {
+  const input=$('background-level');
+  if(!input.checkValidity()) {input.reportValidity(); return;}
+  store.setBackground(input.value==='' ? null : input.valueAsNumber);
+};
+
 $('undo-placement').onclick=()=>replayPlacement(false);
 $('redo-placement').onclick=()=>replayPlacement(true);
 document.addEventListener('keydown',event=> {
@@ -150,14 +163,15 @@ store.subscribe(reason=> {
   renderHistory();
   if (['geometry','catalogue','receivers','thresholds','restore'].includes(reason)) say('');
   manager.syncModeUI();
-  if (['geometry','catalogue','restore'].includes(reason)) refreshSliderRange();
+  if (['geometry','catalogue','background','restore'].includes(reason)) refreshSliderRange();
+  if (reason==='background' || reason==='restore') syncBackground();
   if (reason==='acceptable-level') contours.syncAcceptable();
   if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
   if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
-  if (['geometry','catalogue','receivers','restore'].includes(reason)) { manager.renderMarkers(); refreshReceivers(); }
-  if (['geometry','catalogue','thresholds','acceptable-level','restore'].includes(reason)) {
+  if (['geometry','catalogue','receivers','background','restore'].includes(reason)) { if(reason!=='background') manager.renderMarkers(); refreshReceivers(); }
+  if (['geometry','catalogue','thresholds','acceptable-level','background','restore'].includes(reason)) {
     refreshGeometry();
   }
 });
@@ -200,7 +214,7 @@ $('demo').onclick=()=> {
 };
 $('retry').onclick=()=> { $('retry').hidden=true; say('Retrying…'); refreshGeometry(); refreshReceivers(); refreshSliderRange(); };
 
-renderHistory(); catalogue.render(); entities.renderSources(); entities.renderReceivers({}); contours.render(); manager.syncModeUI();
+syncBackground(); renderHistory(); catalogue.render(); entities.renderSources(); entities.renderReceivers({}); contours.render(); manager.syncModeUI();
 // No request is needed until equipment or receivers are added.
 
 const files = new ScenarioFilesUI(store,manager,say);

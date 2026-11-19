@@ -82,12 +82,14 @@ class Scenario(StrictModel):
         types: Catalogue of available machine types (up to 50 entries).
         sources: Active noise sources placed on the map (up to 100 entries).
         receivers: Discrete receiver points to evaluate (up to 20 entries).
+        background_db: Optional uniform background pressure in dB(A); never guessed.
         cloud_cover: Recorded sky cloud cover percentage within ``[0, 100]``.
     """
 
     types: list[MachineType] = Field(default_factory=list[MachineType], max_length=50)
     sources: list[Source] = Field(default_factory=list[Source], max_length=100)
     receivers: list[Receiver] = Field(default_factory=list[Receiver], max_length=20)
+    background_db: float | None = Field(default=None, strict=True)
     cloud_cover: int = Field(default=0, ge=0, le=100, strict=True)
 
     @model_validator(mode="after")
@@ -135,18 +137,18 @@ class Point(BaseModel):
     """Aggregated acoustic prediction result at a single receiver location.
 
     Attributes:
-        level_db: Energetic sum in dB(A), or ``None`` for no sources or suppressed scope.
+        level_db: Energetic sum in dB(A), or ``None`` for no sources or a negligible background increase.
         near_field: ``True`` if at least one contributing source is within 1 m.
-        contributions: Per-source breakdown, suppressed outside the receiver screening scope.
-        status: Whether a reading is present, empty, or deliberately out of scope.
+        contributions: Per-source breakdown, hidden when the total increase is negligible.
+        status: Whether a reading is present, empty, or negligible against background.
         nearest_source_m: Distance to the closest source, where sources exist.
-        includes_distant_sources: Whether an in-scope total includes paths beyond 10 km.
+        includes_distant_sources: Legacy compatibility field; always False.
     """
 
     level_db: float | None
     near_field: bool
     contributions: list[Contribution]
-    status: Literal["ok", "no_sources", "out_of_scope"] = "ok"
+    status: Literal["ok", "no_sources", "negligible"] = "ok"
     nearest_source_m: float | None = None
     includes_distant_sources: bool = False
 
@@ -173,10 +175,10 @@ class ContourRequest(Scenario):
     """Source-based request for level lines, without camera or visual styling.
 
     Attributes:
-        levels: Unique dB(A) thresholds, limited to 25 for bounded computation.
+        levels: Unique dB(A) thresholds, limited to 26 including the automatic boundary.
     """
 
-    levels: list[float] = Field(max_length=25)
+    levels: list[float] = Field(max_length=26)
 
     @model_validator(mode="after")
     def valid_levels(self) -> Self:
@@ -186,10 +188,10 @@ class ContourRequest(Scenario):
             Validated contour request.
 
         Raises:
-            ValueError: If thresholds are repeated or outside 0–300 dB(A).
+            ValueError: If thresholds are repeated or non-finite.
         """
-        if len(set(self.levels)) != len(self.levels) or any(not 0 <= level <= 300 for level in self.levels):
-            raise ValueError("Contour levels must be unique finite values from 0 to 300 dB(A)")
+        if len(set(self.levels)) != len(self.levels):
+            raise ValueError("Contour levels must be unique finite values")
         return self
 
 
@@ -199,13 +201,13 @@ class Contour(BaseModel):
     Attributes:
         level_db: Combined A-weighted noise threshold.
         lines: Polylines as [longitude, latitude] pairs; longitudes may unwrap at 180°.
-        status: Calculated, no crossing, or failed; failures are isolated by level.
-        error: Explanation of a calculation/scope failure, without suppressing other levels.
+        status: Calculated, negligible, no crossing, or failed; failures are isolated by level.
+        error: Explanation of a calculation failure, without suppressing other levels.
     """
 
     level_db: float
     lines: list[list[tuple[float, float]]]
-    status: Literal["ok", "empty", "failed"] = "ok"
+    status: Literal["ok", "empty", "failed", "negligible"] = "ok"
     error: str | None = None
 
 

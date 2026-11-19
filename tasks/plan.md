@@ -39,8 +39,8 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Address navigation | [028](../docs/tasks/028-address-search-autocomplete.md) | Implemented for review; Photon lookup and camera navigation verified in stacked API/browser PRs |
 | Map object removal | [029](../docs/tasks/029-map-object-deletion.md) | Implemented for review; popup and Ctrl-× deletion verified with history/recovery |
 | Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Implemented for review; persistent names beside readings, stable marker nodes and compact controls |
-| Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Reconsider distance-only withholding for receivers and lines; agree policy first |
-| Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Identify credible small additions; do not implement missing physics by guesswork |
+| Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Implemented for review; approved 0.1 dB background-relative boundary |
+| Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Feasibility review complete; select optional band evidence/baseline slice before implementation |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Owner may remove printing as scope creep; no report code before decision |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.
@@ -113,11 +113,11 @@ Future implementation slices should each be a separate small PR based on the the
 reviewed dependency. Do not mix feature implementation into the scaffold PR.
 
 The 10 km maximum pairwise cluster distance is a camera rule. It must not be confused with
-the current 10 km acoustic display policy, which task 024 now reconsiders at the owner's request. An extreme 300 dB source is not evidence that the machinery model simulates an explosion.
+the adaptive background relevance rule implemented by task 024. An extreme 300 dB source is not evidence that the machinery model simulates an explosion.
 
 ## Open decisions
 
-- Task 024: agree the smallest defensible source/model-aware display policy without inventing audibility.
+- Task 024 policy agreed: one background level and a 0.1 dB increase boundary; implementation ready for review.
 - Task 016: keep or remove the printable summary from the POC?
 
 Measurements, environmental propagation selection, regulatory criteria and formal reporting

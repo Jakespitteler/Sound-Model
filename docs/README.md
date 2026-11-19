@@ -10,6 +10,8 @@ dated change records explain how the project reached it.
 | Understand the calculations and their limits | [Sound model](model.md) |
 | Find modules, data flows and API boundaries | [Architecture](../ARCHITECURE.md) |
 | Run checks or troubleshoot startup | [Developer guide](development.md) |
+| Understand the background-boundary decision | [Scope review and approved decision](scope-policy-review.md) |
+| Compare feasible model upgrades and audibility prerequisites | [Model feasibility review](model-feasibility.md) |
 | Choose an approved POC task | [Task backlog](tasks/README.md) |
 | Use or update the installed agent skills | [Agent Skills integration](../.agents/README.md) |
 | Check use permissions | [Project licence](../LICENSE) and [third-party notices](../THIRD_PARTY_NOTICES.md) |

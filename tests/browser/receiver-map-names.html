@@ -31,7 +31,7 @@ try {
  store.renameReceiver(id,'長い名前🌳'.repeat(16));manager.updateReceiverLabels();
  check(root.getBoundingClientRect().width<=220 && root.getBoundingClientRect().height<=70,'long Unicode names stay compact');
  check(root.getAttribute('aria-label').includes(store.receivers[0].name) && marker.getTooltip().getContent().textContent.includes(store.receivers[0].name),'full long name remains available for focus/hover and accessibility');
- for(const [results,failed,expected] of [[null,false,'…'],[{},true,'Unavailable'],[{[id]:{status:'ok',level_db:null}},false,'No sources'],[{[id]:{status:'out_of_scope',level_db:null}},false,'Outside scope']]) {
+ for(const [results,failed,expected] of [[null,false,'…'],[{},true,'Unavailable'],[{[id]:{status:'ok',level_db:null}},false,'No sources'],[{[id]:{status:'negligible',level_db:null}},false,'Negligible overall increase']]) {
   manager.setReceiverReadings(results,failed);
   check(root.querySelector('.receiver-name').textContent===store.receivers[0].name && root.querySelector('.receiver-number').textContent.includes(expected),`name remains with ${expected} status`);
  }

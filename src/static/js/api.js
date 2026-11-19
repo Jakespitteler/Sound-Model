@@ -58,7 +58,7 @@ export class GeometryCache {
    * @return {string} Complete geometry signature, retaining source order and multiplicity. */
   key(payload, level) {
     return JSON.stringify({model:this.model,tolerance_db:this.toleranceDb,
-      sources:payload.sources.map(s=>[s.lat,s.lng,payload.types.find(t=>t.id===s.type_id).lwa]),level_db:level});
+      background_db:payload.background_db ?? null,sources:payload.sources.map(s=>[s.lat,s.lng,payload.types.find(t=>t.id===s.type_id).lwa]),level_db:level});
   }
 
   /** @param {string} key Signature. @return {?Object} Detached cached level; promote on use. */
@@ -71,7 +71,7 @@ export class GeometryCache {
 
   /** @param {string} key Signature. @param {Object} value One successful or empty contour. */
   set(key, value) {
-    if (!['ok','empty'].includes(value.status)) return;
+    if (!['ok','empty','negligible'].includes(value.status)) return;
     this.entries.delete(key); this.entries.set(key,structuredClone(value));
     if (this.entries.size>32) this.entries.delete(this.entries.keys().next().value);
   }

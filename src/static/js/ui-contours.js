@@ -1,4 +1,5 @@
 /** @fileoverview Simple paired slider/number controls, automatically ordered by decibels. */
+import {boundaryLevel} from './background.js';
 import {$,escapeHtml} from './utils.js';
 import {soundColor} from './sound-style.js';
 
@@ -13,7 +14,7 @@ export class ContoursUI {
   /** Bind once; dragging a slider previews locally and commits on release. */
   bind() {
     const commitAcceptable=value=> {
-      if (!this.store.setAcceptableLevel(value)) this.say('Use 0–300 dB(A), with at most 25 unique levels including this reference.');
+      if (!this.store.setAcceptableLevel(value)) this.say('Use a finite dB(A) level, with at most 25 unique levels including this reference.');
       this.render();
     };
     $('acceptable-level').onchange=()=> {
@@ -64,7 +65,7 @@ export class ContoursUI {
       if (!input.matches('input') || !input.checkValidity()) return;
       const accepted = this.store.updateContour(input.closest('[data-contour-id]').dataset.contourId,
         {level_db:input.valueAsNumber});
-      if (!accepted) this.say('Use a distinct ordinary level from 0–300 dB(A), with at most 25 unique levels including the acceptable level.');
+      if (!accepted) this.say('Use a distinct finite level, with at most 25 unique levels including the acceptable level.');
       else this.say('Contour updated. Levels are ordered from highest to lowest.');
       this.render();
     });
@@ -111,7 +112,7 @@ export class ContoursUI {
       `<div class="contour-row" data-contour-id="${c.id}" style="--level-color:${soundColor(c.level_db)}">
       <span class="level-swatch" aria-hidden="true"></span>
       <input type="range" data-field="level_db" min="0" max="300" step="0.1" value="${c.level_db}" aria-label="Slide ${c.level_db} dB contour level">
-      <label class="level-number"><input type="number" data-field="level_db" min="0" max="300" step="0.1" value="${c.level_db}" aria-label="${c.level_db} dB contour level" required><span>dB(A)</span></label>
+      <label class="level-number"><input type="number" data-field="level_db" step="any" value="${c.level_db}" aria-label="${c.level_db} dB contour level" required><span>dB(A)</span></label>
       <button class="danger remove-level" type="button" data-remove-contour="${c.id}" aria-label="Remove ${c.level_db} dB contour">×</button></div>`
     ).join('') || '<p class="empty">No ordinary contours.</p>';
     this.syncRowSliders(); this.renderStatus();
@@ -128,19 +129,20 @@ export class ContoursUI {
       if (!current) continue; // A store notification can precede removal of its old DOM row.
       const result = this.results.find(c=>c.level_db===current.level_db);
       row.classList.toggle('contour-failed',result?.status==='failed');
-      if (result?.status==='failed' || result?.status==='empty') {
+      if (result?.status==='failed' || result?.status==='empty' || result?.status==='negligible') {
         const status = document.createElement('span'); status.className='contour-level-status';
-        status.textContent=result.status==='failed' ? 'Failed' : 'No crossing';
+        status.textContent=result.status==='failed' ? 'Failed' : result.status==='negligible' ? 'Negligible overall increase' : 'No crossing';
         status.title=result.error || 'No contour at this level for the current sources.';
         row.append(status);
       }
     }
     const acceptable=this.results.find(c=>c.level_db===this.store.acceptable_level_db);
-    $('acceptable-status').textContent=acceptable?.status==='failed' ? 'Failed' : acceptable?.status==='empty' ? 'No crossing' : this.sliderRange?.status==='ok' ? `${this.store.acceptable_level_db===null ? 'Drag to set · ' : 'Slider: '}${this.sliderRange.min_db}–${this.sliderRange.max_db} dB(A)` : this.sliderRange?.reason || (this.store.sources.length ? 'Finding slider range…' : 'Place a machine to enable the slider.');
+    $('acceptable-status').textContent=acceptable?.status==='failed' ? 'Failed' : acceptable?.status==='empty' ? 'No crossing' : acceptable?.status==='negligible' ? 'Negligible overall increase' : this.sliderRange?.status==='ok' ? `${this.store.acceptable_level_db===null ? 'Drag to set · ' : 'Slider: '}${this.sliderRange.min_db}–${this.sliderRange.max_db} dB(A)` : this.sliderRange?.reason || (this.store.sources.length ? 'Finding slider range…' : 'Place a machine to enable the slider.');
     $('acceptable-status').title=acceptable?.error || '';
     const failures=this.results.filter(c=>c.status==='failed');
-    $('contour-errors').innerHTML=failures.map(c=>`<p><strong>${c.level_db===this.store.acceptable_level_db ? 'Acceptable level · ' : ''}${c.level_db} dB(A) failed</strong><br>${escapeHtml(c.error)}</p>`).join('');
+    const prefix=c=>c.level_db===boundaryLevel(this.store.background_db) ? 'Outer boundary · ' : c.level_db===this.store.acceptable_level_db ? 'Acceptable level · ' : '';
+    $('contour-errors').innerHTML=failures.map(c=>`<p><strong>${prefix(c)}${c.level_db.toFixed(1)} dB(A) failed</strong><br>${escapeHtml(c.error)}</p>`).join('');
     $('contour-alert').hidden=!failures.length;
-    $('contour-alert').textContent=failures.length ? `${failures.map(c=>(c.level_db===this.store.acceptable_level_db ? 'Acceptable ' : '')+c.level_db+' dB(A)').join(', ')} failed · view details` : '';
+    $('contour-alert').textContent=failures.length ? `${failures.map(c=>prefix(c)+c.level_db.toFixed(1)+' dB(A)').join(', ')} failed · view details` : '';
   }
 }

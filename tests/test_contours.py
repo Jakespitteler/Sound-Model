@@ -102,7 +102,7 @@ def test_antimeridian_sources_remain_neighbours() -> None:
     assert max(longitudes) - min(longitudes) < 0.1
 
 
-@pytest.mark.parametrize("levels", [[45, 45], [-1], [301], [float("nan")], [float("inf")], list(range(26))])
+@pytest.mark.parametrize("levels", [[45, 45], [float("nan")], [float("inf")], list(range(27))])
 def test_contour_input_limits(levels: list[float]) -> None:
     """Reject ambiguous or unbounded requests before computing any geometry.
 
@@ -123,7 +123,7 @@ def test_contour_api_and_domain_limit() -> None:
         assert response.status_code == 200
         failed = response.json()["contours"][0]
         assert failed["status"] == "failed"
-        assert "200 km" in failed["error"]
+        assert "projection" in failed["error"]
 
 
 def test_camera_and_style_fields_are_not_acoustic_inputs() -> None:

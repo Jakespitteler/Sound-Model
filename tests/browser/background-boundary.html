@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><title>Adaptive background boundary</title><pre id="result">Running…</pre>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {boundaryLevel} from '../../src/static/js/background.js';
+import {GeometryCache} from '../../src/static/js/api.js';
+const checks=[];
+/** @param {boolean} claim Expected behaviour. @param {string} label Description. */
+function check(claim,label){if(!claim) throw new Error(label);checks.push(label);}
+try {
+ const store=new ScenarioStore();
+ check(store.background_db===null && boundaryLevel(null)===null,'no invented background');
+ store.setBackground(40);const boundary=boundaryLevel(40);
+ check(Math.abs(10*Math.log10(1+10**((boundary-40)/10))-.1)<1e-12,'boundary raises the combined level by 0.1 dB');
+ check(store.getContourLevels().includes(boundary),'automatic boundary joins geometry requests');
+ check(store.lineSettings().find(c=>c.level_db===boundary).background,'automatic line is identified for rendering');
+ const events=[];store.subscribe(reason=>events.push(reason));store.setBackground(50);
+ check(events.join(',')==='background','background uses an explicit acoustic notification');
+ check(store.getContourLevels().includes(boundaryLevel(50)) && !store.getContourLevels().includes(boundary),'changing background replaces rather than accumulates boundaries');
+ check(store.addContour(-10) && store.addContour(500),'finite contour values have no arbitrary numeric cap');
+ check(store.setAcceptableLevel(-30),'reference levels also accept negative decibels');
+ check(!store.setBackground(Infinity) && !store.setBackground(NaN) && !store.setBackground('40'),'invalid background cannot replace accepted data');
+ store.setBackground(0);check(store.background_db===0 && store.getContourLevels().includes(boundaryLevel(0)),'zero is a real input rather than unset');
+ const payload=store.toPayload(),cache=new GeometryCache(),first=cache.key(payload,40);
+ store.setBackground(40);check(first!==cache.key(store.toPayload(),40),'background changes invalidate classification cache keys');
+ cache.set(first,{level_db:40,lines:[],status:'negligible'});check(cache.get(first).status==='negligible','negligible results can be reused only with their matching signature');
+ const saved={...store.toPayload(),types:store.types,levels:store.contours.map(c=>c.level_db),acceptable_level_db:store.acceptable_level_db};
+ const restored=new ScenarioStore();restored.restore(saved);
+ check(restored.background_db===40 && restored.getContourLevels().includes(boundaryLevel(40)),'saved inputs recreate the derived boundary');
+ delete saved.background_db;restored.restore(saved);check(restored.background_db===null,'legacy saves leave background unset');
+ store.setBackground(null);check(!store.lineSettings().some(c=>c.background),'clearing background removes its automatic line');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+</script>

@@ -187,3 +187,16 @@ Expect **PASS: 17 checks** for names/fallbacks, reading states, literal Unicode 
 badges, coordinate anchoring, stable focused nodes and Ctrl-delete labels. Rerun the map
 deletion and acceptable-label-priority fixtures when changing badge layout. Task 030 records
 full-app dragging, acoustic request counts, Save/Open/recovery and inspected screenshots.
+
+
+## Background-boundary checks
+
+With the repository-root static server running, open `/tests/browser/background-boundary.html`.
+Expect **PASS: 15 checks** for the 0.1 dB energy ratio, automatic line identity, background
+notifications/cache signatures, uncapped finite thresholds and legacy restore. The updated
+receiver-map-names fixture checks the negligible label alongside persistent names.
+
+`uv run pytest tests/test_scope.py tests/test_background.py tests/test_contour_range.py -q`
+checks the independent energy relation, all-source combination before classification, distant
+receivers, >200 km lines, negative/extreme finite levels, save compatibility and invalid values.
+Task 024 records full-app Save/Open/recovery, request counts and inspected screenshots.

@@ -1,33 +1,42 @@
-"""Explicit presentation scope for the unvalidated free-field screening model.
+"""Background-relative display policy, independent of distance and propagation physics."""
 
-This is an owner-approved screening policy, not a propagation or audibility cutoff.
-The underlying scalar equations remain available for analytical tests.
-"""
+import math
 
 from .types import Point
 
-SCREENING_DISTANCE_M = 10_000.0
+NEGLIGIBLE_INCREASE_DB = 0.1
+# Stable energy ratio: machine/background = 10**(0.1/10) - 1.
+BACKGROUND_OFFSET_DB = 10 * math.log10(math.expm1(NEGLIGIBLE_INCREASE_DB * math.log(10) / 10))
 
 
-def screen_receiver(point: Point) -> Point:
-    """Suppress unsupported distant receiver totals without falsifying them as silence.
+def boundary_level(background_db: float) -> float:
+    """Find the machinery level that raises a uniform background by 0.1 dB.
 
     Args:
-        point: Raw free-field total and source contributions.
+        background_db: Scenario background pressure level in dB(A).
 
     Returns:
-        Scoped reading; a receiver more than 10 km from every source has no numeric
-        level or numeric source contributions. In-scope totals retain all sources,
-        with a warning if any individual path exceeds the screening distance.
+        Combined machinery contribution at the adaptive outer boundary.
+    """
+    return background_db + BACKGROUND_OFFSET_DB
+
+
+def screen_receiver(point: Point, background_db: float | None = None) -> Point:
+    """Label negligible machinery increases without using any distance cutoff.
+
+    Args:
+        point: All-source geometry estimate before presentation filtering.
+        background_db: User-entered background, or None when not supplied.
+
+    Returns:
+        Original estimate, no-source status, or an explicit negligible-increase label.
+        Background is never added to the displayed machinery contribution.
     """
     if not point.contributions:
         return point.model_copy(update={"status": "no_sources"})
     nearest = min(c.distance_m for c in point.contributions)
-    if nearest > SCREENING_DISTANCE_M:
-        return Point(level_db=None, near_field=False, contributions=[], status="out_of_scope", nearest_source_m=nearest)
-    return point.model_copy(
-        update={
-            "nearest_source_m": nearest,
-            "includes_distant_sources": any(c.distance_m > SCREENING_DISTANCE_M for c in point.contributions),
-        }
-    )
+    if background_db is not None and point.level_db is not None and point.level_db < boundary_level(background_db):
+        return Point(
+            level_db=None, near_field=point.near_field, contributions=[], status="negligible", nearest_source_m=nearest
+        )
+    return point.model_copy(update={"nearest_source_m": nearest})

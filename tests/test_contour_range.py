@@ -20,16 +20,17 @@ def scenario(power: float = 110) -> dict[str, object]:
         "sources": [{"id": "s", "type_id": "t", "lat": -33.86, "lng": 116.07}],
         "receivers": [],
         "cloud_cover": 0,
+        "background_db": 40,
     }
 
 
-@pytest.mark.parametrize(("power", "minimum", "maximum"), [(110, 19.1, 98.9), (300, 209.1, 288.9)])
+@pytest.mark.parametrize(("power", "minimum", "maximum"), [(110, 23.8, 98.9), (300, 160.0, 288.9)])
 def test_single_source_slider_range(power: float, minimum: float, maximum: float) -> None:
     """Check useful bounds against a full-space analytic reference and actual extracted lines.
 
     Args:
         power: Known sound power.
-        minimum: Expected rounded scope-bound threshold.
+        minimum: Expected verified lower threshold.
         maximum: Expected rounded source-peak threshold.
     """
     with TestClient(app) as client:
@@ -52,7 +53,7 @@ def test_range_responds_to_layout_and_all_source_power() -> None:
         body = scenario()
         body["sources"] = [{"id": name, "type_id": "t", "lat": -33.86, "lng": 116.07} for name in ("a", "b")]
         together = client.post("/api/contour-range", json=body).json()
-        assert together["min_db"] == 22.1 and together["max_db"] == 101.9
+        assert together["min_db"] == 23.8 and together["max_db"] == 101.9
         body["sources"] = [
             {"id": "a", "type_id": "t", "lat": -33.86, "lng": 116.07},
             {"id": "b", "type_id": "t", "lat": -33.85, "lng": 116.07},

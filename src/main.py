@@ -59,7 +59,8 @@ def predict(scenario: Scenario) -> Prediction:
     """
     types: dict[str, MachineType] = {item.id: item for item in scenario.types}
     receivers: dict[str, Point] = {
-        point.id: screen_receiver(at_point(point, scenario.sources, types)) for point in scenario.receivers
+        point.id: screen_receiver(at_point(point, scenario.sources, types), scenario.background_db)
+        for point in scenario.receivers
     }
     return Prediction(
         receivers=receivers,

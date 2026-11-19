@@ -76,3 +76,13 @@ native Windows execution was not available for validation. Run `uv sync --frozen
 Current-state links and a historical-status banner were added to prevent older controls,
 limits, save behaviour or verification counts being mistaken for the current app. The
 original change record and its evidence have been retained.
+
+
+## Feasibility follow-up — 19 November 2026
+
+The [task 026 review](model-feasibility.md) recommends an optional frequency-band evidence
+and scalar-baseline foundation before an audibility boundary. It requires no additional
+library. The candidates above remain evaluation-only; no engine, service or dataset has
+been approved or adopted. Missing bands, atmospheric inputs or detection criteria are not
+replaced with guessed values. Background relevance from task 024 is a display rule, not
+an environmental propagation or audibility engine.

@@ -109,8 +109,7 @@ export class EntitiesUI {
               `<div class="item-card" data-receiver-card="${escapeHtml(r.id)}">` +
               `${this.positionForm(r, 'receivers',
                 `<button class="danger entity-remove" type="button" data-remove-receiver="${r.id}" aria-label="Remove ${escapeHtml(receiverLabel(r,i))}">Remove receiver</button>` +
-                `${result?.status === 'out_of_scope' ? `<p>Nearest machine: ${(result.nearest_source_m/1000).toFixed(1)} km. No numerical prediction beyond the 10 km screening scope.</p>` : ''}` +
-                `${result?.includes_distant_sources ? '<p>Includes distant source paths; the free-field total is unvalidated.</p>' : ''}` +
+                `${result?.status === 'negligible' ? '<p>Machinery adds less than 0.1 dB to the scenario background.</p>' : ''}` +
                 `${result?.near_field ? '<p>Within 1 m: numerical limit applies.</p>' : ''}` +
                 `<label>Name (optional)<input type="text" data-receiver-name="${escapeHtml(r.id)}" aria-label="Name for receiver ${i+1}" placeholder="e.g. Town boundary" value="${escapeHtml(r.name || '')}"></label>` +
                 (result?.contributions.length
@@ -118,7 +117,7 @@ export class EntitiesUI {
                     `<li>${this.store.sources.findIndex(source=>source.id===c.id)+1}. ${escapeHtml(c.name)} · ${c.distance_m.toFixed(0)} m · ${c.level_db.toFixed(1)} dB(A)${c.provenance === 'example' ? ' · estimate' : ''}</li>`
                   ).join('')}</ul></details>` : ''),
                 `<strong data-receiver-title>${escapeHtml(receiverLabel(r,i))}</strong>` +
-                `<span class="result" style="color:${soundColor(result?.level_db ?? null)}">${!result ? 'Calculating…' : result.status === 'out_of_scope' ? 'Outside model scope' : formatDb(result.level_db)}</span>` +
+                `<span class="result${result?.status==='negligible' ? ' is-negligible' : ''}" style="color:${soundColor(result?.level_db ?? null)}">${!result ? 'Calculating…' : result.status === 'negligible' ? 'Negligible overall increase' : formatDb(result.level_db)}</span>` +
                 `${result?.near_field || result?.includes_distant_sources ? `<span class="entity-warning">${[result.near_field ? 'Within 1 m of a machine' : '',result.includes_distant_sources ? 'Includes distant sources' : ''].filter(Boolean).join(' · ')}</span>` : ''}`
               )}</div>`
             );

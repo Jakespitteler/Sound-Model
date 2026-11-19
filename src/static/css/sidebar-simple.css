@@ -72,3 +72,10 @@ details[open] > .entity-summary::before { content:'▾'; }
   #scenario-panel > section > label { margin-bottom:0; }
   #place-source { align-self:end; width:auto; height:36px; padding:8px 12px; }
 }
+
+.background-control { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:8px; font-size:12px; }
+.background-control .level-number { display:flex; align-items:center; gap:5px; }
+.background-control input { width:85px; }
+
+.sidebar .level-number input[type=number] { width:76px; flex:none; }
+.entity-summary .result.is-negligible { font-size:12px; line-height:1.35; }
