@@ -88,6 +88,11 @@ The eight starter types are project-authored guesses, not verified Charles Hull 
 fleet data. Replace values and notes with traceable equipment sound-power evidence. The
 in-app **Estimate notes** page records their origin.
 
+Open **Measurements** to record a pressure reading at a map location. Test details are
+optional; suitable stationary tests show the measured total beside the current machinery
+estimate. Records are saved with the scenario; they never calibrate the model. See the
+[measurement workflow](docs/user-guide.md#record-site-measurements).
+
 ## Keep your work
 
 Saves are local to the computer running the Python backend, under `local-data/scenarios/`.

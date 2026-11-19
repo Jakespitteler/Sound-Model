@@ -13,7 +13,7 @@ their saved camera instead.
 **Fit local area**, at the map's lower right, frames the group nearest the current map centre.
 Pan, search for an address/place or use coordinates to move near the area you want, then click Fit. Editing, clicking or
 placing an object does not override the area you are currently viewing. The fitted group keeps
-every pair of machines/receivers within 10 km, so a chain of neighbours cannot pull in a
+every pair of machines, receivers and measurement pins within 10 km, so a chain of neighbours cannot pull in a
 separate test area. Objects outside the view still contribute to the sound calculation.
 
 The action is disabled in an empty scene and caps zoom at 16 for a single location.
@@ -234,3 +234,35 @@ next to Save; previously stored draft data is retained when a write fails. Brows
 be cleared, and edits made immediately before a crash may not have passed the debounce or
 the browser's own disk flush. Keep named
 saves and backups for important work.
+
+## Record site measurements
+
+Open **Measurements** below Machine data, select **Add measurement**, and click where the
+meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
+show recorded readings; they are separate from simulated receivers and machine sound power.
+Click a pin to reopen it. Delete uses two clicks in its editor. Correct a recorded location
+using its latitude/longitude fields; moving a machine never moves a measurement.
+
+Leave unknown details blank. Under **Test details (optional)** you can record the tested
+machine, operating activity, duration, meter and conditions. Choose the meter's actual
+reading type: LAeq is an energy average, LAmax is a maximum, and Unknown stays unknown.
+Record separate passes separately. Accepted records survive named Save/Open and optional
+recovery; save the measurement form before saving the scenario.
+
+```mermaid
+flowchart LR
+    Add[Add measurement] --> Place[Click measured location]
+    Place --> Record[Enter pressure and known details]
+    Record --> Save[Save measurement]
+    Save --> Review[Inspect comparison or stated limitation]
+```
+
+For a stationary LAeq test with known duration/activity and a matching linked model setup,
+the card places **Measured total** beside the **Current machinery-only estimate**. All active
+machines contribute to that estimate. The measured total can include background and other
+activity, so these two numbers are not a model-error score. Measurements never adjust powers,
+contours or background automatically. Moving/maximum/unknown tests remain recorded without
+a numerical comparison. Source edits or removal make the comparison unavailable and retain
+the captured model context. There is no calibration or audibility verdict.
+
+![Stationary reading beside the current machinery estimate](images/task-031/measurement-stationary.png)

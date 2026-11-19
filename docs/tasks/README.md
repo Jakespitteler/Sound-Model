@@ -31,7 +31,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 14 | [028 Address search with autocomplete](028-address-search-autocomplete.md) | Implemented; API and browser PRs stacked for review |
 | 15 | [029 Delete objects from the map](029-map-object-deletion.md) | Implemented; ready for review |
 | 16 | [030 Persistent receiver names on the map](030-persistent-receiver-map-names.md) | Implemented; ready for review |
-| 17 | [031 Site measurement pins](031-site-measurement-pins.md) | Ready; record and compare only, no calibration |
+| 17 | [031 Site measurement pins](031-site-measurement-pins.md) | Implemented; backend and editor PRs stacked for review, no calibration |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Implemented; adaptive background boundary ready for review |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend/editor ready for review |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Complete — removed from the POC by owner |

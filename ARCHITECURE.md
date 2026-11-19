@@ -455,3 +455,34 @@ Background updates do not rebuild source editors or lose unrelated drafts. Open 
 details survive pending results. Save/recovery snapshots retain full evidence; old scenes
 restore null profiles. All acoustic data remains local to the backend; Photon receives no bands.
 See the [contract](docs/frequency-band-contract.md) for units, statuses and validation.
+
+
+## Site observations
+
+`measurements.py` validates pressure observations and captured model setup. The scenario-file
+schema defaults old files to `measurements: []`. `ui-measurements.js` owns a distinct violet
+marker layer and compact editor, using a separate `RequestLane` and a bounded per-point cache.
+Observations are absent from ordinary receiver/contour payloads. Saved snapshots and recovery
+retain them, while machine history never moves or deletes historical readings. Measurement
+pins participate in camera fitting only; they are not acoustic sources.
+
+```mermaid
+flowchart LR
+    Form[Measured pressure and known test context] --> Store[Accepted observations]
+    Store --> Files[Save / Open / recovery]
+    Store --> Lane[Separate comparison lane]
+    Setup[Current sources, modes and background] --> Lane
+    Lane --> API[POST /api/measurements/compare]
+    API --> Check{Compatible stationary test?}
+    Check -->|Yes| Direct[Existing direct-point energy calculation]
+    Check -->|No| Reason[Explicit unavailable reason]
+    Direct --> UI[Measured total beside current machinery estimate]
+    Reason --> UI
+```
+
+The comparison uses all active sources. A changed/missing linked setup blocks numerical
+comparison without discarding the observation. Reading/name/note/meter edits reuse cached
+results; context/location changes request affected missing results. Late responses cannot
+replace a newer scene or rebuild active editor fields. Neither measured pressure nor comparison
+results feed source power, contours or calibration. See the
+[measurement contract](docs/measurement-contract.md) for exact fields and eligibility.

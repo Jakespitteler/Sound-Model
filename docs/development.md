@@ -221,3 +221,15 @@ visibility, one scroll area, original list offsets, retained drafts, hidden work
 renderer removal and zero presentation-only state notifications. Existing sidebar/entity,
 frequency, history and foreground fixtures remain relevant. Task 027 records real-app
 screenshots and keyboard/narrow-window checks.
+
+
+## Measurement checks
+
+Run `uv run pytest tests/test_measurements.py tests/test_scenarios.py` for comparison eligibility,
+independent energy references, historical context and persistence. With the repository-root
+static server running, open `/tests/browser/measurements.html`; expect **PASS: 18 checks**
+for pressure/unknowns, observation isolation, separate request lane, unchanged historical
+locations, cached points, drafts, source deletion and legacy restore. Include the sidebar,
+frequency, background, history and foreground fixtures when changing shared state/renderers.
+Task 031 records the full-app Save/Open/recovery, real delayed-response draft preservation,
+request-count checks and inspected open-editor/comparison screenshots.
