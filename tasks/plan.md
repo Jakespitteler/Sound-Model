@@ -19,7 +19,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 - Reuse contours without changing equations, source contributions, geometry or accuracy.
 - Add bounded placement undo/redo; do not build persistent or collaborative history.
 - The owner declined portable JSON export/import. Only source-reference and operating-mode metadata is approved for equipment.
-- A printable summary requires an explicit keep/remove decision before an implementation task.
+- Printing was removed from the POC by the owner (016); no report implementation is planned.
 
 ## Work order and checkpoints
 
@@ -41,7 +41,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Implemented for review; persistent names beside readings, stable marker nodes and compact controls |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Implemented for review; approved 0.1 dB background-relative boundary |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Feasibility review complete; select optional band evidence/baseline slice before implementation |
-| Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Owner may remove printing as scope creep; no report code before decision |
+| Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.
 If a task grows into multiple independent features, split it and get approval for any new idea.
@@ -118,7 +118,7 @@ the adaptive background relevance rule implemented by task 024. An extreme 300 d
 ## Open decisions
 
 - Task 024 policy agreed: one background level and a 0.1 dB increase boundary; implementation ready for review.
-- Task 016: keep or remove the printable summary from the POC?
+- Task 016 is resolved: printing removed from the POC.
 
 Measurements, environmental propagation selection, regulatory criteria and formal reporting
 remain parked. The app's limitations stay visible; a POC is not an inaudibility certificate.

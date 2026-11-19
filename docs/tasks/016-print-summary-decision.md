@@ -1,6 +1,6 @@
 # 016 — Decide whether a printable summary belongs in the POC
 
-Status: Example prepared; awaiting the owner's Keep/Remove decision. No implementation authorised.
+Status: Complete — printing removed from the POC; no implementation.
 Task creation approved by the owner on 17 November 2026. Theme/dependencies: 007 (parked wider theme).
 
 ## Problem
@@ -17,9 +17,9 @@ Do not implement printing, install PDF/report libraries, produce regulatory pass
 
 ## Acceptance
 
-- [ ] The owner records Keep or Remove with a short reason; no decision is inferred from silence.
-- [ ] If Keep, agree the minimal contents and browser print approach before drafting a small implementation task.
-- [ ] If Remove, mark the idea deferred and leave the application unchanged.
+- [x] The owner records Keep or Remove with a short reason; no decision is inferred from silence.
+- Not applicable: Keep was not selected; no implementation task will be created.
+- [x] If Remove, mark the idea deferred and leave the application unchanged.
 
 ## Verification
 
@@ -127,3 +127,11 @@ was added. Read-only checks against the current model reproduced Town **50.58496
 Camp's **negligible** state and the **28.672253 dB(A)** boundary; all five example contour
 levels returned `ok`. Inputs were fictional and no scenario file was saved. `git diff --check` passed; the record contains no local links to validate. No UI screenshot is needed for this text
 mock-up. Author review only; no independent reviewer.
+
+
+## Owner decision — 19 November 2026
+
+**Remove printing from the POC.** The owner explicitly requested removal and continuation
+to the next task. No further reason was supplied. Printing and printable-summary work are
+excluded from the POC; the example above remains historical decision context only. No
+printing feature, PDF dependency or implementation task was added. This completes task 016.

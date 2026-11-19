@@ -32,7 +32,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 16 | [030 Persistent receiver names on the map](030-persistent-receiver-map-names.md) | Implemented; ready for review |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Implemented; adaptive background boundary ready for review |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Feasibility review complete; optional band foundation proposed, owner selection pending |
-| Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Owner decision before any report implementation |
+| Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Complete — removed from the POC by owner |
 
 See the [implementation plan](../../tasks/plan.md) for order, checkpoints and branch bases.
 Tasks have bounded scope, exclusions, acceptance criteria, likely files and concrete checks.
@@ -43,8 +43,8 @@ No new dependencies, services or regulatory criteria are approved by these brief
 - **JSON export/import:** declined as unnecessary for the POC; no new task.
 - **Equipment evidence:** only optional source-reference and operating-mode text fields were
   approved (019–020). No attachments, uncertainty framework or evidence-management platform.
-- **Printable summary:** tentative only; task 016 records the keep/remove decision. No full
-  report, PDF generator or report implementation task is authorised yet.
+- **Printable summary:** removed from the POC by the owner (016). No printing/report
+  implementation task or PDF generator is planned.
 - **Latest additions:** an optional user-set acceptable contour and Ctrl-click repeat
   placement are requested. Replacing distance-only scope needs a defensible policy (024),
   not a claim that the present model can establish audibility.
