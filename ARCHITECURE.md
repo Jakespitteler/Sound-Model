@@ -515,3 +515,15 @@ flowchart LR
     Derived --> Existing[Existing receiver / contour lanes]
     Derived --> Files[Save / Open / recovery with fit evidence]
 ```
+
+
+## First-use workflow
+
+`workflow.js` arranges existing controls into Machines, Measurements and Contours workspaces,
+with listening points shared by the two modeling paths. It does not own acoustic data. Existing
+DOM nodes are moved rather than recreated, retaining delegated handlers and unsaved drafts.
+The measurement journey reveals Setup, Readings or Result, opens invalid fields for correction,
+reuses existing activity labels and shows selected-role/activity feedback. Custom events reveal
+measurement editors from pins/results and hand successful application to the listening-point
+action. `ui-fitting.js` still owns request invalidation and explicit application; all backend
+eligibility and background rules remain authoritative. No missing metadata is inferred.

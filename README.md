@@ -34,7 +34,7 @@ flowchart LR
 ```
 
 1. Select a type under **Machines**, choose **Place machine**, then click the map.
-2. Choose **Place a receiver**, then click a listening location. Its coloured number is
+2. Choose **Add listening point**, then click a listening location. Its coloured number is
    the calculated machine contribution there, excluding background noise.
    Expand its receiver row to give it an optional name, such as Town boundary; the name
    stays visible beside its map reading.
@@ -54,8 +54,8 @@ small red **×** controls for one-click removal; Undo restores the object.
 **Fit local area** frames nearby objects around the object nearest the current map centre,
 keeping every pair within 10 km. It changes only the view. Type an **Address or place**, then choose a suggestion to move the map. Arrow keys and
 Enter also select a result. **Go to coordinates** remains available. **Machine data** holds the equipment catalogue
-and editable estimate notes. On desktop, Save and tabs stay at the top while machine and
-receiver lists scroll separately. Expand an object row to edit it; Machine data and Model info
+and editable estimate notes. On desktop, Machines, Measurements and Contours provide separate workspaces. Machine and
+receiver controls share one natural scroll area. Expand an object row to edit it; Machine data and Model info
 share the advanced-settings space.
 
 ## What the numbers mean
@@ -88,9 +88,9 @@ The eight starter types are project-authored guesses, not verified Charles Hull 
 fleet data. Replace values and notes with traceable equipment sound-power evidence. The
 in-app **Estimate notes** page records their origin.
 
-Open **Measurements** to record a pressure reading at a map location. Test details are
+Choose the **Measurements** workspace to record a pressure reading at a map location. Test details are
 optional; suitable stationary tests show the measured total beside the current machinery
-estimate. Records are saved with the scenario. **Build an estimate from readings** offers a separate
+estimate. Records are saved with the scenario. **Estimate noise from readings →** guides you through Setup, Readings and Result in a separate
 preview/apply workflow for an isolated machine or a combined operating area, with held-back
 check readings. See the
 [measurement workflow](docs/user-guide.md#record-site-measurements).

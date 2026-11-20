@@ -46,6 +46,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Derived emissions | [032](../docs/tasks/032-machine-measurement-calibration.md), [033](../docs/tasks/033-operating-area-estimate.md) | Implemented in stacked fitting/editor slices; preview/apply only, no new propagation physics |
 | Site observations | [031](../docs/tasks/031-site-measurement-pins.md) | Implemented in stacked data/editor PRs; retain unknowns, no automatic calibration |
 | Field preparation | [034](../docs/tasks/034-field-measurement-guide.md) | Implemented; practical isolated/mixed/background/check guidance, documentation only |
+| First-use simplicity | [035](../docs/tasks/035-simple-poc-workflow.md) | Implemented; task-focused workspaces, three-stage estimate and direct correction paths |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.

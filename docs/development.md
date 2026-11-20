@@ -261,3 +261,13 @@ roles, escaped values and original measurement numbering. It complements the exi
 17-check application fixture and numerical tests. The
 [workflow review](measurement-workflow-review.md) records real API/browser interactions,
 a condition-inversion regression check and inspected screenshots. No test dependency added.
+
+
+## POC journey checks
+
+Serve the repository root and open `/tests/browser/simple-workflow.html` (**17 checks**).
+It assembles the real HTML partials, tests workspace visibility, step navigation, recorded
+activity selection, early mismatch guidance, unchanged observations, listening-point handoff
+and marker/editor workspace reveal. Run the existing shared-state/fitting fixtures as well.
+Task 035 records real-app machine/area paths, preview/apply/save, mismatch correction and
+inspected screenshots. Native meter metadata remains unknown until supplied by the user.

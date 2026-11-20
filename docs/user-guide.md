@@ -36,13 +36,13 @@ changes all those instances. Removing a type is prevented while it is in use.
    **Ctrl-click** each position, then click without Control to place the last machine.
    **Escape** or **Cancel placement** exits without adding another. Placement stops at 100 machines.
 2. Drag its icon to move it, or expand its machine row and enter coordinates.
-3. Choose **Place a receiver**, then click the listening location.
+3. Choose **Add listening point**, then click the listening location.
 4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
    to add an optional name or edit coordinates. **Machine contributions** shows individual sources.
 
-On desktop, Save/Open and the workspace tabs stay above the two compact object lists.
+On desktop, Machines, Measurements and Contours separate the main jobs.
 Machine rows show their sound power; receiver rows show their current reading. Expand only
-the row you need. Machine data and Model info open one at a time, retaining their drafts.
+the row you need. Machine data and More settings & model details open one at a time, retaining their drafts.
 
 Opening an editor gives it the full sidebar height and one scroll area. Cards that fit in
 the window are brought fully into view; longer forms scroll naturally. **Close editor**
@@ -240,7 +240,7 @@ saves and backups for important work.
 Before going on site, read the [field-measurement guide](field-measurement-guide.md) for
 what to record, background requirements and choosing separate check points.
 
-Open **Measurements** below Machine data, select **Add measurement**, and click where the
+Choose the **Measurements** workspace, select **Add measurement**, and click where the
 meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
 show recorded readings; they are separate from simulated receivers and machine sound power.
 Click a pin to reopen it. Delete uses two clicks in its editor. Correct a recorded location
@@ -273,34 +273,38 @@ audibility verdict. To derive an estimate deliberately, use the separate workflo
 
 ## Build an estimate from measurements
 
-Under **Measurements → Build an estimate from readings**, choose a workflow:
+In the **Measurements** workspace, choose **Estimate noise from readings →**, then choose a workflow in Setup:
 
 | Choice | Use it when | Result after Apply |
 | --- | --- | --- |
 | Calibrate one machine | Stationary tests isolate that machine at its recorded position | A derived emission for that placed machine; original type and other instances stay unchanged |
 | Combined operating area | Several machines operate together, or individual equipment is unknown | One combined source at your marked centre; individual machines need not be placed |
 
-1. Record LAeq averages, duration and the same activity/site-state label on the readings.
-   The fitting activity field suggests labels already recorded on your measurements.
-   For machine tests, link the machine and set **Other machinery → Selected machine was
-   isolated**. If you cannot isolate it, choose Other machinery contributing or Unsure and
-   use the area workflow. Unknown/max/pass-by observations remain recorded.
-2. Enter a representative background level in the scenario. Confirm it represents these
-   tests on a comparable averaging basis. The app cannot establish this from one number.
-3. For an area, enter a name, **Mark area centre on map**, and enter a radius. The dashed
-   circle marks the operating footprint. Use outside readings to fit/check; interior readings
-   remain useful context. If sources already exist, explicitly confirm their replacement
-   to avoid counting the same machinery twice.
-4. Select at least two **Fit** readings and a separate **Check only** reading at distinct
-   locations. Others stay Don't use. More points at different distances and directions are
-   helpful; similar operating conditions matter more than simply collecting many points.
-5. **Preview estimate** shows corrected pressure, predictions and their differences. Unnamed
-   rows retain their measurement numbers; machine choices match their map numbers. Check
-   readings do not determine the fitted emission. Review disagreements; the app does not
-   invent a pass/fail threshold or declare the model accurate.
-6. **Apply reviewed estimate** changes the emission used by existing receivers and contours.
-   Original observations remain unchanged. Save the scenario to retain the resulting state.
-   **Machine data → Recorded measurement fit** shows the snapshot behind a derived estimate.
+1. Add readings in **Measurements**. Meter reading, activity, type of test and duration are
+   visible in the record editor; machine links and extra notes are optional disclosures.
+   Unknown values can remain unknown, but may prevent using the reading in an estimate.
+2. Choose **Estimate noise from readings →**. **Setup** asks what you are estimating:
+   one machine, or a whole area without machines. For an area, mark its centre and radius.
+   For a machine, choose its map number. Click **Choose readings →**.
+3. In **Readings**, select the recorded activity, enter a representative background and
+   confirm it describes these tests. A unique existing activity is selected automatically;
+   no records are relabeled. Choose **Build estimate** for at least two locations and
+   **Check prediction** for a separate location. Leave other readings out.
+4. Read the activity shown alongside each reading. A mismatch warning explains which
+   selection needs attention. **Edit** opens the original reading. Correct a label only if
+   it was recorded incorrectly; genuinely different operating conditions need separate fits.
+5. Click **Review prediction →**, then **Preview estimate**. The result shows readings with
+   background removed beside estimates. Check readings were not used to build the model.
+   **Edit reading** lets you resolve rejected data directly. **Calculation details** holds
+   sound power and technical diagnostics.
+6. Choose **Use this estimate on the map** when satisfied. The app brings **Check a location**
+   into view. **Add listening point** at town to see its estimated machinery contribution.
+   Save your scenario. Original readings remain intact; recorded fit evidence is under Machine data.
+
+The workspace tabs preserve form drafts. The sidebar uses one scroll area instead of short
+nested lists. **Contours** holds level/contrast settings. **More settings & model details**
+holds the optional global background, cloud notes and background frequency data. Equipment
+frequency evidence remains in Machine data. The sound reference key can be expanded on the map.
 
 Background correction subtracts sound energy, not dB numbers. Readings less than 3 dB above
 background are too sensitive to use for this fit; 3–10 dB separation carries a caution. If a
