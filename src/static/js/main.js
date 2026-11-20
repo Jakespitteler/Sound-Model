@@ -37,7 +37,7 @@ function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed ||
 const say = message => { $('message').textContent = message; };
 const catalogue = new CatalogueUI(store,say), entities = new EntitiesUI(store,say), contours = new ContoursUI(store,say);
 const measurements=new MeasurementUI(store,manager,say);
-new FittingUI(store,manager,say,id=>{document.dispatchEvent(new Event('open-measurement'));measurements.open(id);});
+new FittingUI(store,manager,say,id=>measurements.open(id));
 catalogue.bind(); entities.bind(); contours.bind(); renderSoundGuide(); setupSidebar(); setupWorkflow(store);
 const syncBackgroundSpectrum=bindBackgroundSpectrum(store,say);
 
@@ -70,7 +70,7 @@ function displayGeometry(results) {
   geometryFailed=!!failures.length; updateRetry(); contours.setResults(geometry);
   manager.contourLayer.render(geometry,store.lineSettings()); manager.contourLayer.setPending(false);
   const empty=geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
-  const examples=store.sources.some(s=>store.typeFor(s).provenance==='example');
+  const examples=store.sources.some(s=>store.typeFor(s).provenance==='example' && !store.typeFor(s).fitting);
   $('calculation-status').textContent=store.sources.length ?
     `${store.sources.length} sources · geometry estimate${examples?' · example data':''}${store.sources.some(s=>store.typeFor(s).lwa===300)?' · Extreme input: machinery model unsupported':''}${failures.length?' · '+failures.length+' failed level(s)':''}${empty.length?' · No crossing at '+empty.join(', '):''}` : 'Add a source to begin';
 }

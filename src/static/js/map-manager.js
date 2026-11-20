@@ -281,7 +281,7 @@ export class MapManager {
         const title = document.createElement('strong'); title.textContent = label; title.dataset.objectTitle='';
         popup.append(title);
         if (isSource) {
-          const power = document.createElement('p'); power.textContent = `Sound power: ${machine.lwa.toFixed(1)} dB(A) LwA. This is the machine emission, not what a receiver hears.`;
+          const power = document.createElement('p'); power.textContent = `Sound power: ${machine.lwa.toFixed(1)} dB(A) LwA. Sound at a listening point depends on distance.`;
           const evidence = document.createElement('p'); evidence.textContent = machine.note || 'No source note recorded.';
           popup.append(power,evidence);
         } else {

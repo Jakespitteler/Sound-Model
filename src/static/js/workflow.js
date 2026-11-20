@@ -15,9 +15,11 @@ export function setupWorkflow(store) {
   const panels=[scenario,$('measurement-workspace'),$('contours-panel')];
   /** @param {number} index Active workspace. @param {boolean} focus Move tab focus. */
   function select(index,focus=false) {
+    if(panels[index].hidden && store.mode) store.setMode(null);
     tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
     $('listening-workspace').hidden=index===2;$('equipment-workspace').hidden=index!==0;
-    $('workflow-help').textContent=index===0?'Place machines, then check a listening location.':index===1?'Add meter readings, then use them to estimate the noise.':'Choose which sound levels appear on the map.';
+    $('workflow-help').hidden=index===0;
+    $('workflow-help').textContent=index===1?'Record the sound at each test location. Use readings from the same activity to estimate one machine or a whole site.':'Choose which sound levels appear on the map.';
     if(index===1) measurements.open=true;
     document.querySelector('.sidebar').dispatchEvent(new Event('sidebar-view'));
     if(focus) tabs[index].focus();
@@ -26,11 +28,25 @@ export function setupWorkflow(store) {
     tab.onclick=()=>select(index);
     tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();select(event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3,true);};
   });
-  $('start-estimate').onclick=()=>{document.querySelectorAll('.measurement-card > details').forEach(card=>card.open=false);$('measurement-fit').open=true;$('measurement-fit').scrollIntoView({block:'start'});};
+  $('start-estimate').addEventListener('click',()=>{
+    for(const card of document.querySelectorAll('.measurement-card > details')) card.open=false;
+  });
+  $('source-from-readings').onclick=()=>{
+    select(1);
+    const next=store.measurements.length>=3?$('start-estimate'):$('add-measurement');
+    next.focus();
+    if(next.id==='start-estimate' && !$('measurement-fit').open) next.click();
+  };
   $('sound-key').open=false;
   select(0);
-  document.addEventListener('open-measurement',()=>select(1));
-  document.addEventListener('estimate-applied',()=>{measurements.open=false;$('place-receiver').focus();$('listening-workspace').scrollIntoView({block:'nearest'});});
+  document.addEventListener('open-measurement',()=>{select(1);$('measurement-fit').open=false;});
+  document.addEventListener('estimate-applied',()=>{
+    measurements.open=false;
+    select(0);
+    const target=$('receivers').querySelector('.entity-summary') || $('place-receiver');
+    target.focus();
+    target.scrollIntoView({block:'nearest'});
+  });
   setupFitJourney(store);
 }
 
@@ -50,6 +66,7 @@ function setupFitJourney(store) {
     const invalid=[...steps[active].querySelectorAll('input,select')].find(input=>input.willValidate && !input.checkValidity());
     if(active===1 && !invalid) {const roles=[...$('fit-selections').querySelectorAll('select')].map(select=>select.value);if(roles.filter(role=>role==='fit').length<2 || !roles.includes('check')) {$('fit-selection-help').textContent='Choose at least two readings to Build estimate and one different reading to Check prediction.';$('fit-selections').querySelector('select')?.focus();return;}}
     if(invalid){for(let node=invalid.parentElement;node && node!==form;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;invalid.reportValidity();return;}show(Math.min(2,active+1));
+    if(active===2) form.requestSubmit();
   });
   form.querySelectorAll('[data-fit-go]').forEach(button=>button.onclick=()=>show(Number(button.dataset.fitGo)));
   form.addEventListener('input',summary);form.addEventListener('change',summary);
@@ -68,7 +85,11 @@ function setupFitJourney(store) {
     if(!manual.value && labels.length===1){manual.value=labels[0];manual.dispatchEvent(new Event('input',{bubbles:true}));}
     $('fit-test-choice').value=manual.value;
     $('fit-background-input').value=store.background_db??'';summary();
-    $('measurement-next').textContent=store.measurements.length<3?'Add readings at three or more different locations to build and check an estimate.':'Ready to estimate? Choose readings from the same operating conditions.';
+    const needed=Math.max(0,3-store.measurements.length);
+    $('measurement-next').textContent=needed
+      ? `To build a sound source, record at least ${needed} more reading${needed===1?'':'s'} at different locations.`
+      : 'Choose readings from the same activity to build and check your estimate.';
+    $('source-from-readings').textContent=store.sources.length?'Add an estimate from readings':'Use meter readings instead';
   }
   store.subscribe(reason=>{if(reason==='ui')return;sync();if(reason==='restore')show(0);});
   $('measurement-fit').addEventListener('toggle',()=>{if($('measurement-fit').open){sync();show(0);}});

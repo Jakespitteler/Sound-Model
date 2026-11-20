@@ -17,7 +17,8 @@ export class FittingUI {
     this.form.addEventListener('input',()=>{this.invalidate();this.syncMode();this.drawArea();});
     this.form.addEventListener('change',()=>{this.invalidate();this.syncMode();this.drawArea();});
     this.form.addEventListener('submit',event=>{event.preventDefault();this.calculate();});
-    $('apply-fit').onclick=()=>this.apply();
+    $('apply-fit-form').onsubmit=event=>{event.preventDefault();this.apply();};
+    $('fit-coverage-list').onchange=()=>this.describeCoverage();
     $('mark-fit-area').onclick=()=>store.setMode('fit-area');
     manager.map.on('click',event=> {
       if(store.mode!=='fit-area') return;
@@ -26,27 +27,34 @@ export class FittingUI {
       store.setMode(null);this.invalidate();this.drawArea();$('fit-radius').focus();
     });
     this.root.addEventListener('toggle',()=>{if(!this.root.open && store.mode==='fit-area') store.setMode(null);this.drawArea();});
+    document.querySelector('.sidebar')?.addEventListener('sidebar-view',()=>this.drawArea());
     store.subscribe(reason=> {
       if(reason==='ui') return;
       this.invalidate();
       if(reason==='restore') {this.form.reset();$('fit-selections').replaceChildren();this.root.open=false;}
-      this.choices();this.drawArea();
+      this.choices(reason==='restore');this.drawArea();
     });
-    this.choices();this.syncMode();
+    this.choices(true);
   }
 
   /** Cancel stale previews after any accepted input or scene change. */
   invalidate() {
     this.generation++;this.controller?.abort();this.preview=null;
-    $('fit-result').replaceChildren();$('apply-fit').hidden=true;$('fit-error').textContent='';
-    $('preview-fit').disabled=false;
+    $('fit-result').replaceChildren();$('apply-fit-form').hidden=true;$('fit-coverage-list').replaceChildren();$('apply-fit').hidden=true;$('fit-error').textContent='';
+    $('preview-fit').hidden=false;$('preview-fit').disabled=false;
   }
 
-  /** Refresh keyed options without losing roles selected for other records. */
-  choices() {
+  /** Refresh choices while preserving in-progress edits.
+   * @param {boolean} [fresh] Select an available starting mode for a new scenario. */
+  choices(fresh=false) {
     const select=this.form.elements.source_id,previous=select.value;
     select.innerHTML='<option value="">Choose machine</option>'+this.store.sources.flatMap((s,index)=>this.store.typeFor(s).kind==='area'?[]:[`<option value="${e(s.id)}">${index+1}. ${e(this.store.typeFor(s).name)}</option>`]).join('');
     select.value=previous;
+    const machineMode=this.form.elements.mode.querySelector('option[value=machine]');
+    machineMode.disabled=select.options.length===1;
+    if(machineMode.disabled) this.form.elements.mode.value='area';
+    else if(fresh) this.form.elements.mode.value='machine';
+    if(select.options.length===2 && !select.value) select.selectedIndex=1;
     const holder=$('fit-selections');
     for(const row of [...holder.children]) if(!this.store.measurements.some(m=>m.id===row.dataset.fitReading)) row.remove();
     this.store.measurements.forEach((item,index)=> {
@@ -70,9 +78,7 @@ export class FittingUI {
     $('fit-machine-fields').hidden=area;$('fit-area-fields').hidden=!area;
     $('fit-machine').required=!area;$('fit-machine').disabled=area;
     for(const input of $('fit-area-fields').querySelectorAll('input:not([type=checkbox])')) {input.required=area;input.disabled=!area;}
-    $('replace-fit-sources-label').hidden=!area || !this.store.sources.length;
-    this.form.elements.replace.required=area && !!this.store.sources.length;
-    $('fit-background').textContent=this.store.background_db==null?'Background not set — enter it in the scenario first.':`Background: ${this.store.background_db} dB(A)`;
+    $('fit-background').textContent=this.store.background_db==null?'Enter the background measured without the activity you are estimating.':`Background: ${this.store.background_db} dB(A)`;
   }
 
   /** @return {Object} Detached fitting request, never a receiver/contour payload. */
@@ -104,19 +110,52 @@ export class FittingUI {
       $('fit-error').textContent='';$('fit-result').innerHTML=fitPreview(result,request.measurements);
       $('fit-result').focus({preventScroll:true});$('fit-result').scrollIntoView({block:'start'});
       $('apply-fit').hidden=!result.ready;
-      this.preview={request,result,name:this.form.elements.area_name.value,replace:this.form.elements.replace.checked};
+      this.preview=result.ready?{request,result,name:this.form.elements.area_name.value}:null;
+      if(this.preview) {this.showApply();$('preview-fit').hidden=true;}
     } catch(error) {if(generation===this.generation && error.name!=='AbortError') $('fit-error').textContent=error.message;}
     finally {if(generation===this.generation) $('preview-fit').disabled=false;}
+  }
+
+  /** Ask about overlap only once a whole-area estimate is ready to place. */
+  showApply() {
+    const sources=this.preview.request.mode==='area'?this.store.sources:[];
+    const list=$('fit-coverage-list');
+    sources.forEach((source,index)=>{
+      const label=document.createElement('label');
+      label.textContent=`${index+1}. ${this.store.typeFor(source).name}`;
+      const choice=document.createElement('select');
+      choice.name=source.id;
+      choice.required=true;
+      choice.add(new Option('Choose what happened during the test',''));
+      choice.add(new Option('Included in readings — replace on map','covered'));
+      choice.add(new Option('Separate sound — keep on map','separate'));
+      label.append(choice); list.append(label);
+    });
+    $('fit-coverage').hidden=sources.length===0;
+    $('apply-fit-form').hidden=false;
+    this.describeCoverage();
+  }
+
+  /** Show the placement decision before it changes the live sound sources. */
+  describeCoverage() {
+    const choices=[...$('fit-coverage-list').querySelectorAll('select')];
+    const covered=choices.filter(choice=>choice.value==='covered').length;
+    const separate=choices.filter(choice=>choice.value==='separate').length;
+    const pending=choices.length-covered-separate;
+    $('fit-coverage-summary').textContent=pending
+      ? 'Choose an option for each source before applying.'
+      : `On the map: add one area estimate, replace ${covered} and keep ${separate} separate.`;
   }
 
   /** Apply only the current reviewed preview; machine calibration affects one placed instance. */
   apply() {
     const preview=this.preview;if(!preview) return;
-    if(!this.store.applyMeasurementFit(preview.request,preview.result,preview.name,preview.replace)) {
-      $('fit-error').textContent='Could not apply. Check source selection and the 50-type catalogue limit.';return;
+    const choices=new Map(new FormData($('apply-fit-form')));
+    if(!this.store.applyMeasurementFit(preview.request,preview.result,preview.name,choices)) {
+      $('fit-error').textContent='Could not apply. Review the source choices and available space (100 sources and 50 types per scenario).';return;
     }
     this.root.open=false;document.dispatchEvent(new Event('estimate-applied'));
-    this.say(preview.request.mode==='area'?'Area estimate applied. Receivers and contours now use its combined emission.':'Calibration applied to this machine only. Original catalogue data and readings were retained.');
+    this.say(preview.request.mode==='area'?'Area estimate added. Listening points and contours now include it.':'Calibration applied to this machine only. Original catalogue data and readings were retained.');
   }
 
   /** Render the operating footprint as context only, never as an attenuation barrier. */
@@ -127,7 +166,7 @@ export class FittingUI {
       if(type.kind==='area' && type.fitting) L.circle([source.lat,source.lng],{radius:type.fitting.request.radius_m,color:'#176a63',weight:2,dashArray:'5 5',fillOpacity:.04,interactive:false}).addTo(this.layer);
     }
     const f=this.form.elements;
-    if(!this.root.open || f.mode.value!=='area' || !f.lat.value || !f.lng.value || !f.radius.value) return;
+    if(!this.root.open || this.root.closest('[hidden]') || f.mode.value!=='area' || !f.lat.value || !f.lng.value || !f.radius.value) return;
     if(![f.lat,f.lng,f.radius].every(input=>input.checkValidity())) return;
     L.circle([Number(f.lat.value),Number(f.lng.value)],{radius:Number(f.radius.value),color:'#176a63',weight:2,dashArray:'5 5',fillOpacity:.06,interactive:false}).addTo(this.layer);
   }

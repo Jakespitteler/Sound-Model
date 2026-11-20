@@ -103,11 +103,31 @@ class FitEvidence(StrictModel):
         request: Complete fitting inputs, preserving original observations and roles.
         result: Reviewed numerical preview.
         model: Propagation and fitting method identifier.
+        covered_source_ids: Map sources replaced when applying an area estimate.
     """
 
     request: FitRequest
     result: FitResult
+    covered_source_ids: list[str] | None = Field(default=None, max_length=100)
     model: Literal["full-space-log-fit-v1"] = "full-space-log-fit-v1"
+
+    @model_validator(mode="after")
+    def check_covered_sources(self) -> Self:
+        """Check recorded coverage against the sources present during this area fit.
+
+        Returns:
+            Evidence with an unambiguous set of covered source IDs.
+        """
+        if self.covered_source_ids is None:
+            return self
+        covered = set(self.covered_source_ids)
+        if (
+            self.request.mode != "area"
+            or len(covered) != len(self.covered_source_ids)
+            or not covered.issubset(source.id for source in self.request.sources)
+        ):
+            raise ValueError("Area coverage must identify distinct sources in the fitting snapshot.")
+        return self
 
 
 def separated_pressure(total_db: float, background_db: float) -> float | None:

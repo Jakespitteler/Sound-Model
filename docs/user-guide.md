@@ -38,9 +38,9 @@ changes all those instances. Removing a type is prevented while it is in use.
 2. Drag its icon to move it, or expand its machine row and enter coordinates.
 3. Choose **Add listening point**, then click the listening location.
 4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
-   to add an optional name or edit coordinates. **Machine contributions** shows individual sources.
+   to add an optional name or edit coordinates. **Sound from each source** shows individual sources.
 
-On desktop, Machines, Measurements and Contours separate the main jobs.
+On desktop, Scenario, Meter readings and Contours separate the main jobs.
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and More settings & model details open one at a time, retaining their drafts.
 
@@ -240,7 +240,7 @@ saves and backups for important work.
 Before going on site, read the [field-measurement guide](field-measurement-guide.md) for
 what to record, background requirements and choosing separate check points.
 
-Choose the **Measurements** workspace, select **Add measurement**, and click where the
+Choose the **Meter readings** workspace, select **Add measurement**, and click where the
 meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
 show recorded readings; they are separate from simulated receivers and machine sound power.
 Click a pin to reopen it. Delete uses two clicks in its editor. Correct a recorded location
@@ -273,17 +273,17 @@ audibility verdict. To derive an estimate deliberately, use the separate workflo
 
 ## Build an estimate from measurements
 
-In the **Measurements** workspace, choose **Estimate noise from readings →**, then choose a workflow in Setup:
+In the **Meter readings** workspace, choose **Build a sound source from readings**, then choose a workflow in Setup:
 
 | Choice | Use it when | Result after Apply |
 | --- | --- | --- |
 | Calibrate one machine | Stationary tests isolate that machine at its recorded position | A derived emission for that placed machine; original type and other instances stay unchanged |
 | Combined operating area | Several machines operate together, or individual equipment is unknown | One combined source at your marked centre; individual machines need not be placed |
 
-1. Add readings in **Measurements**. Meter reading, activity, type of test and duration are
+1. Add readings in **Meter readings**. Meter reading, activity, type of test and duration are
    visible in the record editor; machine links and extra notes are optional disclosures.
    Unknown values can remain unknown, but may prevent using the reading in an estimate.
-2. Choose **Estimate noise from readings →**. **Setup** asks what you are estimating:
+2. Choose **Build a sound source from readings**. **Setup** asks what you are estimating:
    one machine, or a whole area without machines. For an area, mark its centre and radius.
    For a machine, choose its map number. Click **Choose readings →**.
 3. In **Readings**, select the recorded activity, enter a representative background and
@@ -293,13 +293,20 @@ In the **Measurements** workspace, choose **Estimate noise from readings →**, 
 4. Read the activity shown alongside each reading. A mismatch warning explains which
    selection needs attention. **Edit** opens the original reading. Correct a label only if
    it was recorded incorrectly; genuinely different operating conditions need separate fits.
-5. Click **Review prediction →**, then **Preview estimate**. The result shows readings with
-   background removed beside estimates. Check readings were not used to build the model.
-   **Edit reading** lets you resolve rejected data directly. **Calculation details** holds
-   sound power and technical diagnostics.
-6. Choose **Use this estimate on the map** when satisfied. The app brings **Check a location**
-   into view. **Add listening point** at town to see its estimated machinery contribution.
-   Save your scenario. Original readings remain intact; recorded fit evidence is under Machine data.
+5. Choose **Preview estimate**. Compare the prediction with your held-back reading after
+   background correction. Expand **All readings & calculation details** for the full comparison.
+6. For a whole area, identify each source already on the map. Choose **Included in readings**
+   for equipment that contributed to the test and **Separate sound** for equipment whose sound
+   was absent or negligible. The preview lists how many placements will be replaced and kept.
+7. Choose **Use this estimate on the map**. Under **What reaches town?**, add a listening
+   point or open one you already placed. **Sound from each source** shows how much each
+   contributes there. Save the scenario to keep the estimate, readings and source choices.
+
+For example, if your readings covered a loader at the pit and a haul truck was parked with
+its engine off, include the loader and keep the truck separate to model it running later.
+The resulting scenario has two sources at their own locations: the pit and the truck.
+If you cannot tell whether the truck contributed, leave the preview unapplied until you
+have a clear basis for that choice.
 
 The workspace tabs preserve form drafts. The sidebar uses one scroll area instead of short
 nested lists. **Contours** holds level/contrast settings. **More settings & model details**

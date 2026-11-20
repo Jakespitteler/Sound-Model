@@ -101,11 +101,13 @@ one position cannot serve as separate fit/check locations. Do not shift pins to 
 
 ## Back in the app
 
-Open **Measurements → Build an estimate from readings**. Choose the matching machine or
+Open **Meter readings → Build a sound source from readings**. Choose the matching machine or
 combined area, enter the operating activity, and confirm a representative background basis.
-Assign the planned Fit and Check-only roles. Preview before applying; review disagreement
+Assign the planned **Build estimate** and **Check prediction** roles. Preview before applying; review disagreement
 at the Check points, not just the tidy appearance of the contour lines. A poor check is a
 reason to examine conditions and the model, not move the point into Fit to make it disappear.
+
+For an area estimate, identify which map sources contributed to the readings before applying it. Keep separately modelled equipment only when its sound was absent or negligible during the test.
 
 Name a receiver **Town** and place it at the relevant location. If you cannot measure there,
 its number remains an extrapolation. Prioritise accessible check positions along the direction

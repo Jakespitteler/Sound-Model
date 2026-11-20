@@ -14,7 +14,8 @@ try {
  check(document.querySelector('#measurement-workspace').hidden,'first use begins with machines');
  check(!document.querySelector('#listening-workspace').hidden,'listening points available on machine path');
  check(document.querySelector('.model-settings').contains(document.querySelector('#background-level')),'optional global background grouped with settings');
- document.querySelector('#measurements-tab').click();
+ document.querySelector('#source-from-readings').click();
+ check(document.activeElement.id==='add-measurement','short path from Scenario focuses collecting missing readings');
  check(!document.querySelector('#measurement-workspace').hidden && document.querySelector('#scenario-panel').hidden,'measurement path is a visible independent workspace');
  check(document.querySelector('.measurement-settings').open,'readings available without finding an advanced disclosure');
  document.querySelector('#start-estimate').click();
@@ -31,7 +32,7 @@ try {
  form.elements.background_confirmed.checked=true;form.querySelectorAll('[data-fit-next]')[1].click();
  check(steps[2].hidden && document.querySelector('#fit-selection-help').textContent.includes('Choose at least two'),'insufficient role selection is explained before leaving the readings step');
  document.dispatchEvent(new Event('estimate-applied'));
- check(document.activeElement.id==='place-receiver','apply hands off to checking a location');
+ check(!document.querySelector('#scenario-panel').hidden && document.activeElement.id==='place-receiver','apply hands off to checking a location');
  document.querySelector('#contours-tab').click();check(document.querySelector('#listening-workspace').hidden,'contour editing hides unrelated workflow');
  document.dispatchEvent(new Event('open-measurement'));check(!document.querySelector('#measurement-workspace').hidden,'marker/editor requests reveal measurement path');
  check(store.sources.length===0 && store.background_db===null,'presentation has not created sources or guessed background');

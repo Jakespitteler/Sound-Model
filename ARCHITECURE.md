@@ -500,7 +500,9 @@ and outside observations, with no individual source required.
 `fit-preview.js` renders escaped read-only results both in previews and saved catalogue evidence.
 Form/scene edits abort and version-invalidate pending responses. Only explicit Apply calls
 `ScenarioStore.applyMeasurementFit`, atomically creating a derived catalogue entry for one
-instance or replacing active sources with one labeled area source after confirmation.
+instance or combining one area source with the placements explicitly marked separate. The
+area replaces placements marked as included in the readings. The saved fit evidence records
+their IDs against its original source snapshot.
 Accepted observations, background and receiver/contour settings remain unchanged. Existing
 prediction/cache lanes then consume ordinary source coordinates and effective LwA. No fitted
 metadata is sent to those lanes. Save/Open/recovery retain the detached fitting evidence;
@@ -512,14 +514,15 @@ flowchart LR
     Preview --> Results[Read-only results]
     Results --> Review[User reviews and applies]
     Review --> Derived[Derived catalogue entry and source]
-    Derived --> Existing[Existing receiver / contour lanes]
+    Derived --> Existing[Combined receiver and contour predictions]
+    Separate[Independent sources kept on the map] --> Existing
     Derived --> Files[Save / Open / recovery with fit evidence]
 ```
 
 
 ## First-use workflow
 
-`workflow.js` arranges existing controls into Machines, Measurements and Contours workspaces,
+`workflow.js` arranges existing controls into Scenario, Meter readings and Contours workspaces,
 with listening points shared by the two modeling paths. It does not own acoustic data. Existing
 DOM nodes are moved rather than recreated, retaining delegated handlers and unsaved drafts.
 The measurement journey reveals Setup, Readings or Result, opens invalid fields for correction,

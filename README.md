@@ -33,7 +33,7 @@ flowchart LR
     Read --> Save[Save scenario]
 ```
 
-1. Select a type under **Machines**, choose **Place machine**, then click the map.
+1. Select a type under **Scenario → What’s making noise?**, choose **Place machine**, then click the map.
 2. Choose **Add listening point**, then click a listening location. Its coloured number is
    the calculated machine contribution there, excluding background noise.
    Expand its receiver row to give it an optional name, such as Town boundary; the name
@@ -54,7 +54,7 @@ small red **×** controls for one-click removal; Undo restores the object.
 **Fit local area** frames nearby objects around the object nearest the current map centre,
 keeping every pair within 10 km. It changes only the view. Type an **Address or place**, then choose a suggestion to move the map. Arrow keys and
 Enter also select a result. **Go to coordinates** remains available. **Machine data** holds the equipment catalogue
-and editable estimate notes. On desktop, Machines, Measurements and Contours provide separate workspaces. Machine and
+and editable estimate notes. On desktop, Scenario, Meter readings and Contours provide separate workspaces. Machine and
 receiver controls share one natural scroll area. Expand an object row to edit it; Machine data and Model info
 share the advanced-settings space.
 
@@ -88,11 +88,12 @@ The eight starter types are project-authored guesses, not verified Charles Hull 
 fleet data. Replace values and notes with traceable equipment sound-power evidence. The
 in-app **Estimate notes** page records their origin.
 
-Choose the **Measurements** workspace to record a pressure reading at a map location. Test details are
+Choose the **Meter readings** workspace to record a pressure reading at a map location. Test details are
 optional; suitable stationary tests show the measured total beside the current machinery
-estimate. Records are saved with the scenario. **Estimate noise from readings →** guides you through Setup, Readings and Result in a separate
+estimate. Records are saved with the scenario. **Build a sound source from readings** guides you through Setup, Readings and Result in a separate
 preview/apply workflow for an isolated machine or a combined operating area, with held-back
-check readings. See the
+check readings. When placing an area estimate, choose which existing sources its readings
+already include. The map combines the area with every source you keep separate. See the
 [measurement workflow](docs/user-guide.md#record-site-measurements).
 
 Planning site readings? Start with the [field-measurement guide](docs/field-measurement-guide.md).

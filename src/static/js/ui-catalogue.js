@@ -6,6 +6,17 @@ import {fitPreview} from './fit-preview.js';
 import {spectrumFields,readSpectrum} from './band-ui.js';
 import { $, escapeHtml } from './utils.js';
 
+/** @param {Object} fit Saved fit evidence. @return {string} Escaped original map labels. */
+function coverageNote(fit) {
+  if(!fit.covered_source_ids) return '';
+  const labels=fit.request.sources.flatMap((source,index)=>{
+    if(!fit.covered_source_ids.includes(source.id)) return [];
+    const type=fit.request.types.find(item=>item.id===source.type_id);
+    return [`${index+1}. ${escapeHtml(type.name)}`];
+  });
+  return `<p>Map sources included when applied: ${labels.join(', ') || 'none'}.</p>`;
+}
+
 /** Machine catalogue forms, selection and cloud metadata controls. */
 export class CatalogueUI {
   /**
@@ -81,14 +92,14 @@ export class CatalogueUI {
           `<option value="measured" ${t.provenance === 'measured' ? 'selected' : ''}>Measured</option></select></label></div>` +
           `<label>Source reference (optional)<input name="source_reference" placeholder="Manufacturer sheet section 4" value="${escapeHtml(t.source_reference || '')}"></label>` +
           `<label>Operating mode (optional)<input name="operating_mode" placeholder="Loaded / travelling" value="${escapeHtml(t.operating_mode || '')}"></label>` +
-          `<label>Source / assumption note<textarea name="note" maxlength="2000" rows="3">${escapeHtml(t.note || "")}</textarea></label><details class="source-bands"><summary>Frequency data (optional)</summary>${spectrumFields(t.spectrum,true)}</details><button class="secondary" type="submit">Save type</button></form></details>${t.fitting?`<details><summary>Recorded measurement fit</summary><p class="hint">At application: ${escapeHtml(t.fitting.request.activity)}, background ${t.fitting.request.background_db} dB(A). ${t.lwa!==t.fitting.result.lwa?'Current sound power has since been edited.':''}</p>${fitPreview(t.fitting.result,t.fitting.request.measurements)}</details>`:''}</div>`,
+          `<label>Source / assumption note<textarea name="note" maxlength="2000" rows="3">${escapeHtml(t.note || "")}</textarea></label><details class="source-bands"><summary>Frequency data (optional)</summary>${spectrumFields(t.spectrum,true)}</details><button class="secondary" type="submit">Save type</button></form></details>${t.fitting?`<details><summary>Recorded measurement fit</summary><p class="hint">At application: ${escapeHtml(t.fitting.request.activity)}, background ${t.fitting.request.background_db} dB(A). ${t.lwa!==t.fitting.result.lwa?'Current sound power has since been edited.':''}</p>${coverageNote(t.fitting)}${fitPreview(t.fitting.result,t.fitting.request.measurements,false)}</details>`:''}</div>`,
       )
       .join('');
 
     $('catalogue-count').textContent = `${this.store.types.length} types`;
     const old = $('place-type').value;
     $('place-type').innerHTML = this.store.types.length
-      ? this.store.types.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')
+      ? this.store.types.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}${t.kind==='area'?' · area estimate':t.fitting?' · calibrated':''}</option>`).join('')
       : '<option value="">Add a machine type first</option>';
     if (this.store.types.some((t) => t.id === old)) $('place-type').value = old;
     $('place-source').disabled = !this.store.types.length;

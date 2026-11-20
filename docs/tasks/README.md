@@ -36,6 +36,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 19 | [033 Combined operating-area estimate](033-operating-area-estimate.md) | Implemented; one equivalent source, no individual machines required |
 | 20 | [034 Field-measurement guide](034-field-measurement-guide.md) | Implemented; practical collection guidance, no app changes |
 | 21 | [035 Simple POC workflow](035-simple-poc-workflow.md) | Implemented; visible input paths and guided estimates |
+| 22 | [036 Use machines and estimates together](036-combined-scenario-sources.md) | Implemented for review above 035 |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Implemented; adaptive background boundary ready for review |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend/editor ready for review |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Complete — removed from the POC by owner |

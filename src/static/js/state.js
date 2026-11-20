@@ -227,21 +227,27 @@ export class ScenarioStore {
 
   /** Apply a reviewed estimate atomically, retaining originals in its evidence snapshot.
    * @param {Object} request Fitting inputs. @param {Object} result Successful preview.
-   * @param {string} name Area name. @param {boolean} replaceSources Explicit area replacement.
+   * @param {string} name Area name. @param {Map<string,string>} [choices] Each placed source marked covered or separate.
    * @return {boolean} Whether the reviewed change was accepted. */
-  applyMeasurementFit(request,result,name,replaceSources=false) {
+  applyMeasurementFit(request,result,name,choices=new Map()) {
     if(!result.ready || !Number.isFinite(result.lwa) || result.lwa<0 || result.lwa>300 || this.types.length>=50) return false;
     const source=this.sources.find(s=>s.id===request.source_id),area=request.mode==='area';
-    if(!area && !source || area && (this.sources.length && !replaceSources || !name.trim())) return false;
+    if(!area && !source) return false;
+    const covered=area?this.sources.filter(item=>choices.get(item.id)==='covered'):[];
+    if(area && (!name.trim() || this.sources.length-covered.length>=100 ||
+      this.sources.some(item=>!['covered','separate'].includes(choices.get(item.id))))) return false;
     const original=area ? {} : this.typeFor(source),id=uuid();
     const type={...structuredClone(original),id,name:area ? name.trim() : original.name,lwa:result.lwa,
       provenance:'example',spectrum:null,kind:area ? 'area' : original.kind || 'generic',
       operating_mode:request.activity,source_reference:'Measurement-derived geometric estimate',
       note:`Measurement-derived estimate for ${request.activity}. ${request.fit_ids.length} fit readings; ${request.check_ids.length} independent check readings. Background ${request.background_db} dB(A). Full-space point-source fit; not validated sound power.`,
       fitting:{request:structuredClone(request),result:structuredClone(result),model:'full-space-log-fit-v1'}};
+    if(area) {
+      type.fitting.covered_source_ids=covered.map(item=>item.id);
+      this.sources=this.sources.filter(item=>choices.get(item.id)==='separate');
+      this.sources.push({id:uuid(),type_id:id,...result.centre});
+    } else source.type_id=id;
     this.types.push(type);
-    if(area) this.sources=[{id:uuid(),type_id:id,...result.centre}];
-    else source.type_id=id;
     this.clearHistory();this.setMode(null);this.notify('catalogue');return true;
   }
 

@@ -51,6 +51,17 @@ try {
  store.measurements[0].activity='<img src=x onerror=alert(1)>';store.notify('measurements');
  check(!document.querySelector('#fit-activities img') && [...fields.activity.list.options].some(o=>o.value.includes('<img')),'activity suggestions display literal text');
  check([...document.querySelectorAll('#fit-selections select')].map(s=>s.value).join(',')==='fit,fit,check','refreshing suggestions retains selected roles');
+ set('mode','area');set('lat',0);set('lng',0);set('radius',50);
+ await ui.calculate();
+ const coverage=document.querySelector('#fit-coverage-list'),apply=document.querySelector('#apply-fit-form');
+ check(!document.querySelector('#fit-coverage').hidden && coverage.children.length===2,'area result asks about every current source including earlier areas');
+ check(!apply.checkValidity(),'an unclassified source blocks placement');
+ const previewRequests=requests;
+ for(const select of coverage.querySelectorAll('select')) {select.value='separate';select.dispatchEvent(new Event('change',{bubbles:true}));}
+ check(apply.checkValidity() && document.querySelector('#fit-coverage-summary').textContent.includes('keep 2'),'all-separate scenario previews the resulting source selection');
+ check(requests===previewRequests && ui.preview,'coverage choices do not recompute power or discard the reviewed estimate');
+ store.removeSource('area-first');
+ check(apply.hidden && !ui.preview,'source change cancels placement of a stale estimate');
  await settle();manager.map.remove();
  document.querySelector('#result').textContent=`PASS: ${count} checks`;
 } catch(error) {document.querySelector('#result').textContent='FAIL: '+error.stack;throw error;}

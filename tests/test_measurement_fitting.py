@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from src.main import app
-from src.measurement_fitting import FitRequest, fit_measurements, separated_pressure
+from src.measurement_fitting import FitEvidence, FitRequest, fit_measurements, separated_pressure
 from src.measurements import Measurement, SourceContext
 from src.scenario_files import ScenarioDocument
 from src.types import MachineType, Source
@@ -189,6 +189,19 @@ def test_log_fit_and_recorded_evidence() -> None:
     assert restored.types[0].fitting is not None
     assert restored.types[0].fitting.request.measurements == request.measurements
     assert restored.types[0].fitting.result == result
+
+
+def test_area_coverage_describes_the_original_placements() -> None:
+    """Round-trip selected sources and keep older evidence readable without inventing coverage."""
+    request = fitting("area")
+    data = {"request": request, "result": fit_measurements(request)}
+    assert FitEvidence.model_validate(data).covered_source_ids is None
+    for ids in ([], ["s"]):
+        evidence = FitEvidence.model_validate({**data, "covered_source_ids": ids})
+        assert FitEvidence.model_validate_json(evidence.model_dump_json()).covered_source_ids == ids
+    for invalid in (["missing"], ["s", "s"]):
+        with pytest.raises(ValidationError):
+            FitEvidence.model_validate({**data, "covered_source_ids": invalid})
 
 
 def test_api_returns_preview_without_mutating_scene() -> None:

@@ -70,19 +70,34 @@ export class EntitiesUI {
   /** Render placed machine cards with numeric coordinate editing. */
   renderSources() {
     $('source-count').textContent = String(this.store.sources.length);
-    const title=$('source-count').previousElementSibling;
-    if(title?.tagName==='H2') title.textContent=this.store.sources.some(s=>this.store.typeFor(s).kind==='area')?'Noise sources':'Machines';
     $('sources').innerHTML = this.store.sources.length
       ? this.store.sources
           .map(
-            (s, i) =>
-              `<div class="item-card">${this.positionForm(s, 'sources',
-                `<button class="danger entity-remove" type="button" data-remove-source="${s.id}" aria-label="Remove ${this.store.typeFor(s).kind==='area'?'area estimate':'machine'} ${i + 1}">Remove ${this.store.typeFor(s).kind==='area'?'area estimate':'machine'}</button>`,
-                `<strong>${i + 1}. ${escapeHtml(this.store.typeFor(s).name)}</strong>` +
-                `<span class="source-power">${this.store.typeFor(s).lwa.toFixed(1)} <small>dB(A) LwA</small></span>`)}</div>`,
+            (s, i) => {
+              const type=this.store.typeFor(s);
+              const sourceLabel=type.kind==='area'?'area estimate':'machine';
+              const origin=type.kind==='area'?'Area estimate':type.fitting?'From meter readings':'';
+              const edited=type.fitting && type.lwa!==type.fitting.result.lwa?' · power edited':'';
+              return `<div class="item-card">${this.positionForm(s, 'sources',
+                `<button class="danger entity-remove" type="button" data-remove-source="${s.id}" aria-label="Remove ${sourceLabel} ${i + 1}">Remove ${sourceLabel}</button>`,
+                `<strong>${i + 1}. ${escapeHtml(type.name)}${origin?`<small class="source-origin">${origin}${edited}</small>`:''}</strong>` +
+                `<span class="source-power">${type.lwa.toFixed(1)} <small>dB(A) LwA</small></span>`)}</div>`;
+            }
           )
           .join('')
-      : '<p class="empty">No machines placed yet. Choose a type, then click the map.</p>';
+      : '';
+  }
+
+  /** @param {Object[]} contributions Acoustic pressure at this listening point from each source.
+   * @return {string} Loudest sources first, with a disclosure for longer lists. */
+  contributionList(contributions) {
+    if(!contributions?.length) return '';
+    const rows=[...contributions].sort((a,b)=>b.level_db-a.level_db).map(item=>{
+      const index=this.store.sources.findIndex(source=>source.id===item.id);
+      return `<li><span>${index+1}. ${escapeHtml(item.name)} <small>${Math.round(item.distance_m)} m</small></span><strong>${item.level_db.toFixed(1)} dB(A)</strong></li>`;
+    });
+    const more=rows.length>3?`<details><summary>Show ${rows.length-3} more</summary><ul>${rows.slice(3).join('')}</ul></details>`:'';
+    return `<div class="receiver-contributions"><h3>Sound from each source</h3><ul>${rows.slice(0,3).join('')}</ul>${more}</div>`;
   }
 
   /** Update headings and accessible controls without replacing the active editor. */
@@ -116,15 +131,12 @@ export class EntitiesUI {
             return (
               `<div class="item-card" data-receiver-card="${escapeHtml(r.id)}">` +
               `${this.positionForm(r, 'receivers',
+                this.contributionList(result?.contributions) +
                 `<button class="danger entity-remove" type="button" data-remove-receiver="${r.id}" aria-label="Remove ${escapeHtml(receiverLabel(r,i))}">Remove receiver</button>` +
                 `${result?.status === 'negligible' ? '<p>Machinery adds less than 0.1 dB to the scenario background.</p>' : ''}` +
                 `${result?.near_field ? '<p>Within 1 m: numerical limit applies.</p>' : ''}` +
                 `<label>Name (optional)<input type="text" data-receiver-name="${escapeHtml(r.id)}" aria-label="Name for receiver ${i+1}" placeholder="e.g. Town boundary" value="${escapeHtml(r.name || '')}"></label>` +
-                bandComparison(bandResults[r.id]) +
-                (result?.contributions.length
-                  ? `<details class="receiver-contributions"><summary>Machine contributions</summary><ul class="contributions">${result.contributions.map(c =>
-                    `<li>${this.store.sources.findIndex(source=>source.id===c.id)+1}. ${escapeHtml(c.name)} · ${c.distance_m.toFixed(0)} m · ${c.level_db.toFixed(1)} dB(A)${c.provenance === 'example' ? ' · estimate' : ''}</li>`
-                  ).join('')}</ul></details>` : ''),
+                bandComparison(bandResults[r.id]),
                 `<strong data-receiver-title>${escapeHtml(receiverLabel(r,i))}</strong>` +
                 `<span class="result${result?.status==='negligible' ? ' is-negligible' : ''}" style="color:${soundColor(result?.level_db ?? null)}">${!result ? 'Calculating…' : result.status === 'negligible' ? 'Negligible overall increase' : formatDb(result.level_db)}</span>` +
                 `${result?.near_field || result?.includes_distant_sources ? `<span class="entity-warning">${[result.near_field ? 'Within 1 m of a machine' : '',result.includes_distant_sources ? 'Includes distant sources' : ''].filter(Boolean).join(' · ')}</span>` : ''}`
@@ -132,7 +144,7 @@ export class EntitiesUI {
             );
           })
           .join('')
-      : '<p class="empty">Receiver readings appear here.</p>';
+      : '';
     for (const card of $('receivers').querySelectorAll('[data-receiver-card]')) {
       if (open.has(card.dataset.receiverCard)) card.querySelector('details').open=true;
       if (this.bandOpen.has(card.dataset.receiverCard) && card.querySelector('.receiver-bands')) card.querySelector('.receiver-bands').open=true;
