@@ -21,7 +21,7 @@ conditions comparable.
 
 Plan several accessible positions at different distances and directions, including towards
 town where practical. Use approved site access; do not approach operating equipment just to
-reach a preferred distance. Reserve some positions as **Check only before inspecting the fit**.
+reach a preferred distance. Reserve some positions as **Check prediction** before inspecting the fit.
 The app needs at least two Fit locations and one separate Check location; that is a software
 minimum, not evidence that three points are sufficient.
 
@@ -86,11 +86,11 @@ silently treating the event as machinery noise.
 
 | Record | Where it goes in the app |
 | --- | --- |
-| Position and optional useful name | Measurement pin; correct coordinates under Test details |
-| Original total pressure and actual meter metric | **Measured pressure**, **Meter reading type** |
-| Actual duration and stationary/moving/brief test | **Duration**, **Test** |
-| Machine link, if known; isolation status | **Machine**, **Other machinery** |
-| Consistent activity/site-state label | **Operating activity** |
+| Position and optional useful name | Drag the measurement pin or edit coordinates under **Notes, meter & coordinates** |
+| Original total pressure and actual meter metric | **Meter reading · dB**, **Meter reading type** |
+| Actual duration and stationary/moving/brief test | **Duration · seconds**, **Test** |
+| Machine link, if known; isolation status | **Link to a machine (optional)** |
+| Consistent activity/site-state label | **What was happening? (activity)**. Choose a saved label when the operating condition matches. |
 | Meter identification/settings | **Meter details**; unknown details can stay blank |
 | Date/time, microphone height, weather/wind, other activity, background basis and intended Fit/Check role | **Conditions / notes**; these are notes, not propagation corrections |
 

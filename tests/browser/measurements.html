@@ -33,9 +33,12 @@ try {
  const before=calls.length;store.updateMeasurement(id,{level_db:-5,note:'Observed only',name:'<img src=x>'});await settle();
  check(calls.length===before && store.types[0].lwa===power,'reading/notes change neither prediction requests nor machine power');
  check(!document.querySelector('.measurement-card img') && document.querySelector('.entity-summary strong').textContent==='<img src=x>','measurement names stay literal');
+ store.updateMeasurement(id,{activity:'Steady <loading>'});
  store.setMode('measurement');map.fire('click',{latlng:L.latLng(0,.02)});await settle();
  check(ui.draft && store.measurements.length===1 && store.receivers.length===0,'placement creates a reading draft, not a simulated receiver');
  const form=document.querySelector('[data-reading=draft]');check(form.querySelector('[name=level_db]').value==='' && form.querySelector('[name=duration_s]').value==='','required pressure and unknown duration start blank');
+ const activity=form.elements.activity;
+ check(activity.value==='' && activity.list.options[0].value==='Steady <loading>','new reading offers the saved activity without preselecting it');
  form.querySelector('[name=level_db]').value='-8';
  ui.layer.getLayers().at(-1).setLatLng([0.01,0.03]).fire('dragend');
  check(ui.draft.lat===0.01 && form.elements.lat.value==='0.01' && form.elements.level_db.value==='-8','moving a draft retains its unsaved reading');

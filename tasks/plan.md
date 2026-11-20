@@ -50,6 +50,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Combined scenario | [036](../docs/tasks/036-combined-scenario-sources.md) | Apply a fixed area, place additional machines and check the total at town |
 | Repeat calibration | [037](../docs/tasks/037-repeat-machine-calibration.md) | Reuse earlier readings for the same placement, location and operating activity |
 | Calibration preview | [038](../docs/tasks/038-calibration-power-preview.md) | Compare the machine’s current and proposed sound power before applying |
+| Field-workflow rehearsal | [039](../docs/tasks/039-field-workflow-rehearsal.md) | Enter readings, fit an area, check a listening point and reopen the save |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.

@@ -12,6 +12,9 @@ export class MeasurementUI {
     this.layer=L.layerGroup().addTo(manager.map);this.lane=new RequestLane();
     this.cache=new Map();this.results={};this.signature=null;
     this.settings=document.querySelector('.measurement-settings');
+    this.activities=document.createElement('datalist');
+    this.activities.id='measurement-activities';
+    this.settings.append(this.activities);
     $('add-measurement').onclick=()=>store.setMode('measurement');
     $('retry-measurements').onclick=()=>{this.signature=null;this.refresh();};
     manager.map.on('click',event=> {
@@ -65,7 +68,7 @@ export class MeasurementUI {
       <label>Name (optional)<input name="name" maxlength="80" value="${e(item.name || '')}"></label>
       <div class="two-columns"><label>Meter reading · dB<input name="level_db" type="number" step="any" value="${item.level_db ?? ''}" required></label>
       <label>Meter reading type<select name="metric">${options([['unknown','Unknown'],['LAeq','LAeq — average'],['LAmax','LAmax — maximum']],item.metric || 'unknown')}</select></label></div>
-      <label>What was happening? (activity)<input name="activity" maxlength="200" value="${e(item.activity || '')}" placeholder="e.g. steady idle or loaded pass"></label>
+      <label>What was happening? (activity)<input name="activity" maxlength="200" list="measurement-activities" value="${e(item.activity || '')}" placeholder="e.g. steady idle or loaded pass"></label>
       <div class="two-columns"><label>Test<select name="test_kind">${options([['unknown','Unknown'],['stationary','Stationary / steady'],['moving','Moving / pass-by'],['startup','Startup / brief event']],item.test_kind || 'unknown')}</select></label>
       <label>Duration · seconds<input name="duration_s" type="number" min="0.000001" step="any" value="${item.duration_s ?? ''}" placeholder="Unknown"></label></div>
       <details><summary>Link to a machine (optional)</summary>
@@ -106,6 +109,8 @@ export class MeasurementUI {
       card.innerHTML=this.card(item,index);card.dataset.record=signature;
       if(open) card.querySelector('details').open=true;
     });
+    const activities=new Set(this.store.measurements.map(item=>item.activity).filter(Boolean));
+    this.activities.replaceChildren(...[...activities].map(activity=>new Option(activity,activity)));
     $('measurement-count').textContent=String(this.store.measurements.length);
     $('add-measurement').disabled=!!this.draft || this.store.measurements.length>=100;
     this.renderMarkers();this.updateResults();
