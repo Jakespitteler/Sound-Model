@@ -294,7 +294,8 @@ In the **Meter readings** workspace, choose **Build a sound source from readings
    it was recorded incorrectly; genuinely different operating conditions need separate fits.
 5. Choose **Preview estimate**. Compare the prediction with your held-back reading after
    background correction. Expand **All readings & calculation details** for the full comparison.
-6. Apply the preview. For a whole area, the button shows how many placed sources it will
+6. For a machine calibration, compare **Current** and **Proposed** sound power before
+   applying the preview. For a whole area, the button shows how many placed sources it will
    replace. The result is one area source fixed at the chosen centre. Meter readings,
    listening points and catalogue entries are retained.
 7. Under **Scenario**, use **Place machine** to add equipment that will run in addition

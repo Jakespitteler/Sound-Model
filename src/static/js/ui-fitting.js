@@ -131,7 +131,10 @@ export class FittingUI {
     try {
       const result=await post('/api/measurements/fit',request,this.controller.signal);
       if(generation!==this.generation) return;
-      $('fit-error').textContent='';$('fit-result').innerHTML=fitPreview(result,request.measurements);
+      const source=request.sources.find(item=>item.id===request.source_id);
+      const currentPower=request.types.find(type=>type.id===source?.type_id)?.lwa;
+      $('fit-error').textContent='';
+      $('fit-result').innerHTML=fitPreview(result,request.measurements,{currentPower});
       $('fit-result').focus({preventScroll:true});$('fit-result').scrollIntoView({block:'start'});
       $('apply-fit').hidden=!result.ready;
       this.preview=result.ready?{request,result,name:this.form.elements.area_name.value}:null;

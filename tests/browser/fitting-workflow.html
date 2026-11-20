@@ -44,6 +44,12 @@ try {
  set('activity','Steady idle');await ui.calculate();check(requests===0 && document.querySelector('#fit-error').textContent.includes('two readings'),'insufficient fit/check selection is actionable locally');
  [...document.querySelectorAll('#fit-selections select')].forEach((select,index)=>select.value=index<2?'fit':'check');
  await ui.calculate();check(requests===1 && !document.querySelector('#apply-fit').hidden,'valid existing workflow still produces applicable preview');
+ const powerValues=()=>[...document.querySelectorAll('.fit-power dd')].map(value=>value.textContent);
+ check(powerValues().join('|')===`${type.lwa.toFixed(1)} dB(A) LwA|110.0 dB(A) LwA`,'machine preview compares sound power before and after');
+ store.updateMachineType(type.id,{lwa:0});
+ check(powerValues().length===0,'editing current power clears the old comparison');
+ await ui.calculate();
+ check(powerValues()[0]==='0.0 dB(A) LwA','preview uses the latest power, including zero');
  set('activity','Changed');check(document.querySelector('#apply-fit').hidden && ui.preview===null,'activity correction cannot leave stale Apply available');
  const html=fitPreview({ready:false,reason:'Review',rows:[{id:'m1',role:'fit',reason:'Unknown'},{id:'m3',role:'check',reason:'Unknown'}]},store.measurements);
  const preview=document.createElement('div');preview.innerHTML=html;
@@ -53,6 +59,7 @@ try {
  check([...document.querySelectorAll('#fit-selections select')].map(s=>s.value).join(',')==='fit,fit,check','refreshing suggestions retains selected roles');
  set('mode','area');set('lat',0);set('lng',0);set('radius',50);
  await ui.calculate();
+ check(powerValues().length===0,'area preview has no current machine to compare');
  const apply=document.querySelector('#apply-fit-form');
  check(document.querySelector('#apply-fit').textContent==='Replace 2 sources with this area estimate','apply action explains replacement including the earlier area');
  check(!apply.querySelector('select') && store.sources.length===2,'preview offers one deliberate action and preserves existing map');
