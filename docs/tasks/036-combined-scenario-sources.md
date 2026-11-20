@@ -1,28 +1,22 @@
 # 036 — Use machines and estimates together
 
-A first-time user can build a scenario from machines, field readings or both, then check
-the combined sound at town. The Scenario tab offers both starting points. Applying an
-estimate brings the user back to their listening points.
+Start with machines, field readings or both. Previewing an estimate leaves the current
+map intact. On Apply, the selected workflow determines which sources contribute.
 
 | Field situation | What happens on the map |
 | --- | --- |
-| The meter picked up the loader and crusher together | A single area estimate replaces their selected placements |
-| A separate truck was absent during that test | Keep the truck to predict it operating alongside the area |
-| Tests isolated one specific machine | Apply its calibrated power to that placement |
+| A whole area was measured | Replace every placed source with one area estimate at the chosen centre |
+| Another truck will run alongside that activity | Place the truck afterward to see the combined sound at town |
+| A test isolated one machine | Calibrate only that placement. The machine can still be moved for a what-if scenario |
 
-The user classifies each existing source before applying an area. The app cannot infer
-coverage from distance or identify individual machines in a mixed recording. An incomplete
-choice leaves the scenario untouched. The saved estimate retains the original inputs,
-check readings and recorded source selections.
+The area has a fixed position and cannot be placed again from the catalogue. Build a new
+estimate to change the centre. Drag a meter pin to correct its location, including while
+entering a new reading. Saved readings, listening points and catalogue entries survive an
+area replacement. Applied fits retain their evidence when a pin moves.
 
-Verification covers mixed, all, none and incomplete coverage, original evidence, save/open
-and independent-source summation at a town receiver. The screenshots use fictional data.
+[Area replacement preview](../images/task-036/coverage.png) · [Result with an additional truck](../images/task-036/scenario.png)
 
-[Source choices](../images/task-036/coverage.png) · [Combined listening result](../images/task-036/scenario.png)
-
-Verified with 215 Python tests, 15 Chromium fixtures, Ruff and Pyright. In the end-to-end
-test a separate truck contributed 34.68 dB(A) at a town point and the loading area
-contributed 33.23 dB(A). The combined 37.02 dB(A) matched an independently computed
-energy sum. Browser checks exercised machine-only, area-only and mixed scenarios,
-incomplete coverage, and saving and reopening the mixed result. Screenshots were inspected
-on desktop and at 390 px. Imagery was unavailable during capture.
+Verified with 215 Python tests and 15 Chromium fixtures. The end-to-end check applied an
+area over two sources, placed a separate truck, dragged a recorded pin and reopened the
+saved scenario. The independent energy sum matched the receiver prediction. Screenshots
+use synthetic readings and the fallback map.

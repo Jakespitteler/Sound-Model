@@ -22,7 +22,7 @@ try {
  const context=ui.context(sourceId);
  const id=store.addMeasurement({level_db:0,lat:0,lng:.01,source_id:sourceId,source_context:context});await settle();
  check(store.measurements[0].level_db===0 && store.measurements[0].metric==='unknown' && store.measurements[0].meter==='','zero pressure retained; unknown meter/metric not invented');
- check(!ui.layer.getLayers()[0].options.draggable,'observation pins cannot be dragged into hypothetical positions');
+ check(ui.layer.getLayers()[0].options.draggable,'observation locations can be corrected by dragging');
  check(calls.length===1 && calls[0].measurements.length===1,'new point uses the separate bounded comparison lane');
  store.updateSource(sourceId,{lat:.1});await settle();
  check(store.measurements[0].lat===0 && store.measurements[0].source_context.lat===0,'source movement leaves the observation and recorded setup fixed');
@@ -36,9 +36,16 @@ try {
  store.setMode('measurement');map.fire('click',{latlng:L.latLng(0,.02)});await settle();
  check(ui.draft && store.measurements.length===1 && store.receivers.length===0,'placement creates a reading draft, not a simulated receiver');
  const form=document.querySelector('[data-reading=draft]');check(form.querySelector('[name=level_db]').value==='' && form.querySelector('[name=duration_s]').value==='','required pressure and unknown duration start blank');
- form.querySelector('[name=level_db]').value='-8';form.requestSubmit();await settle();
+ form.querySelector('[name=level_db]').value='-8';
+ ui.layer.getLayers().at(-1).setLatLng([0.01,0.03]).fire('dragend');
+ check(ui.draft.lat===0.01 && form.elements.lat.value==='0.01' && form.elements.level_db.value==='-8','moving a draft retains its unsaved reading');
+ form.requestSubmit();await settle();
  check(store.measurements.length===2 && calls.at(-1).measurements.length===1,'only the new uncached point is requested');
  check(document.querySelectorAll('[data-measurement-pin]').length===2,'fixed observation markers remain distinct');
+ const savedForm=document.querySelector('[data-reading="'+id+'"]');savedForm.elements.note.value='Unsaved note';
+ const beforeMove=calls.length;ui.layer.getLayers()[0].setLatLng([.02,.04]).fire('dragend');await settle();
+ check(calls.length===beforeMove+1 && calls.at(-1).measurements.length===1 && store.measurements[0].lat===.02 && store.measurements[0].level_db===-5,'moving a recorded pin refreshes only its location comparison');
+ check(savedForm.isConnected && savedForm.elements.note.value==='Unsaved note' && savedForm.elements.lat.value==='0.02','pin correction preserves edits in the open form');
  const record=structuredClone(store.measurements),doc={...store.toPayload(),types:store.types,levels:[40],measurements:record};
  store.restore(doc);await settle();check(JSON.stringify(store.measurements)===JSON.stringify(record),'restore preserves complete and partial observation data');
  const button=document.querySelectorAll('[data-delete-reading]')[1];button.click();check(store.measurements.length===2,'first delete click only confirms intent');

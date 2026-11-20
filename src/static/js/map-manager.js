@@ -260,7 +260,7 @@ export class MapManager {
         });
         const marker = L.marker([item.lat, item.lng], {
           icon,
-          draggable: true,
+          draggable: machine?.kind!=='area',
           alt: label,
           riseOnHover: true,
         }).addTo(this.markers);

@@ -19,7 +19,7 @@ export function setupWorkflow(store) {
     tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
     $('listening-workspace').hidden=index===2;$('equipment-workspace').hidden=index!==0;
     $('workflow-help').hidden=index===0;
-    $('workflow-help').textContent=index===1?'Record the sound at each test location. Use readings from the same activity to estimate one machine or a whole site.':'Choose which sound levels appear on the map.';
+    $('workflow-help').textContent=index===1?'Record the sound at each test location. Drag a meter pin to correct its location.':'Choose which sound levels appear on the map.';
     if(index===1) measurements.open=true;
     document.querySelector('.sidebar').dispatchEvent(new Event('sidebar-view'));
     if(focus) tabs[index].focus();

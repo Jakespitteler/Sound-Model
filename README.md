@@ -92,8 +92,8 @@ Choose the **Meter readings** workspace to record a pressure reading at a map lo
 optional; suitable stationary tests show the measured total beside the current machinery
 estimate. Records are saved with the scenario. **Build a sound source from readings** guides you through Setup, Readings and Result in a separate
 preview/apply workflow for an isolated machine or a combined operating area, with held-back
-check readings. When placing an area estimate, choose which existing sources its readings
-already include. The map combines the area with every source you keep separate. See the
+check readings. Applying a whole-area estimate replaces all placed sources with one fixed area.
+Place any separate machines afterward to see their combined sound. Drag a meter pin to correct its recorded location. See the
 [measurement workflow](docs/user-guide.md#record-site-measurements).
 
 Planning site readings? Start with the [field-measurement guide](docs/field-measurement-guide.md).

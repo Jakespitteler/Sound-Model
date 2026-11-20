@@ -464,7 +464,7 @@ schema defaults old files to `measurements: []`. `ui-measurements.js` owns a dis
 marker layer and compact editor, using a separate `RequestLane` and a bounded per-point cache.
 Observations are absent from ordinary receiver/contour payloads. Saved snapshots and recovery
 retain them, while machine history never moves or deletes historical readings. Measurement
-pins participate in camera fitting only; they are not acoustic sources.
+pins can be dragged to correct coordinates. A drop updates the observation comparison and invalidates a pending fit. Applied estimates retain their historical evidence. Pins also participate in camera fitting.
 
 ```mermaid
 flowchart LR
@@ -500,9 +500,8 @@ and outside observations, with no individual source required.
 `fit-preview.js` renders escaped read-only results both in previews and saved catalogue evidence.
 Form/scene edits abort and version-invalidate pending responses. Only explicit Apply calls
 `ScenarioStore.applyMeasurementFit`, atomically creating a derived catalogue entry for one
-instance or combining one area source with the placements explicitly marked separate. The
-area replaces placements marked as included in the readings. The saved fit evidence records
-their IDs against its original source snapshot.
+instance or replacing every placement with one fixed area source. Its saved fit evidence records
+the replaced IDs against the input snapshot. Machines placed afterward join the usual sound calculation.
 Accepted observations, background and receiver/contour settings remain unchanged. Existing
 prediction/cache lanes then consume ordinary source coordinates and effective LwA. No fitted
 metadata is sent to those lanes. Save/Open/recovery retain the detached fitting evidence;
@@ -515,7 +514,7 @@ flowchart LR
     Results --> Review[User reviews and applies]
     Review --> Derived[Derived catalogue entry and source]
     Derived --> Existing[Combined receiver and contour predictions]
-    Separate[Independent sources kept on the map] --> Existing
+    Separate[Separate machines placed afterward] --> Existing
     Derived --> Files[Save / Open / recovery with fit evidence]
 ```
 

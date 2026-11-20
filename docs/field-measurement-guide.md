@@ -107,7 +107,7 @@ Assign the planned **Build estimate** and **Check prediction** roles. Preview be
 at the Check points, not just the tidy appearance of the contour lines. A poor check is a
 reason to examine conditions and the model, not move the point into Fit to make it disappear.
 
-For an area estimate, identify which map sources contributed to the readings before applying it. Keep separately modelled equipment only when its sound was absent or negligible during the test.
+Applying a whole-area estimate replaces every source on the map. Add separate equipment afterward if its sound was absent or negligible during the test.
 
 Name a receiver **Town** and place it at the relevant location. If you cannot measure there,
 its number remains an extrapolation. Prioritise accessible check positions along the direction

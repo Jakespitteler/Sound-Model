@@ -18,7 +18,6 @@ export class FittingUI {
     this.form.addEventListener('change',()=>{this.invalidate();this.syncMode();this.drawArea();});
     this.form.addEventListener('submit',event=>{event.preventDefault();this.calculate();});
     $('apply-fit-form').onsubmit=event=>{event.preventDefault();this.apply();};
-    $('fit-coverage-list').onchange=()=>this.describeCoverage();
     $('mark-fit-area').onclick=()=>store.setMode('fit-area');
     manager.map.on('click',event=> {
       if(store.mode!=='fit-area') return;
@@ -40,7 +39,7 @@ export class FittingUI {
   /** Cancel stale previews after any accepted input or scene change. */
   invalidate() {
     this.generation++;this.controller?.abort();this.preview=null;
-    $('fit-result').replaceChildren();$('apply-fit-form').hidden=true;$('fit-coverage-list').replaceChildren();$('apply-fit').hidden=true;$('fit-error').textContent='';
+    $('fit-result').replaceChildren();$('apply-fit-form').hidden=true;$('apply-fit').hidden=true;$('fit-error').textContent='';
     $('preview-fit').hidden=false;$('preview-fit').disabled=false;
   }
 
@@ -116,46 +115,29 @@ export class FittingUI {
     finally {if(generation===this.generation) $('preview-fit').disabled=false;}
   }
 
-  /** Ask about overlap only once a whole-area estimate is ready to place. */
+  /** Name the map change on the action that commits the reviewed estimate. */
   showApply() {
-    const sources=this.preview.request.mode==='area'?this.store.sources:[];
-    const list=$('fit-coverage-list');
-    sources.forEach((source,index)=>{
-      const label=document.createElement('label');
-      label.textContent=`${index+1}. ${this.store.typeFor(source).name}`;
-      const choice=document.createElement('select');
-      choice.name=source.id;
-      choice.required=true;
-      choice.add(new Option('Choose what happened during the test',''));
-      choice.add(new Option('Included in readings — replace on map','covered'));
-      choice.add(new Option('Separate sound — keep on map','separate'));
-      label.append(choice); list.append(label);
-    });
-    $('fit-coverage').hidden=sources.length===0;
+    const area=this.preview.request.mode==='area';
+    const count=this.store.sources.length;
+    const button=$('apply-fit');
+    button.textContent='Apply to this machine';
+    if(area) {
+      button.textContent=count
+        ? `Replace ${count} ${count===1?'source':'sources'} with this area estimate`
+        : 'Add area estimate to map';
+    }
+    $('fit-area-next').hidden=!area;
     $('apply-fit-form').hidden=false;
-    this.describeCoverage();
-  }
-
-  /** Show the placement decision before it changes the live sound sources. */
-  describeCoverage() {
-    const choices=[...$('fit-coverage-list').querySelectorAll('select')];
-    const covered=choices.filter(choice=>choice.value==='covered').length;
-    const separate=choices.filter(choice=>choice.value==='separate').length;
-    const pending=choices.length-covered-separate;
-    $('fit-coverage-summary').textContent=pending
-      ? 'Choose an option for each source before applying.'
-      : `On the map: add one area estimate, replace ${covered} and keep ${separate} separate.`;
   }
 
   /** Apply only the current reviewed preview; machine calibration affects one placed instance. */
   apply() {
     const preview=this.preview;if(!preview) return;
-    const choices=new Map(new FormData($('apply-fit-form')));
-    if(!this.store.applyMeasurementFit(preview.request,preview.result,preview.name,choices)) {
-      $('fit-error').textContent='Could not apply. Review the source choices and available space (100 sources and 50 types per scenario).';return;
+    if(!this.store.applyMeasurementFit(preview.request,preview.result,preview.name)) {
+      $('fit-error').textContent='Could not apply. Check the selected source and the 50-type catalogue limit.';return;
     }
     this.root.open=false;document.dispatchEvent(new Event('estimate-applied'));
-    this.say(preview.request.mode==='area'?'Area estimate added. Listening points and contours now include it.':'Calibration applied to this machine only. Original catalogue data and readings were retained.');
+    this.say(preview.request.mode==='area'?'Area estimate added. Use Place machine to add separate equipment.':'Calibration applied to this machine only. Original catalogue data and readings were retained.');
   }
 
   /** Render the operating footprint as context only, never as an attenuation barrier. */

@@ -243,8 +243,7 @@ what to record, background requirements and choosing separate check points.
 Choose the **Meter readings** workspace, select **Add measurement**, and click where the
 meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
 show recorded readings; they are separate from simulated receivers and machine sound power.
-Click a pin to reopen it. Delete uses two clicks in its editor. Correct a recorded location
-using its latitude/longitude fields; moving a machine never moves a measurement.
+Click a pin to reopen it. Delete uses two clicks in its editor. Drag a meter pin to correct its recorded location, or enter its latitude and longitude in the editor. A correction updates the comparison for that reading. Build a new estimate to use the corrected location in a fit.
 
 Leave unknown details blank. Under **Test details (optional)** you can record the tested
 machine, operating activity, duration, meter and conditions. Choose the meter's actual
@@ -295,18 +294,16 @@ In the **Meter readings** workspace, choose **Build a sound source from readings
    it was recorded incorrectly; genuinely different operating conditions need separate fits.
 5. Choose **Preview estimate**. Compare the prediction with your held-back reading after
    background correction. Expand **All readings & calculation details** for the full comparison.
-6. For a whole area, identify each source already on the map. Choose **Included in readings**
-   for equipment that contributed to the test and **Separate sound** for equipment whose sound
-   was absent or negligible. The preview lists how many placements will be replaced and kept.
-7. Choose **Use this estimate on the map**. Under **What reaches town?**, add a listening
-   point or open one you already placed. **Sound from each source** shows how much each
-   contributes there. Save the scenario to keep the estimate, readings and source choices.
+6. Apply the preview. For a whole area, the button shows how many placed sources it will
+   replace. The result is one area source fixed at the chosen centre. Meter readings,
+   listening points and catalogue entries are retained.
+7. Under **Scenario**, use **Place machine** to add equipment that will run in addition
+   to the measured activity. Open a listening point under **What reaches town?** to see
+   the combined level and each source’s contribution. Save to keep the scenario.
 
-For example, if your readings covered a loader at the pit and a haul truck was parked with
-its engine off, include the loader and keep the truck separate to model it running later.
-The resulting scenario has two sources at their own locations: the pit and the truck.
-If you cannot tell whether the truck contributed, leave the preview unapplied until you
-have a clear basis for that choice.
+For example, if your site readings captured a loader but the haul truck was switched off,
+apply the area estimate first. Then place the haul truck where you expect it to run.
+If the truck was already contributing to the readings, adding it again would count it twice.
 
 The workspace tabs preserve form drafts. The sidebar uses one scroll area instead of short
 nested lists. **Contours** holds level/contrast settings. **More settings & model details**

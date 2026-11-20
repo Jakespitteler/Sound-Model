@@ -160,7 +160,7 @@ export class ScenarioStore {
    * @param {?Object} patch Coordinates, or null for removal. */
   editPlacement(collection,id,patch) {
     const items=this[collection], index=items.findIndex(item=>item.id===id);
-    if (index<0) return;
+    if (index<0 || (patch && collection==='sources' && this.typeFor(items[index]).kind==='area')) return;
     const before=structuredClone(items[index]);
     if (patch) {
       const lat=patch.lat ?? before.lat, lng=patch.lng ?? before.lng;
@@ -174,7 +174,7 @@ export class ScenarioStore {
 
   /** @param {string} type_id Selected type. @param {number} lat Latitude. @param {number} lng Longitude. */
   addSource(type_id, lat, lng) {
-    if (!this.types.some(t=>t.id===type_id) || this.sources.length>=100) return;
+    if (!this.types.some(t=>t.id===type_id && t.kind!=='area') || this.sources.length>=100) return;
     const source={id:uuid(),type_id,lat,lng}; this.sources.push(source);
     this.recordPlacement('sources',null,source,this.sources.length-1,'Place machine');
   }
@@ -227,15 +227,13 @@ export class ScenarioStore {
 
   /** Apply a reviewed estimate atomically, retaining originals in its evidence snapshot.
    * @param {Object} request Fitting inputs. @param {Object} result Successful preview.
-   * @param {string} name Area name. @param {Map<string,string>} [choices] Each placed source marked covered or separate.
+   * @param {string} name Area name.
    * @return {boolean} Whether the reviewed change was accepted. */
-  applyMeasurementFit(request,result,name,choices=new Map()) {
+  applyMeasurementFit(request,result,name) {
     if(!result.ready || !Number.isFinite(result.lwa) || result.lwa<0 || result.lwa>300 || this.types.length>=50) return false;
     const source=this.sources.find(s=>s.id===request.source_id),area=request.mode==='area';
     if(!area && !source) return false;
-    const covered=area?this.sources.filter(item=>choices.get(item.id)==='covered'):[];
-    if(area && (!name.trim() || this.sources.length-covered.length>=100 ||
-      this.sources.some(item=>!['covered','separate'].includes(choices.get(item.id))))) return false;
+    if(area && !name.trim()) return false;
     const original=area ? {} : this.typeFor(source),id=uuid();
     const type={...structuredClone(original),id,name:area ? name.trim() : original.name,lwa:result.lwa,
       provenance:'example',spectrum:null,kind:area ? 'area' : original.kind || 'generic',
@@ -243,9 +241,8 @@ export class ScenarioStore {
       note:`Measurement-derived estimate for ${request.activity}. ${request.fit_ids.length} fit readings; ${request.check_ids.length} independent check readings. Background ${request.background_db} dB(A). Full-space point-source fit; not validated sound power.`,
       fitting:{request:structuredClone(request),result:structuredClone(result),model:'full-space-log-fit-v1'}};
     if(area) {
-      type.fitting.covered_source_ids=covered.map(item=>item.id);
-      this.sources=this.sources.filter(item=>choices.get(item.id)==='separate');
-      this.sources.push({id:uuid(),type_id:id,...result.centre});
+      type.fitting.covered_source_ids=this.sources.map(item=>item.id);
+      this.sources=[{id:uuid(),type_id:id,...result.centre}];
     } else source.type_id=id;
     this.types.push(type);
     this.clearHistory();this.setMode(null);this.notify('catalogue');return true;

@@ -57,6 +57,9 @@ export class EntitiesUI {
    * @return {string} Escaped coordinate-editing form markup.
    */
   positionForm(item, collection, extra = '', summary = '') {
+    if(collection==='sources' && this.store.typeFor(item).kind==='area') {
+      return `<details><summary class="entity-summary">${summary}</summary><div class="entity-editor"><p>Fixed area location. To change its centre, build a new estimate.</p>${extra}</div></details>`;
+    }
     return (
       `<details><summary class="entity-summary">${summary || (collection === 'sources' ? 'Edit position' : 'Details &amp; position')}</summary>` +
       `<div class="entity-editor">${extra}` +

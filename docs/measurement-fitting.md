@@ -86,7 +86,7 @@ retains a detached request/result snapshot and method `full-space-log-fit-v1`; o
 prediction requests strip this metadata. No new dependency or external service is used.
 Applying calibration creates a derived catalogue type for one placed instance; other shared
 instances and the original entry stay unchanged. Bands are not inferred or inherited as
-measured data. Applying an area places one equivalent source and asks which existing map sources its readings include. It replaces those placements and retains independent sources. Coverage is a field judgement and does not change the fitted power. Receiver and contour equations are unchanged. The derived
+measured data. Applying an area places one equivalent source and replaces all placed sources. Its position is fixed. Add separate machines afterward to model additional activity. Receiver and contour equations are unchanged. The derived
 power is marked as an estimate, with the measured origin described in its note; it is not
 labeled as directly measured sound power. Saved evidence remains historical after manual edits.
 

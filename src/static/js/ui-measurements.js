@@ -2,7 +2,7 @@
 import {$,escapeHtml} from './utils.js';
 import {RequestLane} from './api.js';
 
-/** Measurement records, non-draggable pins and a bounded cached direct-comparison lane. */
+/** Measurement records, movable pins and a bounded cached direct-comparison lane. */
 export class MeasurementUI {
   /** @param {import('./state.js').ScenarioStore} store Scenario state.
    * @param {import('./map-manager.js').MapManager} manager Map and placement state.
@@ -90,6 +90,17 @@ export class MeasurementUI {
       let card=[...container.children].find(c=>c.dataset.measurementId===item.id);
       const signature=JSON.stringify(item);
       if(card?.dataset.record===signature) {card.querySelector('.entity-summary strong').textContent=this.label(item,index);return;}
+      // A map correction updates coordinate inputs in place, preserving other unsaved fields.
+      if(card) {
+        const previous=JSON.parse(card.dataset.record);
+        if(JSON.stringify({...item,lat:previous.lat,lng:previous.lng})===card.dataset.record) {
+          const fields=card.querySelector('form').elements;
+          fields.lat.value=item.lat;
+          fields.lng.value=item.lng;
+          card.dataset.record=signature;
+          return;
+        }
+      }
       const open=card?.querySelector('details').open;
       if(!card) {card=document.createElement('div');card.className='item-card measurement-card';card.dataset.measurementId=item.id;container.append(card);}
       card.innerHTML=this.card(item,index);card.dataset.record=signature;
@@ -134,17 +145,28 @@ export class MeasurementUI {
     requestAnimationFrame(()=>card.querySelector('[name=level_db]').focus());
   }
 
-  /** Distinct fixed observation markers; source movement never changes their locations. */
+  /** Render observation markers. Dragging corrects only the selected reading’s coordinates. */
   renderMarkers() {
     this.layer.clearLayers();
     const items=[...this.store.measurements,...(this.draft?[{...this.draft,id:'draft'}]:[])];
     items.forEach((item,index)=> {
       const text=item.level_db==null?'…':item.level_db.toFixed(1),units=item.metric && item.metric!=='unknown'?'dB(A)':'dB · type unknown';
-      const marker=L.marker([item.lat,item.lng],{draggable:false,icon:L.divIcon({className:'measurement-location',iconSize:[120,40],iconAnchor:[60,20],html:`<div class="measurement-pin" data-measurement-pin="${escapeHtml(item.id)}"><b>${item.id==='draft'?'New':'M'+(index+1)}</b><strong>${text}<small>${units} · measured</small></strong></div>`})}).addTo(this.layer);
-      marker.getElement().setAttribute('aria-label',`${this.label(item,index)}: ${text} ${units}, measured pressure. Open observation.`);
+      const marker=L.marker([item.lat,item.lng],{draggable:true,icon:L.divIcon({className:'measurement-location',iconSize:[120,40],iconAnchor:[60,20],html:`<div class="measurement-pin" data-measurement-pin="${escapeHtml(item.id)}"><b>${item.id==='draft'?'New':'M'+(index+1)}</b><strong>${text}<small>${units} · measured</small></strong></div>`})}).addTo(this.layer);
+      marker.getElement().setAttribute('aria-label',`${this.label(item,index)}: ${text} ${units}, measured pressure. Drag to correct its location or select to open.`);
       const tooltip=document.createElement('span'),title=document.createElement('strong');title.textContent=this.label(item,index);tooltip.append(title);
       marker.bindTooltip(tooltip,{direction:'top',className:'object-tooltip'});
       marker.on('tooltipopen',event=>this.manager.fitObjectTooltip?.(event.tooltip,marker));
+      marker.on('dragend',()=>{
+        const point=marker.getLatLng().wrap();
+        const position={lat:Math.max(-85,Math.min(85,point.lat)),lng:point.lng};
+        if(item.id==='draft') {
+          this.draft=position;
+          this.render();
+        } else {
+          this.store.updateMeasurement(item.id,position);
+        }
+        this.say('Measurement location updated.');
+      });
       marker.on('click',()=>{this.store.setMode(null);this.open(item.id);});
     });
   }

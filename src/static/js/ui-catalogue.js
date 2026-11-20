@@ -14,7 +14,7 @@ function coverageNote(fit) {
     const type=fit.request.types.find(item=>item.id===source.type_id);
     return [`${index+1}. ${escapeHtml(type.name)}`];
   });
-  return `<p>Map sources included when applied: ${labels.join(', ') || 'none'}.</p>`;
+  return `<p>Map sources replaced when applied: ${labels.join(', ') || 'none'}.</p>`;
 }
 
 /** Machine catalogue forms, selection and cloud metadata controls. */
@@ -98,13 +98,12 @@ export class CatalogueUI {
 
     $('catalogue-count').textContent = `${this.store.types.length} types`;
     const old = $('place-type').value;
-    $('place-type').innerHTML = this.store.types.length
-      ? this.store.types.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}${t.kind==='area'?' · area estimate':t.fitting?' · calibrated':''}</option>`).join('')
+    const machines=this.store.types.filter(type=>type.kind!=='area');
+    $('place-type').innerHTML = machines.length
+      ? machines.map(t=>`<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}${t.fitting?' · calibrated':''}</option>`).join('')
       : '<option value="">Add a machine type first</option>';
-    if (this.store.types.some((t) => t.id === old)) $('place-type').value = old;
-    $('place-source').disabled = !this.store.types.length;
-    const placementLabel=()=>{$('place-source').textContent=this.store.types.find(t=>t.id===$('place-type').value)?.kind==='area'?'Place area estimate':'Place machine';};
-    $('place-type').onchange=placementLabel;placementLabel();
+    if(machines.some(type=>type.id===old)) $('place-type').value=old;
+    $('place-source').disabled=!machines.length;
     $('demo').disabled = Boolean(
       this.store.sources.length || this.store.receivers.length,
     );
