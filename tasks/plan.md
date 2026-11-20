@@ -2,9 +2,9 @@
 
 [Canonical task queue](../docs/tasks/README.md) · [Project rules](../AGENTS.md)
 
-Updated 17 November 2026 after the owner's task-by-task review. The scope is a small proof
+Updated 20 November 2026 after the owner's task-by-task review. The scope is a small proof
 of concept, balancing usability and assessment foundations without building a full assessment
-platform. This plan prepares work for agents; no queued feature is implemented by this change.
+platform. This plan records the approved work; current implementation states are in the linked briefs.
 Task states and acceptance checkboxes live only in the linked task briefs, not a second todo list.
 
 ## Decisions
@@ -19,7 +19,8 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 - Reuse contours without changing equations, source contributions, geometry or accuracy.
 - Add bounded placement undo/redo; do not build persistent or collaborative history.
 - The owner declined portable JSON export/import. Only source-reference and operating-mode metadata is approved for equipment.
-- Site-measurement pins are approved for recording/comparison only; calibration remains later.
+- Site-measurement pins retain their record/compare workflow. Later approved tasks 032–033
+  add deliberate machine/combined-area fitting with background correction and held-back checks.
 - Printing was removed from the POC by the owner (016); no report implementation is planned.
 
 ## Work order and checkpoints
@@ -42,7 +43,14 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Receiver map identity | [030](../docs/tasks/030-persistent-receiver-map-names.md) | Implemented for review; persistent names beside readings, stable marker nodes and compact controls |
 | Scope investigation | [024](../docs/tasks/024-source-aware-model-scope.md) | Implemented for review; approved 0.1 dB background-relative boundary |
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend then editor PRs |
-| Site observations | [031](../docs/tasks/031-site-measurement-pins.md) | Record/compare pressure measurements; retain unknowns, no automatic calibration |
+| Derived emissions | [032](../docs/tasks/032-machine-measurement-calibration.md), [033](../docs/tasks/033-operating-area-estimate.md) | Implemented in stacked fitting/editor slices; preview/apply only, no new propagation physics |
+| Site observations | [031](../docs/tasks/031-site-measurement-pins.md) | Implemented in stacked data/editor PRs; retain unknowns, no automatic calibration |
+| Field preparation | [034](../docs/tasks/034-field-measurement-guide.md) | Implemented; practical isolated/mixed/background/check guidance, documentation only |
+| First-use simplicity | [035](../docs/tasks/035-simple-poc-workflow.md) | Implemented; task-focused workspaces, three-stage estimate and direct correction paths |
+| Combined scenario | [036](../docs/tasks/036-combined-scenario-sources.md) | Apply a fixed area, place additional machines and check the total at town |
+| Repeat calibration | [037](../docs/tasks/037-repeat-machine-calibration.md) | Reuse earlier readings for the same placement, location and operating activity |
+| Calibration preview | [038](../docs/tasks/038-calibration-power-preview.md) | Compare the machine’s current and proposed sound power before applying |
+| Field-workflow rehearsal | [039](../docs/tasks/039-field-workflow-rehearsal.md) | Enter readings, fit an area, check a listening point and reopen the save |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.
@@ -122,5 +130,6 @@ the adaptive background relevance rule implemented by task 024. An extreme 300 d
 - Task 024 policy agreed: one background level and a 0.1 dB increase boundary; implementation ready for review.
 - Task 016 is resolved: printing removed from the POC.
 
-Measurements, environmental propagation selection, regulatory criteria and formal reporting
-remain parked. The app's limitations stay visible; a POC is not an inaudibility certificate.
+Real field measurements still require site work. Environmental propagation selection,
+regulatory criteria and formal reporting remain parked. The app's limitations stay visible;
+a POC is not an inaudibility certificate.

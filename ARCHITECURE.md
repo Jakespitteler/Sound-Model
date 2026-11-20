@@ -455,3 +455,77 @@ Background updates do not rebuild source editors or lose unrelated drafts. Open 
 details survive pending results. Save/recovery snapshots retain full evidence; old scenes
 restore null profiles. All acoustic data remains local to the backend; Photon receives no bands.
 See the [contract](docs/frequency-band-contract.md) for units, statuses and validation.
+
+
+## Site observations
+
+`measurements.py` validates pressure observations and captured model setup. The scenario-file
+schema defaults old files to `measurements: []`. `ui-measurements.js` owns a distinct violet
+marker layer and compact editor, using a separate `RequestLane` and a bounded per-point cache.
+Observations are absent from ordinary receiver/contour payloads. Saved snapshots and recovery
+retain them, while machine history never moves or deletes historical readings. Measurement
+pins can be dragged to correct coordinates. A drop updates the observation comparison and invalidates a pending fit. Applied estimates retain their historical evidence. Pins also participate in camera fitting.
+
+```mermaid
+flowchart LR
+    Form[Measured pressure and known test context] --> Store[Accepted observations]
+    Store --> Files[Save / Open / recovery]
+    Store --> Lane[Separate comparison lane]
+    Setup[Current sources, modes and background] --> Lane
+    Lane --> API[POST /api/measurements/compare]
+    API --> Check{Compatible stationary test?}
+    Check -->|Yes| Direct[Existing direct-point energy calculation]
+    Check -->|No| Reason[Explicit unavailable reason]
+    Direct --> UI[Measured total beside current machinery estimate]
+    Reason --> UI
+```
+
+The comparison uses all active sources. A changed/missing linked setup blocks numerical
+comparison without discarding the observation. Reading/name/note/meter edits reuse cached
+results; context/location changes request affected missing results. Late responses cannot
+replace a newer scene or rebuild active editor fields. Neither measured pressure nor comparison
+results feed source power, contours or calibration. See the
+[measurement contract](docs/measurement-contract.md) for exact fields and eligibility.
+
+
+## Explicit measurement fitting
+
+`measurement_fitting.py` is a separate read-only preview endpoint. It background-corrects
+eligible selected LAeq readings and fits one fixed source by least squares in pressure dB;
+held-back check rows never affect power. Machine mode requires confirmed isolation and
+matching recorded context. Area mode uses a user-marked equivalent centre/circular footprint
+and outside observations, with no individual source required.
+
+`ui-fitting.js` owns roles, map-centre selection, footprint rendering and preview invalidation;
+`fit-preview.js` renders escaped read-only results both in previews and saved catalogue evidence.
+Form/scene edits abort and version-invalidate pending responses. Only explicit Apply calls
+`ScenarioStore.applyMeasurementFit`, atomically creating a derived catalogue entry for one
+instance or replacing every placement with one fixed area source. Its saved fit evidence records
+the replaced IDs against the input snapshot. Machines placed afterward join the usual sound calculation.
+Accepted observations, background and receiver/contour settings remain unchanged. Existing
+prediction/cache lanes then consume ordinary source coordinates and effective LwA. No fitted
+metadata is sent to those lanes. Save/Open/recovery retain the detached fitting evidence;
+manual later edits do not rewrite its historical inputs/results.
+
+```mermaid
+flowchart LR
+    Readings[Recorded observations and fit/check roles] --> Preview[POST measurement fit]
+    Preview --> Results[Read-only results]
+    Results --> Review[User reviews and applies]
+    Review --> Derived[Derived catalogue entry and source]
+    Derived --> Existing[Combined receiver and contour predictions]
+    Separate[Separate machines placed afterward] --> Existing
+    Derived --> Files[Save / Open / recovery with fit evidence]
+```
+
+
+## First-use workflow
+
+`workflow.js` arranges existing controls into Scenario, Meter readings and Contours workspaces,
+with listening points shared by the two modeling paths. It does not own acoustic data. Existing
+DOM nodes are moved rather than recreated, retaining delegated handlers and unsaved drafts.
+The measurement journey reveals Setup, Readings or Result, opens invalid fields for correction,
+reuses existing activity labels and shows selected-role/activity feedback. Custom events reveal
+measurement editors from pins/results and hand successful application to the listening-point
+action. `ui-fitting.js` still owns request invalidation and explicit application; all backend
+eligibility and background rules remain authoritative. No missing metadata is inferred.

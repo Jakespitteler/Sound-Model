@@ -21,6 +21,8 @@ export class ScenarioStore {
     this.sources = [];
     /** @type {import('./types.js').Receiver[]} */
     this.receivers = [];
+    /** @type {import('./types.js').Measurement[]} */
+    this.measurements = [];
     /** @type {import('./types.js').ContourLevel[]} */
     this.contours = SOUND_REFERENCE.map(item=>item.level).sort((a,b)=>b-a).map(level_db => ({id:uuid(), level_db}));
     /** @type {Object[]} Completed placement commands, oldest first. */
@@ -65,6 +67,7 @@ export class ScenarioStore {
     this.types = structuredClone(document.types);
     this.sources = structuredClone(document.sources);
     this.receivers = structuredClone(document.receivers);
+    this.measurements = structuredClone(document.measurements ?? []);
     this.contours = document.levels.map(level_db=>({id:uuid(),level_db})).sort((a,b)=>b.level_db-a.level_db);
     this.cloud_cover = document.cloud_cover;
     this.mode = null;
@@ -157,7 +160,7 @@ export class ScenarioStore {
    * @param {?Object} patch Coordinates, or null for removal. */
   editPlacement(collection,id,patch) {
     const items=this[collection], index=items.findIndex(item=>item.id===id);
-    if (index<0) return;
+    if (index<0 || (patch && collection==='sources' && this.typeFor(items[index]).kind==='area')) return;
     const before=structuredClone(items[index]);
     if (patch) {
       const lat=patch.lat ?? before.lat, lng=patch.lng ?? before.lng;
@@ -171,7 +174,7 @@ export class ScenarioStore {
 
   /** @param {string} type_id Selected type. @param {number} lat Latitude. @param {number} lng Longitude. */
   addSource(type_id, lat, lng) {
-    if (!this.types.some(t=>t.id===type_id) || this.sources.length>=100) return;
+    if (!this.types.some(t=>t.id===type_id && t.kind!=='area') || this.sources.length>=100) return;
     const source={id:uuid(),type_id,lat,lng}; this.sources.push(source);
     this.recordPlacement('sources',null,source,this.sources.length-1,'Place machine');
   }
@@ -205,6 +208,45 @@ export class ScenarioStore {
 
   /** @param {string} id Receiver to remove. */
   removeReceiver(id) {this.editPlacement('receivers',id,null);}
+
+  /** @param {Object} record Field observation with known position/pressure. @return {?string} Stable ID. */
+  addMeasurement(record) {
+    if(this.measurements.length>=100 || !Number.isFinite(record.level_db)) return null;
+    const item={isolation:'unknown',name:'',metric:'unknown',test_kind:'unknown',duration_s:null,source_id:null,source_context:null,activity:'',meter:'',note:'',...structuredClone(record),id:uuid()};
+    this.measurements.push(item);this.notify('measurements');return item.id;
+  }
+
+  /** @param {string} id Observation ID. @param {Object} patch Accepted observation fields. */
+  updateMeasurement(id,patch) {
+    const item=this.measurements.find(m=>m.id===id);if(!item) return;
+    Object.assign(item,structuredClone(patch),{id});this.notify('measurements');
+  }
+
+  /** @param {string} id Observation to remove, independently of simulated objects/history. */
+  removeMeasurement(id) {this.measurements=this.measurements.filter(m=>m.id!==id);this.notify('measurements');}
+
+  /** Apply a reviewed estimate atomically, retaining originals in its evidence snapshot.
+   * @param {Object} request Fitting inputs. @param {Object} result Successful preview.
+   * @param {string} name Area name.
+   * @return {boolean} Whether the reviewed change was accepted. */
+  applyMeasurementFit(request,result,name) {
+    if(!result.ready || !Number.isFinite(result.lwa) || result.lwa<0 || result.lwa>300 || this.types.length>=50) return false;
+    const source=this.sources.find(s=>s.id===request.source_id),area=request.mode==='area';
+    if(!area && !source) return false;
+    if(area && !name.trim()) return false;
+    const original=area ? {} : this.typeFor(source),id=uuid();
+    const type={...structuredClone(original),id,name:area ? name.trim() : original.name,lwa:result.lwa,
+      provenance:'example',spectrum:null,kind:area ? 'area' : original.kind || 'generic',
+      operating_mode:request.activity,source_reference:'Measurement-derived geometric estimate',
+      note:`Measurement-derived estimate for ${request.activity}. ${request.fit_ids.length} fit readings; ${request.check_ids.length} independent check readings. Background ${request.background_db} dB(A). Full-space point-source fit; not validated sound power.`,
+      fitting:{request:structuredClone(request),result:structuredClone(result),model:'full-space-log-fit-v1'}};
+    if(area) {
+      type.fitting.covered_source_ids=this.sources.map(item=>item.id);
+      this.sources=[{id:uuid(),type_id:id,...result.centre}];
+    } else source.type_id=id;
+    this.types.push(type);
+    this.clearHistory();this.setMode(null);this.notify('catalogue');return true;
+  }
 
   /** @param {number[]} levels Ordinary levels. @param {?number} [acceptable] Reference level.
    * @return {boolean} Whether all unique levels fit the API budget. */

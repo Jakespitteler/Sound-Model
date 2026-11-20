@@ -221,3 +221,53 @@ visibility, one scroll area, original list offsets, retained drafts, hidden work
 renderer removal and zero presentation-only state notifications. Existing sidebar/entity,
 frequency, history and foreground fixtures remain relevant. Task 027 records real-app
 screenshots and keyboard/narrow-window checks.
+
+
+## Measurement checks
+
+Run `uv run pytest tests/test_measurements.py tests/test_scenarios.py` for comparison eligibility,
+independent energy references, historical context and persistence. With the repository-root
+static server running, open `/tests/browser/measurements.html`; expect **PASS: 18 checks**
+for pressure/unknowns, observation isolation, separate request lane, unchanged historical
+locations, cached points, drafts, source deletion and legacy restore. Include the sidebar,
+frequency, background, history and foreground fixtures when changing shared state/renderers.
+Task 031 records the full-app Save/Open/recovery, real delayed-response draft preservation,
+request-count checks and inspected open-editor/comparison screenshots.
+
+
+## Measurement-fitting checks
+
+`uv run pytest tests/test_measurement_fitting.py tests/test_measurements.py tests/test_scenarios.py`
+checks independent energy correction, known-power recovery, held-back independence, unknown/
+mixed context, background sensitivity, distinct locations, source-free areas, legacy schemas,
+finite/extreme inputs and evidence round trips. With the static repository server running,
+open `/tests/browser/measurement-fitting.html`; expect **PASS: 17 checks** for atomic apply,
+instance isolation, copied evidence, unchanged other inputs, deliberate source replacement,
+area routing into the existing acoustic payload, metadata stripping and escaped previews.
+
+Run the 12 measurement/shared-state fixtures listed in task 032 as regressions. Full-app
+checks should include real preview/Apply clicks, mixed rejection, a delayed stale response,
+background/input invalidation, Save/Open/recovery and recorded catalogue evidence. Inspect
+open preview, error and narrow layouts. Tasks 032–033 hold actual check counts and screenshots;
+synthetic fits do not replace field validation.
+
+
+### Fitting workflow review checks
+
+Serve the repository root and open `/tests/browser/fitting-workflow.html`; expect **PASS: 19 checks**.
+This exercises the real fitting editor with a local fake preview response, covering mode
+cancellation, map-numbered choices, activity suggestions, whitespace validation, preserved
+roles, escaped values and original measurement numbering. It complements the existing
+17-check application fixture and numerical tests. The
+[workflow review](measurement-workflow-review.md) records real API/browser interactions,
+a condition-inversion regression check and inspected screenshots. No test dependency added.
+
+
+## POC journey checks
+
+Serve the repository root and open `/tests/browser/simple-workflow.html` (**17 checks**).
+It assembles the real HTML partials, tests workspace visibility, step navigation, recorded
+activity selection, early mismatch guidance, unchanged observations, listening-point handoff
+and marker/editor workspace reveal. Run the existing shared-state/fitting fixtures as well.
+Task 035 records real-app machine/area paths, preview/apply/save, mismatch correction and
+inspected screenshots. Native meter metadata remains unknown until supplied by the user.

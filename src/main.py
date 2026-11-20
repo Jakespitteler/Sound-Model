@@ -12,6 +12,8 @@ from .bands import at_receiver_bands
 from .contour_range import ContourRange, calculate_contour_range
 from .contours import build_contours
 from .geocoding_routes import router as geocoding_router
+from .measurement_fitting import FitRequest, FitResult, fit_measurements
+from .measurements import Comparison, MeasurementRequest, compare_measurement
 from .pages import about_page, index_page, machine_estimates_page
 from .scenario_routes import router as scenario_router
 from .scope import screen_receiver
@@ -77,6 +79,32 @@ def predict(scenario: Scenario) -> Prediction:
         example_data=any(types[source.type_id].provenance == "example" for source in scenario.sources),
         model="full-space-point-source-v1",
     )
+
+
+@app.post("/api/measurements/fit", response_model=FitResult)
+def measurement_fit(request: FitRequest) -> FitResult:
+    """Preview an isolated-machine or combined-area emission estimate.
+
+    Args:
+        request: Selected observations, roles, operating basis and source geometry.
+
+    Returns:
+        Read-only fit with separate check results and explicit excluded-reading reasons.
+    """
+    return fit_measurements(request)
+
+
+@app.post("/api/measurements/compare")
+def measurement_comparisons(request: MeasurementRequest) -> dict[str, Comparison]:
+    """Return per-observation eligibility/current estimates without fitting the model.
+
+    Args:
+        request: Current scenario and bounded observation records.
+
+    Returns:
+        Independent comparison states keyed by stable measurement ID.
+    """
+    return {item.id: compare_measurement(item, request, request.source_modes) for item in request.measurements}
 
 
 @app.post("/api/contour-range", response_model=ContourRange)

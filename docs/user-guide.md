@@ -13,7 +13,7 @@ their saved camera instead.
 **Fit local area**, at the map's lower right, frames the group nearest the current map centre.
 Pan, search for an address/place or use coordinates to move near the area you want, then click Fit. Editing, clicking or
 placing an object does not override the area you are currently viewing. The fitted group keeps
-every pair of machines/receivers within 10 km, so a chain of neighbours cannot pull in a
+every pair of machines, receivers and measurement pins within 10 km, so a chain of neighbours cannot pull in a
 separate test area. Objects outside the view still contribute to the sound calculation.
 
 The action is disabled in an empty scene and caps zoom at 16 for a single location.
@@ -36,13 +36,13 @@ changes all those instances. Removing a type is prevented while it is in use.
    **Ctrl-click** each position, then click without Control to place the last machine.
    **Escape** or **Cancel placement** exits without adding another. Placement stops at 100 machines.
 2. Drag its icon to move it, or expand its machine row and enter coordinates.
-3. Choose **Place a receiver**, then click the listening location.
+3. Choose **Add listening point**, then click the listening location.
 4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
-   to add an optional name or edit coordinates. **Machine contributions** shows individual sources.
+   to add an optional name or edit coordinates. **Sound from each source** shows individual sources.
 
-On desktop, Save/Open and the workspace tabs stay above the two compact object lists.
+On desktop, Scenario, Meter readings and Contours separate the main jobs.
 Machine rows show their sound power; receiver rows show their current reading. Expand only
-the row you need. Machine data and Model info open one at a time, retaining their drafts.
+the row you need. Machine data and More settings & model details open one at a time, retaining their drafts.
 
 Opening an editor gives it the full sidebar height and one scroll area. Cards that fit in
 the window are brought fully into view; longer forms scroll naturally. **Close editor**
@@ -234,3 +234,92 @@ next to Save; previously stored draft data is retained when a write fails. Brows
 be cleared, and edits made immediately before a crash may not have passed the debounce or
 the browser's own disk flush. Keep named
 saves and backups for important work.
+
+## Record site measurements
+
+Before going on site, read the [field-measurement guide](field-measurement-guide.md) for
+what to record, background requirements and choosing separate check points.
+
+Choose the **Meter readings** workspace, select **Add measurement**, and click where the
+meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
+show recorded readings; they are separate from simulated receivers and machine sound power.
+Click a pin to reopen it. Delete uses two clicks in its editor. Drag a meter pin to correct its recorded location, or enter its latitude and longitude in the editor. A correction updates the comparison for that reading. Build a new estimate to use the corrected location in a fit.
+
+Leave unknown details blank. Under **Test details (optional)** you can record the tested
+machine, operating activity, duration, meter and conditions. Choose the meter's actual
+reading type: LAeq is an energy average, LAmax is a maximum, and Unknown stays unknown.
+Record separate passes separately. Accepted records survive named Save/Open and optional
+recovery; save the measurement form before saving the scenario.
+
+```mermaid
+flowchart LR
+    Add[Add measurement] --> Place[Click measured location]
+    Place --> Record[Enter pressure and known details]
+    Record --> Save[Save measurement]
+    Save --> Review[Inspect comparison or stated limitation]
+```
+
+For a stationary LAeq test with known duration/activity and a matching linked model setup,
+the card places **Measured total** beside the **Current machinery-only estimate**. All active
+machines contribute to that estimate. The measured total can include background and other
+activity, so these two numbers are not a model-error score. Measurements never adjust powers,
+contours or background automatically. Moving/maximum/unknown tests remain recorded without
+a numerical comparison. Source edits or removal make the comparison unavailable and retain
+the captured model context. This read-only comparison does not calibrate the model or give an
+audibility verdict. To derive an estimate deliberately, use the separate workflow below.
+
+![Stationary reading beside the current machinery estimate](images/task-031/measurement-stationary.png)
+
+## Build an estimate from measurements
+
+In the **Meter readings** workspace, choose **Build a sound source from readings**, then choose a workflow in Setup:
+
+| Choice | Use it when | Result after Apply |
+| --- | --- | --- |
+| Calibrate one machine | Stationary tests isolate that machine at its recorded position | A derived emission for that placed machine; original type and other instances stay unchanged |
+| Combined operating area | Several machines operate together, or individual equipment is unknown | One combined source at your marked centre; individual machines need not be placed |
+
+1. Add readings in **Meter readings**. Meter reading, activity, type of test and duration are
+   visible in the record editor; machine links and extra notes are optional disclosures.
+   Unknown values can remain unknown, but may prevent using the reading in an estimate.
+2. Choose **Build a sound source from readings**. **Setup** asks what you are estimating:
+   one machine, or a whole area without machines. For an area, mark its centre and radius.
+   For a machine, choose its map number. Click **Choose readings →**.
+3. In **Readings**, select the recorded activity, enter a representative background and
+   confirm it describes these tests. A unique existing activity is selected automatically;
+   no records are relabeled. Choose **Build estimate** for at least two locations and
+   **Check prediction** for a separate location. Leave other readings out.
+4. Read the activity shown alongside each reading. A mismatch warning explains which
+   selection needs attention. **Edit** opens the original reading. Correct a label only if
+   it was recorded incorrectly; genuinely different operating conditions need separate fits.
+5. Choose **Preview estimate**. Compare the prediction with your held-back reading after
+   background correction. Expand **All readings & calculation details** for the full comparison.
+6. For a machine calibration, compare **Current** and **Proposed** sound power before
+   applying the preview. For a whole area, the button shows how many placed sources it will
+   replace. The result is one area source fixed at the chosen centre. Meter readings,
+   listening points and catalogue entries are retained.
+7. Under **Scenario**, use **Place machine** to add equipment that will run in addition
+   to the measured activity. Open a listening point under **What reaches town?** to see
+   the combined level and each source’s contribution. Save to keep the scenario.
+
+For example, if your site readings captured a loader but the haul truck was switched off,
+apply the area estimate first. Then place the haul truck where you expect it to run.
+If the truck was already contributing to the readings, adding it again would count it twice.
+
+The workspace tabs preserve form drafts. The sidebar uses one scroll area instead of short
+nested lists. **Contours** holds level/contrast settings. **More settings & model details**
+holds the optional global background, cloud notes and background frequency data. Equipment
+frequency evidence remains in Machine data. The sound reference key can be expanded on the map.
+
+Background correction subtracts sound energy, not dB numbers. Readings less than 3 dB above
+background are too sensitive to use for this fit; 3–10 dB separation carries a caution. If a
+selected reading is unsuitable, the preview explains why. Change its role to Don't use to
+exclude it explicitly. Recording a reading never applies calibration automatically.
+
+The area uses one equivalent point, not a detailed distribution of machines. Its circle
+adds no attenuation, and predictions inside the area are especially unsuitable. Both fits
+use the existing open-space model: missing ground, terrain and weather effects may influence
+the fitted emission and extrapolation. A fit does not establish the maximum sustained sound
+at town or prove inaudibility. See the [fitting method](measurement-fitting.md).
+
+![Reviewed machine estimate and independent check](images/task-032/fit-machine-preview.png)

@@ -1,0 +1,60 @@
+<!doctype html><meta charset="utf-8"><title>Field observation checks</title>
+<link rel="stylesheet" href="../../src/static/vendor/leaflet/leaflet.css">
+<div id="map" style="height:400px;width:800px"></div><details class="measurement-settings" open><summary>Measurements <span id="measurement-count"></span></summary><button id="add-measurement"></button><button id="retry-measurements" hidden></button><div id="measurement-cards"></div></details><pre id="result">Running…</pre>
+<script src="../../src/static/vendor/leaflet/leaflet.js"></script>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {MeasurementUI} from '../../src/static/js/ui-measurements.js';
+const checks=[],calls=[],originalFetch=window.fetch;
+/** @param {boolean} claim Outcome. @param {string} label Behaviour. */
+function check(claim,label){if(!claim)throw new Error(label);checks.push(label);}
+/** @return {Promise<void>} Settle the existing debounced request lane. */
+const settle=()=>new Promise(resolve=>setTimeout(resolve,240));
+window.fetch=async(url,options)=> {
+ const payload=JSON.parse(options.body);calls.push(payload);
+ return {ok:true,json:async()=>Object.fromEntries(payload.measurements.map(m=>[m.id,{status:'unsupported',point:null,reason:'Unknown test basis remains recorded.'}]))};
+};
+try {
+ const store=new ScenarioStore();store.addSource(store.types[0].id,0,0);
+ const sourceId=store.sources[0].id,power=store.types[0].lwa;
+ const map=L.map('map').setView([0,0],14),ui=new MeasurementUI(store,{map},()=>{});
+ check(store.measurements.length===0 && !('measurements' in store.toPayload()),'observations are absent from ordinary acoustic payloads');
+ const context=ui.context(sourceId);
+ const id=store.addMeasurement({level_db:0,lat:0,lng:.01,source_id:sourceId,source_context:context});await settle();
+ check(store.measurements[0].level_db===0 && store.measurements[0].metric==='unknown' && store.measurements[0].meter==='','zero pressure retained; unknown meter/metric not invented');
+ check(ui.layer.getLayers()[0].options.draggable,'observation locations can be corrected by dragging');
+ check(calls.length===1 && calls[0].measurements.length===1,'new point uses the separate bounded comparison lane');
+ store.updateSource(sourceId,{lat:.1});await settle();
+ check(store.measurements[0].lat===0 && store.measurements[0].source_context.lat===0,'source movement leaves the observation and recorded setup fixed');
+ const pin=ui.layer.getLayers()[0].getLatLng();check(pin.lat===0 && pin.lng===.01,'marker remains at its measured location');
+ store.removeSource(sourceId);await settle();
+ check(store.measurements.length===1 && store.measurements[0].source_id===sourceId,'source deletion retains historical link and observation');
+ check(document.querySelector('[name=source_id]').textContent.includes('(removed)'),'missing source is apparent in the editor');
+ const before=calls.length;store.updateMeasurement(id,{level_db:-5,note:'Observed only',name:'<img src=x>'});await settle();
+ check(calls.length===before && store.types[0].lwa===power,'reading/notes change neither prediction requests nor machine power');
+ check(!document.querySelector('.measurement-card img') && document.querySelector('.entity-summary strong').textContent==='<img src=x>','measurement names stay literal');
+ store.updateMeasurement(id,{activity:'Steady <loading>'});
+ store.setMode('measurement');map.fire('click',{latlng:L.latLng(0,.02)});await settle();
+ check(ui.draft && store.measurements.length===1 && store.receivers.length===0,'placement creates a reading draft, not a simulated receiver');
+ const form=document.querySelector('[data-reading=draft]');check(form.querySelector('[name=level_db]').value==='' && form.querySelector('[name=duration_s]').value==='','required pressure and unknown duration start blank');
+ const activity=form.elements.activity;
+ check(activity.value==='' && activity.list.options[0].value==='Steady <loading>','new reading offers the saved activity without preselecting it');
+ form.querySelector('[name=level_db]').value='-8';
+ ui.layer.getLayers().at(-1).setLatLng([0.01,0.03]).fire('dragend');
+ check(ui.draft.lat===0.01 && form.elements.lat.value==='0.01' && form.elements.level_db.value==='-8','moving a draft retains its unsaved reading');
+ form.requestSubmit();await settle();
+ check(store.measurements.length===2 && calls.at(-1).measurements.length===1,'only the new uncached point is requested');
+ check(document.querySelectorAll('[data-measurement-pin]').length===2,'fixed observation markers remain distinct');
+ const savedForm=document.querySelector('[data-reading="'+id+'"]');savedForm.elements.note.value='Unsaved note';
+ const beforeMove=calls.length;ui.layer.getLayers()[0].setLatLng([.02,.04]).fire('dragend');await settle();
+ check(calls.length===beforeMove+1 && calls.at(-1).measurements.length===1 && store.measurements[0].lat===.02 && store.measurements[0].level_db===-5,'moving a recorded pin refreshes only its location comparison');
+ check(savedForm.isConnected && savedForm.elements.note.value==='Unsaved note' && savedForm.elements.lat.value==='0.02','pin correction preserves edits in the open form');
+ const record=structuredClone(store.measurements),doc={...store.toPayload(),types:store.types,levels:[40],measurements:record};
+ store.restore(doc);await settle();check(JSON.stringify(store.measurements)===JSON.stringify(record),'restore preserves complete and partial observation data');
+ const button=document.querySelectorAll('[data-delete-reading]')[1];button.click();check(store.measurements.length===2,'first delete click only confirms intent');
+ button.click();await settle();check(store.measurements.length===1,'second delete click removes only that observation');
+ delete doc.measurements;store.restore(doc);await settle();check(store.measurements.length===0 && ui.layer.getLayers().length===0,'legacy restore clears observations without defaults or stale pins');
+ document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
+finally {window.fetch=originalFetch;}
+</script>

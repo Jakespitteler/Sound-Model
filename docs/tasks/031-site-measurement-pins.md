@@ -1,6 +1,10 @@
 # 031 — Record and compare site measurements
 
-Status: Ready when selected; task creation approved on 19 November 2026.
+Status: Implemented; backend and editor PRs stacked for review.
+
+This brief records the original record/compare-only slice. Later owner-approved
+[032](032-machine-measurement-calibration.md) and [033](033-operating-area-estimate.md) add a
+separate explicit fitting workflow; recording itself remains read-only.
 Related: 026 (optional band foundation), 027 (simple expanded editors), 003/005 (parked
 measurement/validation themes). This brief adds one bounded POC feature, not those wider themes.
 
@@ -84,9 +88,9 @@ can be considered later, once actual capabilities and need are known.
 
 ## Acceptance
 
-- [ ] A user can add/edit/delete a distinct measurement pin with a pressure level and location, optionally link its machine/activity and record known duration/metric/meter/conditions. Unknown fields remain blank/Unknown. Long notes and open cards remain usable at desktop and 390 px without tiny nested scroll areas or extra mandatory steps.
-- [ ] Comparison respects the current/observed and machinery/total distinctions, uses all modeled sources and explicitly handles stationary eligibility, moving/max/unknown cases, changed/missing context, negligible/pending/failed results. Recording/editing a reading never changes source powers, background, contours, propagation or calibration; presentation-only actions make no acoustic requests.
-- [ ] Save/Open/recovery retain complete and partial observations; old scenes remain compatible and source movement/deletion cannot move/delete observations. Numerical/data-boundary tests and full-app screenshots show matching values, unavailable states, preserved drafts and unchanged baseline results.
+- [x] A user can add/edit/delete a distinct measurement pin with a pressure level and location, optionally link its machine/activity and record known duration/metric/meter/conditions. Unknown fields remain blank/Unknown. Long notes and open cards remain usable at desktop and 390 px without tiny nested scroll areas or extra mandatory steps.
+- [x] Comparison respects the current/observed and machinery/total distinctions, uses all modeled sources and explicitly handles stationary eligibility, moving/max/unknown cases, changed/missing context, negligible/pending/failed results. Recording/editing a reading never changes source powers, background, contours, propagation or calibration; presentation-only actions make no acoustic requests.
+- [x] Save/Open/recovery retain complete and partial observations; old scenes remain compatible and source movement/deletion cannot move/delete observations. Numerical/data-boundary tests and full-app screenshots show matching values, unavailable states, preserved drafts and unchanged baseline results.
 
 ## Implementation and verification
 
@@ -108,3 +112,55 @@ no source-power/background/contour changes and no camera/disclosure-triggered so
 Capture and inspect the actual open editor and comparison/unsupported states. No real field
 measurements are supplied yet; do not invent them. Record commits, commands, evidence and
 remaining limitations here when implemented.
+
+
+## Backend slice — 19 November 2026
+
+The owner selected task 031. [The measurement contract](../measurement-contract.md) defines
+observations, historical model context and the independent direct-comparison endpoint. It
+keeps source/pressure quantities separate, preserves deleted-source observations and defaults
+old scenes to an empty collection. The backend does not use the observed pressure to fit or
+change any model quantity. Current source operating labels are context, not a new noise model.
+
+Backend checks: **182 pytest tests passed**; independent intensity and equal-source energy
+references, inapplicable tests, changed/missing/mode context, negligible results, negative/zero
+readings, invalid/duplicate data and saved/legacy records. Ruff and Pyright passed. No new
+technology or real field readings were added. The compatible data/API slice is separate from
+the map/editor integration; owner review and merge remain required.
+
+## Integrated editor — 19 November 2026
+
+Backend commit `36d64b2` ([PR #56](https://github.com/Jakespitteler/Sound-Model/pull/56))
+precedes editor commit `97dffba`. Open **Measurements**, choose **Add measurement** and click
+the observed location. Only the pressure level is required; test details remain optional.
+Violet square M pins distinguish measured pressure from modeled receiver readings. Accepted
+records are included in named saves and recovery; unsubmitted editor drafts are not observations.
+
+The independent comparison lane caches individual points and preserves open form drafts.
+Changing a measured level/name/meter/note makes no acoustic request. Source setup changes
+invalidate the comparison while retaining the original observation and captured model setup.
+Deleting a source retains the record and explains the missing link. Model setup captured
+at entry is not proof of the equipment's historical physical position.
+
+Verification of these commits:
+
+- `uv run pytest`: **182 passed**. `uv run ruff check .`,
+  `uv run ruff format --check src tests scripts`, `uv run pyright` and
+  `uv run python scripts/check_agent_skills.py` passed.
+- **189 browser fixture checks** across measurements (18), sidebar-expanded (17),
+  frequency-bands (14), equipment-metadata (6), sidebar-entities (15), background-boundary
+  (15), receiver-map-names (17), map-deletion (21), repeat-placement (14),
+  placement-history (23), acceptable-label-priority (13), contour-cache (16).
+- Full-app Chromium checks: blank unknown draft, stationary comparison, moving/maximum
+  unavailable state, observed-level edits causing zero requests, unchanged source powers,
+  background and contour inputs, changed/missing setup, Save/Open/recovery, a pending
+  response preserving the exact input node and draft, two-click delete, no page errors,
+  and no horizontal overflow at 390 px.
+- Captured and inspected [stationary comparison](../images/task-031/measurement-stationary.png),
+  [moving observation](../images/task-031/measurement-moving.png), and
+  [open optional editor](../images/task-031/measurement-editor-details.png). Also inspected
+  the narrow layout. Satellite imagery was unavailable, so screenshots show the grid fallback.
+
+No independent reviewer or real field dataset was available. Author inspection and numerical
+checks do not validate environmental propagation or instrument suitability. Calibration,
+background isolation and audibility conclusions remain excluded. Owner review/merge required.

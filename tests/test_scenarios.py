@@ -70,6 +70,7 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
     record = response.json()
     identifier = record["id"]
     expected = {
+        "measurements": [],
         "background_spectrum": None,
         "background_db": None,
         "acceptable_level_db": None,
@@ -78,7 +79,8 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
     }
     original_types = cast(list[dict[str, object]], expected["types"])
     expected["types"] = [
-        {**item, "source_reference": "", "operating_mode": "", "spectrum": None} for item in original_types
+        {**item, "source_reference": "", "operating_mode": "", "spectrum": None, "fitting": None}
+        for item in original_types
     ]
     assert record["document"] == expected
     assert saved_client.get(f"/api/scenarios/{identifier}").json() == record
@@ -234,7 +236,8 @@ def test_legacy_receiver_names_are_defaulted_without_rewriting_files(saved_clien
     assert saved == document
     original_types = cast(list[dict[str, object]], cast(dict[str, object], payload()["document"])["types"])
     assert saved["types"] == [
-        {**item, "source_reference": "", "operating_mode": "", "spectrum": None} for item in original_types
+        {**item, "source_reference": "", "operating_mode": "", "spectrum": None, "fitting": None}
+        for item in original_types
     ]
     assert saved["sources"] == cast(dict[str, object], payload()["document"])["sources"]
 

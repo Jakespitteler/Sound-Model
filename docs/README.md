@@ -13,6 +13,9 @@ dated change records explain how the project reached it.
 | Understand the background-boundary decision | [Scope review and approved decision](scope-policy-review.md) |
 | Enter optional band evidence and interpret receiver comparisons | [Band contract](frequency-band-contract.md) and [user guide](user-guide.md#optional-frequency-band-evidence) |
 | Compare feasible model upgrades and audibility prerequisites | [Model feasibility review](model-feasibility.md) |
+| Plan practical meter readings on site | [Field-measurement guide](field-measurement-guide.md) |
+| Record and compare site readings | [Measurement workflow](user-guide.md#record-site-measurements) and [data contract](measurement-contract.md) |
+| Derive machine or area emission from readings | [User workflow](user-guide.md#build-an-estimate-from-measurements) and [fitting method](measurement-fitting.md) |
 | Choose an approved POC task | [Task backlog](tasks/README.md) |
 | Use or update the installed agent skills | [Agent Skills integration](../.agents/README.md) |
 | Check use permissions | [Project licence](../LICENSE) and [third-party notices](../THIRD_PARTY_NOTICES.md) |
@@ -29,6 +32,9 @@ dated change records explain how the project reached it.
 This is a POC, not an environmental-assessment platform. Missing capabilities are not
 commitments. Only the owner-approved small slices in the backlog are active candidates;
 export/import and broader assessment work are not being added to the POC.
+
+[Measurement workflow review](measurement-workflow-review.md) records the latest fitting
+interaction fixes and their verification.
 
 ## Historical change records
 
