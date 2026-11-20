@@ -48,6 +48,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Field preparation | [034](../docs/tasks/034-field-measurement-guide.md) | Implemented; practical isolated/mixed/background/check guidance, documentation only |
 | First-use simplicity | [035](../docs/tasks/035-simple-poc-workflow.md) | Implemented; task-focused workspaces, three-stage estimate and direct correction paths |
 | Combined scenario | [036](../docs/tasks/036-combined-scenario-sources.md) | Apply a fixed area, place additional machines and check the total at town |
+| Repeat calibration | [037](../docs/tasks/037-repeat-machine-calibration.md) | Reuse earlier readings for the same placement, location and operating activity |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.

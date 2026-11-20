@@ -80,6 +80,29 @@ export class FittingUI {
     $('fit-background').textContent=this.store.background_db==null?'Enter the background measured without the activity you are estimating.':`Background: ${this.store.background_db} dB(A)`;
   }
 
+  /** @param {string} sourceId Placed machine selected for calibration.
+   * @param {string} activity Operating activity selected for the test.
+   * @return {Object[]} Prior catalogue setups still referenced by this machine’s readings. */
+  previousSetups(sourceId,activity) {
+    const source=this.store.sources.find(item=>item.id===sourceId);
+    if(!source) return [];
+    const type=this.store.typeFor(source),previous=type.fitting?.request;
+    if(previous?.mode!=='machine' || previous.source_id!==source.id ||
+      previous.activity!==activity || type.operating_mode!==activity) return [];
+    const original=previous.sources.find(item=>item.id===source.id);
+    if(!original) return [];
+    const setups=[{type_id:original.type_id,operating_mode:previous.source_modes?.[source.id] || ''},
+      ...(previous.previous_setups || [])];
+    const used=new Map();
+    for(const reading of this.store.measurements) {
+      const context=reading.source_context;
+      if(context?.id!==source.id || reading.activity!==activity) continue;
+      const setup=setups.find(item=>item.type_id===context.type_id && item.operating_mode===context.operating_mode);
+      if(setup) used.set(JSON.stringify(setup),setup);
+    }
+    return [...used.values()];
+  }
+
   /** @return {Object} Detached fitting request, never a receiver/contour payload. */
   payload() {
     const f=this.form.elements,fit_ids=[],check_ids=[];
@@ -88,11 +111,13 @@ export class FittingUI {
       if(role==='fit') fit_ids.push(row.dataset.fitReading);
       if(role==='check') check_ids.push(row.dataset.fitReading);
     }
-    const mode=f.mode.value;
+    const mode=f.mode.value,activity=f.activity.value.trim();
+    const sourceId=mode==='machine'?f.source_id.value:null;
     return {...this.store.toPayload(),receivers:[],measurements:structuredClone(this.store.measurements),
       source_modes:Object.fromEntries(this.store.sources.map(s=>[s.id,this.store.typeFor(s).operating_mode || ''])),
-      mode,source_id:mode==='machine'?f.source_id.value:null,centre:mode==='area'?{lat:Number(f.lat.value),lng:Number(f.lng.value)}:null,
-      radius_m:mode==='area'?Number(f.radius.value):null,activity:f.activity.value.trim(),
+      mode,source_id:sourceId,centre:mode==='area'?{lat:Number(f.lat.value),lng:Number(f.lng.value)}:null,
+      radius_m:mode==='area'?Number(f.radius.value):null,activity,
+      previous_setups:sourceId?this.previousSetups(sourceId,activity):[],
       background_confirmed:f.background_confirmed.checked,fit_ids,check_ids};
   }
 

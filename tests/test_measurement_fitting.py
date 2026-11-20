@@ -126,6 +126,35 @@ def test_missing_background_and_changed_machine_context() -> None:
     assert "setup" in fit_measurements(request).rows[0].reason
 
 
+def test_recalibrate_with_readings_from_a_previous_catalogue_setup() -> None:
+    """Allow earlier readings for the same machine and activity after applying a fit."""
+    original = fitting()
+    source = original.sources[0].model_copy(update={"type_id": "derived"})
+    machine = MachineType(id="derived", name="Test source", lwa=124)
+    request = FitRequest.model_validate(
+        {
+            **original.model_dump(),
+            "sources": [source],
+            "types": [machine],
+            "source_modes": {source.id: original.activity},
+            "previous_setups": [{"type_id": "t", "operating_mode": ""}],
+        }
+    )
+    result = fit_measurements(request)
+    assert result.ready and result.lwa == pytest.approx(110)
+    # Readings taken after the first fit can also be used alongside the older readings.
+    request.measurements[-1].source_context = SourceContext(
+        **source.model_dump(), name=machine.name, lwa=machine.lwa, operating_mode=original.activity
+    )
+    assert fit_measurements(request).ready
+    # A real position or mode change still invalidates the old evidence.
+    source.lat = 0.001
+    assert not fit_measurements(request).ready
+    source.lat = 0
+    request.source_modes[source.id] = "Different mode"
+    assert not fit_measurements(request).ready
+
+
 def test_area_works_without_machines_and_rejects_inside_readings() -> None:
     """Mixed site readings need no individual source, but interior points cannot fit it."""
     request = fitting("area")

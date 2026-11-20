@@ -44,6 +44,9 @@ position/type and operating-mode context. Mixed/unknown tests can instead suppor
 The fit ignores the old power being replaced; it never subtracts predicted other machines.
 Machine moves or mismatched setup prevent the fit. The operator must actually isolate the
 machine for the observations; other sources may be active later in a prediction scenario.
+You can recalibrate the same machine at the recorded position using the same activity and
+original readings. The fit retains the earlier catalogue setups referenced by those
+readings, so the first calibration's catalogue change does not invalidate the test.
 
 Area mode needs no source link or existing machine. The user fixes the equivalent centre and
 circular radius. Readings inside/on the circle are retained as context, not fitted. The circle

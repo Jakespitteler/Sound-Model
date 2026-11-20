@@ -6,8 +6,20 @@ from typing import Literal, Self
 from pydantic import Field, model_validator
 
 from .acoustics import distance_metres, source_level
-from .measurements import Measurement, MeasurementRequest
+from .measurements import Measurement, MeasurementRequest, SourceContext
 from .types import Position, Source, StrictModel
+
+
+class CalibrationSetup(StrictModel):
+    """Catalogue identity and operating mode before a calibration.
+
+    Attributes:
+        type_id: Earlier catalogue type for the same placed machine.
+        operating_mode: Mode recorded before that calibration.
+    """
+
+    type_id: str = Field(min_length=1, max_length=80)
+    operating_mode: str = Field(max_length=200)
 
 
 class FitRequest(MeasurementRequest):
@@ -22,6 +34,7 @@ class FitRequest(MeasurementRequest):
         activity: Common operating condition explicitly selected by the user.
         fit_ids: Observations used to estimate emission.
         check_ids: Separate observations used only to check predictions.
+        previous_setups: Earlier catalogue setups retained for this machine and activity.
     """
 
     mode: Literal["machine", "area"]
@@ -32,6 +45,28 @@ class FitRequest(MeasurementRequest):
     activity: str = Field(min_length=1, max_length=200)
     fit_ids: list[str] = Field(min_length=2, max_length=100)
     check_ids: list[str] = Field(min_length=1, max_length=100)
+
+    previous_setups: list[CalibrationSetup] = Field(default_factory=list[CalibrationSetup], max_length=100)
+
+    def matches_machine_setup(self, origin: Source, context: SourceContext) -> bool:
+        """Verify the placed machine, position and operating setup for a reading.
+
+        Args:
+            origin: Current machine selected for calibration.
+            context: Machine setup captured when recording the observation.
+
+        Returns:
+            Whether the live setup matches directly or via a prior calibration.
+        """
+        if context.id != origin.id or (context.lat, context.lng) != (origin.lat, origin.lng):
+            return False
+        current_mode = self.source_modes.get(origin.id, "")
+        if (context.type_id, context.operating_mode) == (origin.type_id, current_mode):
+            return True
+        return current_mode == self.activity and any(
+            (context.type_id, context.operating_mode) == (setup.type_id, setup.operating_mode)
+            for setup in self.previous_setups
+        )
 
     @model_validator(mode="after")
     def selections(self) -> Self:
@@ -169,10 +204,7 @@ def observation_row(item: Measurement, request: FitRequest, origin: Source, role
     elif request.mode == "machine" and (
         item.source_id != origin.id
         or item.source_context is None
-        or item.source_context.type_id != origin.type_id
-        or item.source_context.lat != origin.lat
-        or item.source_context.lng != origin.lng
-        or item.source_context.operating_mode != request.source_modes.get(origin.id, "")
+        or not request.matches_machine_setup(origin, item.source_context)
     ):
         row.reason = "Recorded machine position or operating setup does not match the selected machine."
     elif distance < 1:
