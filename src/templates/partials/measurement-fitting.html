@@ -1,26 +1,37 @@
 <details id="measurement-fit" class="fit-editor">
   <summary>Build an estimate from readings</summary>
   <form id="fit-form">
-    <label>Estimate<select name="mode"><option value="machine">Calibrate one machine</option><option value="area">Combined operating area</option></select></label>
+    <nav class="fit-steps" aria-label="Estimate steps"><button type="button" data-fit-go="0">1 · Setup</button><button type="button" data-fit-go="1">2 · Readings</button><button type="button" data-fit-go="2">3 · Result</button></nav>
+    <fieldset data-fit-step><legend>1. What do you want to estimate?</legend>
+    <label>Estimate<select name="mode"><option value="machine">One machine, using meter readings</option><option value="area">A whole area — no machines needed</option></select></label>
     <div id="fit-machine-fields"><label>Machine<select id="fit-machine" name="source_id" required></select></label>
       <p class="hint">Use isolated-machine tests. Applying creates an estimated version for this placed machine only.</p></div>
     <div id="fit-area-fields" hidden>
       <label>Area name<input name="area_name" maxlength="80" placeholder="e.g. North work area"></label>
       <button id="mark-fit-area" type="button" class="secondary compact">Mark area centre on map</button>
-      <div class="two-columns"><label>Centre latitude<input name="lat" type="number" min="-85" max="85" step="any"></label><label>Centre longitude<input name="lng" type="number" min="-180" max="180" step="any"></label></div>
+      <details><summary>Edit centre coordinates</summary><div class="two-columns"><label>Centre latitude<input name="lat" type="number" min="-85" max="85" step="any"></label><label>Centre longitude<input name="lng" type="number" min="-180" max="180" step="any"></label></div></details>
       <label>Area radius · metres<input id="fit-radius" name="radius" type="number" min="1" step="any"></label>
       <p class="hint">One equivalent source at this centre. Use readings outside the marked area; interior readings remain recorded. This simple model does not describe noise within the area.</p>
       <label id="replace-fit-sources-label" class="fit-confirm"><input name="replace" type="checkbox">Replace all active sources with this area estimate to avoid counting them twice. Measurements and receivers stay.</label>
     </div>
-    <label>Operating activity / site state<input name="activity" list="fit-activities" maxlength="200" placeholder="Match the activity recorded on the selected readings" required></label><datalist id="fit-activities"></datalist>
+    <button type="button" class="primary" data-fit-next>Choose readings →</button></fieldset>
+    <fieldset data-fit-step><legend>2. Choose readings from the same test</legend>
+    <label>What was happening?<select id="fit-test-choice"><option value="">Choose a recorded activity</option></select></label>
+    <details><summary>Enter a different activity label</summary>
+    <label>Operating activity / site state<input name="activity" list="fit-activities" maxlength="200" placeholder="Match the activity recorded on the selected readings" required></label><datalist id="fit-activities"></datalist></details>
+    <label>Background noise · dB(A)<input id="fit-background-input" type="number" step="any" placeholder="Enter a representative background reading"></label>
     <p id="fit-background" class="hint"></p>
-    <label class="fit-confirm"><input name="background_confirmed" type="checkbox" required>The background represents these tests on a comparable averaging basis.</label>
-    <p class="hint">Choose at least two Fit readings and one separate Check reading from the same operating conditions. Only Fit readings determine the estimate.</p>
+    <label class="fit-confirm"><input name="background_confirmed" type="checkbox" required>This background reading represents the conditions during these tests.</label>
+    <p class="hint">Choose two or more readings to build the estimate. Keep at least one different reading to check the prediction.</p>
     <p id="fit-empty" class="hint">Add measurements first. Unknown or mixed-machine tests cannot calibrate a single machine.</p>
-    <div id="fit-selections"></div>
+    <div id="fit-selections"></div><p id="fit-selection-help" class="hint" role="status"></p>
+    <button type="button" class="primary" data-fit-next>Review prediction →</button></fieldset>
+    <fieldset data-fit-step><legend>3. Preview before changing the map</legend>
+    <p class="hint">Calculate a preview, check the differences, then use it on the map. Your original readings are kept.</p>
     <button id="preview-fit" type="submit" class="secondary">Preview estimate</button>
     <p id="fit-error" role="status" aria-live="polite"></p>
     <div id="fit-result" tabindex="-1" aria-live="polite"></div>
-    <button id="apply-fit" type="button" class="primary" hidden>Apply reviewed estimate</button>
+    <button id="apply-fit" type="button" class="primary" hidden>Use this estimate on the map</button>
+    </fieldset>
   </form>
 </details>

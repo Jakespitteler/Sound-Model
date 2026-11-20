@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>Simple POC workflow</title><div id="fixture"></div><pre id="result">Running…</pre>
+<script type="module">
+import {ScenarioStore} from '../../src/static/js/state.js';
+import {setupWorkflow} from '../../src/static/js/workflow.js';
+let count=0;const check=(ok,message)=>{if(!ok)throw Error(message);count++;};
+try {
+ let html=await (await fetch('../../src/templates/index.html')).text();
+ for(const name of ['measurement-fitting','sources-section','receivers-section','map-overlays','contours-section','catalogue-section']) html=html.replace('{{'+name+'}}',await (await fetch('../../src/templates/partials/'+name+'.html')).text());
+ document.querySelector('#fixture').innerHTML=new DOMParser().parseFromString(html,'text/html').body.innerHTML;
+ const store=new ScenarioStore();store.measurements=[{id:'a',activity:'Idle'},{id:'b',activity:'Loading'}];
+ const row=document.createElement('label');row.dataset.fitReading='b';row.innerHTML='<select><option value="fit" selected>Build estimate</option></select>';document.querySelector('#fit-selections').append(row);
+ const form=document.querySelector('#fit-form');
+ setupWorkflow(store);
+ check(document.querySelector('#measurement-workspace').hidden,'first use begins with machines');
+ check(!document.querySelector('#listening-workspace').hidden,'listening points available on machine path');
+ check(document.querySelector('.model-settings').contains(document.querySelector('#background-level')),'optional global background grouped with settings');
+ document.querySelector('#measurements-tab').click();
+ check(!document.querySelector('#measurement-workspace').hidden && document.querySelector('#scenario-panel').hidden,'measurement path is a visible independent workspace');
+ check(document.querySelector('.measurement-settings').open,'readings available without finding an advanced disclosure');
+ document.querySelector('#start-estimate').click();
+ check(document.querySelector('#measurement-fit').open,'primary action opens guided estimate');
+ const steps=[...form.querySelectorAll('[data-fit-step]')];
+ check(!steps[0].hidden && steps[1].hidden && steps[2].hidden,'only setup stage initially shown');
+ document.querySelector('[data-fit-go="1"]').click();
+ check(steps[0].hidden && !steps[1].hidden,'navigation exposes one stage without discarding fields');
+ check(document.querySelector('#fit-test-choice').options.length===3,'recorded conditions appear as choices');
+ document.querySelector('#fit-test-choice').value='Idle';document.querySelector('#fit-test-choice').dispatchEvent(new Event('change'));
+ check(form.elements.activity.value==='Idle','choosing a condition reuses its actual label');
+ check(document.querySelector('#fit-selection-help').textContent.includes('1 selected reading(s) have a different activity'),'mismatch explained before model request');
+ check(store.measurements[1].activity==='Loading','condition selection never relabels observations');
+ document.dispatchEvent(new Event('estimate-applied'));
+ check(document.activeElement.id==='place-receiver','apply hands off to checking a location');
+ document.querySelector('#contours-tab').click();check(document.querySelector('#listening-workspace').hidden,'contour editing hides unrelated workflow');
+ document.dispatchEvent(new Event('open-measurement'));check(!document.querySelector('#measurement-workspace').hidden,'marker/editor requests reveal measurement path');
+ check(store.sources.length===0 && store.background_db===null,'presentation has not created sources or guessed background');
+ document.querySelector('#result').textContent=`PASS: ${count} checks`;
+} catch(error){document.querySelector('#result').textContent='FAIL: '+error.stack;throw error;}
+</script>

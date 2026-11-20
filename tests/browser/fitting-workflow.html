@@ -41,7 +41,7 @@ try {
  window.fetch=async()=>{requests++;return {ok:true,json:async()=>({ready:true,reason:'Preview',lwa:110,spread_db:0,centre:{lat:0,lng:0},rows:[]})};};
  fields.background_confirmed.checked=true;
  set('activity','   ');await ui.calculate();check(requests===0,'invalid activity never reaches model');
- set('activity','Steady idle');await ui.calculate();check(requests===0 && document.querySelector('#fit-error').textContent.includes('two Fit'),'insufficient fit/check selection is actionable locally');
+ set('activity','Steady idle');await ui.calculate();check(requests===0 && document.querySelector('#fit-error').textContent.includes('two readings'),'insufficient fit/check selection is actionable locally');
  [...document.querySelectorAll('#fit-selections select')].forEach((select,index)=>select.value=index<2?'fit':'check');
  await ui.calculate();check(requests===1 && !document.querySelector('#apply-fit').hidden,'valid existing workflow still produces applicable preview');
  set('activity','Changed');check(document.querySelector('#apply-fit').hidden && ui.preview===null,'activity correction cannot leave stale Apply available');

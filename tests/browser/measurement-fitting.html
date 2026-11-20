@@ -35,7 +35,8 @@ try {
  const text=fitPreview({ready:false,reason:'<script>',rows:[{id:'m',role:'check',reason:'<img>',eligible:false}]},store.measurements);
  const container=document.createElement('div');container.innerHTML=text;
  check(!container.querySelector('img,script') && container.textContent.includes('<script>'),'preview escapes labels and reasons');
- check(container.textContent.includes('Check only') && container.textContent.includes('—'),'unavailable check retained without a false zero');
+ check(container.querySelector('[data-open-reading="m"]')?.textContent==='Edit reading','preview links directly to its original reading');
+ check(container.textContent.includes('Checks prediction') && container.textContent.includes('—'),'unavailable check retained without a false zero');
  document.querySelector('#result').textContent=`PASS: ${count} checks`;
 } catch(error) {document.querySelector('#result').textContent='FAIL: '+error.stack;throw error;}
 </script>

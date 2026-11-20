@@ -19,7 +19,7 @@
   <main>
     <aside class="sidebar" aria-label="Scenario controls">
       <div class="sidebar-header">
-        <div class="sidebar-title"><h1>Noise scenario</h1><button id="demo" class="text-button" type="button">Try example</button></div>
+        <div class="sidebar-title"><h1>Noise near your site</h1><button id="demo" class="text-button" type="button">Try example</button></div>
         <div class="scenario-file-actions"><button id="save-scenario" class="secondary compact" type="button">Save</button><button id="open-scenario" class="secondary compact" type="button">Open</button></div>
         <p id="save-status" class="scenario-note" role="status">Unsaved scenario · Save to keep your work</p>
         <p id="recovery-status" class="scenario-note" role="status" hidden></p>
@@ -28,10 +28,12 @@
           <label class="level-number"><input id="background-level" type="number" step="any" placeholder="Not set" aria-label="Background noise"><span>dB(A)</span></label>
         </div><p id="background-status" class="scenario-note" role="status"></p>
         <div class="sidebar-tabs" role="tablist" aria-label="Scenario workspace">
-          <button id="scenario-tab" type="button" role="tab" aria-selected="true" aria-controls="scenario-panel">Scenario</button>
+          <button id="scenario-tab" type="button" role="tab" aria-selected="true" aria-controls="scenario-panel">Machines</button>
+          <button id="measurements-tab" type="button" role="tab" aria-selected="false" aria-controls="measurement-workspace" tabindex="-1">Measurements</button>
           <button id="contours-tab" type="button" role="tab" aria-selected="false" aria-controls="contours-panel" tabindex="-1">Contours</button>
         </div>
       </div>
+      <p id="workflow-help" class="hint"></p>
       <div id="scenario-panel" role="tabpanel" aria-labelledby="scenario-tab">
         {{sources-section}}
         {{receivers-section}}
@@ -40,15 +42,18 @@
       <div id="contours-panel" role="tabpanel" aria-labelledby="contours-tab" hidden>
         {{contours-section}}
       </div>
+      <div id="measurement-workspace" role="tabpanel" aria-labelledby="measurements-tab" hidden></div>
+      <div id="listening-workspace"></div><div id="equipment-workspace"></div>
       <details class="measurement-settings"><summary>Measurements <span id="measurement-count" class="count">0</span></summary>
-        <p class="hint">Record field pressure readings separately from the model.</p>
+        <p class="hint">Add what your meter measured. You can estimate an area without placing machines.</p>
         <button id="add-measurement" type="button" class="secondary compact">＋ Add measurement</button>
         <button id="retry-measurements" type="button" class="text-button" hidden>Retry comparisons</button>
+        <p id="measurement-next" class="hint"></p><button id="start-estimate" type="button" class="primary">Estimate noise from readings →</button>
         <div id="measurement-cards"></div>
         {{measurement-fitting}}
       </details>
       <details class="assumptions model-settings">
-        <summary>Model info</summary>
+        <summary>More settings &amp; model details</summary>
         <p>Estimated machine noise. <a href="/about" target="_blank" rel="noopener">How it works ↗</a></p>
         <div class="section-heading"><h2>Cloud cover</h2><output id="cloud-value" for="cloud">0%</output></div>
         <input id="cloud" aria-label="Cloud cover" type="range" min="0" max="100" step="1" value="0">

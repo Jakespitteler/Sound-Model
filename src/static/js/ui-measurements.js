@@ -63,14 +63,16 @@ export class MeasurementUI {
     return `<details ${id==='draft'?'open':''}><summary class="entity-summary"><strong>${e(id==='draft'?'New measurement':this.label(item,index))}</strong><span class="source-power">${item.level_db==null?'Not recorded':item.level_db.toFixed(1)+' dB'}<small>measured pressure</small></span></summary>
       <div data-comparison></div><form class="measurement-form" data-reading="${e(id)}">
       <label>Name (optional)<input name="name" maxlength="80" value="${e(item.name || '')}"></label>
-      <div class="two-columns"><label>Measured pressure · dB<input name="level_db" type="number" step="any" value="${item.level_db ?? ''}" required></label>
+      <div class="two-columns"><label>Meter reading · dB<input name="level_db" type="number" step="any" value="${item.level_db ?? ''}" required></label>
       <label>Meter reading type<select name="metric">${options([['unknown','Unknown'],['LAeq','LAeq — average'],['LAmax','LAmax — maximum']],item.metric || 'unknown')}</select></label></div>
-      <details><summary>Test details (optional)</summary>
-      <p class="hint">Link a machine only when its modeled setup represents this test.</p><label>Machine<select name="source_id">${this.sourceOptions(item.source_id,item)}</select></label>
-      <label>Other machinery<select name="isolation">${options([['unknown','Unsure'],['isolated','Selected machine was isolated'],['mixed','Other machinery contributing']],item.isolation || 'unknown')}</select></label>
-      <label>Operating activity<input name="activity" maxlength="200" value="${e(item.activity || '')}" placeholder="e.g. steady idle or loaded pass"></label>
+      <label>What was happening? (activity)<input name="activity" maxlength="200" value="${e(item.activity || '')}" placeholder="e.g. steady idle or loaded pass"></label>
       <div class="two-columns"><label>Test<select name="test_kind">${options([['unknown','Unknown'],['stationary','Stationary / steady'],['moving','Moving / pass-by'],['startup','Startup / brief event']],item.test_kind || 'unknown')}</select></label>
       <label>Duration · seconds<input name="duration_s" type="number" min="0.000001" step="any" value="${item.duration_s ?? ''}" placeholder="Unknown"></label></div>
+      <details><summary>Link to a machine (optional)</summary>
+      <p class="hint">Link a machine only when its modeled setup represents this test.</p><label>Machine<select name="source_id">${this.sourceOptions(item.source_id,item)}</select></label>
+      <label>Other machinery<select name="isolation">${options([['unknown','Unsure'],['isolated','Selected machine was isolated'],['mixed','Other machinery contributing']],item.isolation || 'unknown')}</select></label>
+      </details>
+      <details><summary>Notes, meter &amp; coordinates</summary>
       <label>Meter details<input name="meter" maxlength="200" value="${e(item.meter || '')}" placeholder="Unknown until available"></label>
       <label>Conditions / notes<textarea name="note" maxlength="2000" rows="2">${e(item.note || '')}</textarea></label>
       <div class="two-columns"><label>Recorded latitude<input name="lat" type="number" min="-85" max="85" step="any" value="${item.lat}" required></label>
@@ -125,6 +127,7 @@ export class MeasurementUI {
 
   /** @param {string} id Observation/draft to inspect. */
   open(id) {
+    document.dispatchEvent(new Event('open-measurement'));
     this.settings.open=true;
     const card=[...$('measurement-cards').children].find(c=>c.dataset.measurementId===id);if(!card) return;
     const details=card.querySelector('details');if(!details.open) details.querySelector('summary').click();

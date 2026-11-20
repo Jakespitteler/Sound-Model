@@ -7,10 +7,13 @@ import {fitPreview} from './fit-preview.js';
 export class FittingUI {
   /** @param {import('./state.js').ScenarioStore} store Current scenario.
    * @param {import('./map-manager.js').MapManager} manager Shared map/placement.
-   * @param {function(string):void} say Status writer. */
-  constructor(store,manager,say) {
+   * @param {function(string):void} say Status writer.
+   * @param {function(string):void} openMeasurement Reveal an original reading to edit. */
+  constructor(store,manager,say,openMeasurement=()=>{}) {
+    this.formClick=event=>{const edit=event.target.closest('[data-open-reading]');if(edit)openMeasurement(edit.dataset.openReading);};
     this.store=store;this.manager=manager;this.say=say;this.preview=null;this.generation=0;
     this.root=$('measurement-fit');this.form=$('fit-form');this.layer=L.layerGroup().addTo(manager.map);
+    this.form.addEventListener('click',this.formClick);
     this.form.addEventListener('input',()=>{this.invalidate();this.syncMode();this.drawArea();});
     this.form.addEventListener('change',()=>{this.invalidate();this.syncMode();this.drawArea();});
     this.form.addEventListener('submit',event=>{event.preventDefault();this.calculate();});
@@ -49,8 +52,9 @@ export class FittingUI {
     this.store.measurements.forEach((item,index)=> {
       let row=[...holder.children].find(r=>r.dataset.fitReading===item.id);
       if(!row) {row=document.createElement('label');row.className='fit-selection';row.dataset.fitReading=item.id;
-        row.innerHTML=`<span></span><select aria-label="Use measurement ${index+1}"><option value="skip">Don't use</option><option value="fit">Fit</option><option value="check">Check only</option></select>`;holder.append(row);}
-      row.querySelector('span').textContent=`${item.name || 'Measurement '+(index+1)} · ${item.level_db.toFixed(1)} dB`;
+        row.innerHTML=`<span></span><select aria-label="Use measurement ${index+1}"><option value="skip">Leave out</option><option value="fit">Build estimate</option><option value="check">Check prediction</option></select>`;holder.append(row);}
+      row.querySelector('span').textContent=`${item.name || 'Measurement '+(index+1)} · ${item.level_db.toFixed(1)} dB · ${item.activity || 'Activity not recorded'}`;
+      if(!row.querySelector('button')) {const edit=document.createElement('button');edit.type='button';edit.className='text-button';edit.textContent='Edit';edit.dataset.openReading=item.id;row.append(edit);}
     });
     const activities=[...new Set(this.store.measurements.map(item=>(item.activity || '').trim()).filter(Boolean))];
     $('fit-activities').innerHTML=activities.map(activity=>`<option value="${e(activity)}"></option>`).join('');
@@ -89,9 +93,9 @@ export class FittingUI {
 
   /** Calculate once after explicit submission; reject responses for any superseded input. */
   async calculate() {
-    this.invalidate();if(!this.form.reportValidity()) return;
+    this.invalidate();if(!this.form.checkValidity()) {this.form.dispatchEvent(new Event('fit-invalid'));this.form.reportValidity();return;}
     const request=this.payload();
-    if(request.fit_ids.length<2 || !request.check_ids.length) {$('fit-error').textContent='Select at least two Fit readings and one separate Check reading.';return;}
+    if(request.fit_ids.length<2 || !request.check_ids.length) {$('fit-error').textContent='Choose at least two readings to Build estimate and one different reading to Check prediction.';return;}
     const generation=this.generation;this.controller=new AbortController();$('preview-fit').disabled=true;
     $('fit-error').textContent='Calculating preview…';
     try {
@@ -111,7 +115,7 @@ export class FittingUI {
     if(!this.store.applyMeasurementFit(preview.request,preview.result,preview.name,preview.replace)) {
       $('fit-error').textContent='Could not apply. Check source selection and the 50-type catalogue limit.';return;
     }
-    this.root.open=false;
+    this.root.open=false;document.dispatchEvent(new Event('estimate-applied'));
     this.say(preview.request.mode==='area'?'Area estimate applied. Receivers and contours now use its combined emission.':'Calibration applied to this machine only. Original catalogue data and readings were retained.');
   }
 

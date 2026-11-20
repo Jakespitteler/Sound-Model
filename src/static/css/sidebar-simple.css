@@ -131,3 +131,27 @@ details[open] > .entity-summary::before { content:'▾'; }
 #fit-error { font-size:12px; color:var(--danger); }
 
 #fit-result { scroll-margin-top:64px; }
+
+
+/* One job per workspace; one scroll area, including long editors. */
+.sidebar { display:block; overflow-y:auto; }
+.sidebar #scenario-panel { display:block; }
+.sidebar #scenario-panel[hidden],.sidebar [hidden] { display:none !important; }
+.sidebar #scenario-panel > section { display:block; }
+.sidebar #scenario-panel .items,#receivers,.sidebar .catalogue-section,.sidebar .model-settings { max-height:none; overflow:visible; }
+#listening-workspace { margin-top:20px; border-top:1px solid var(--line); }
+#workflow-help { margin:12px 0; }
+.fit-steps { display:flex; gap:6px; margin:12px 0 20px; }
+.fit-steps button { flex:1; background:var(--surface-alt); padding:9px 6px; border:1px solid var(--line); color:var(--muted); }
+.fit-steps button[aria-current=step] { background:var(--teal); color:white; }
+#fit-form fieldset { border:0; margin:0; padding:0; min-width:0; }
+#fit-form legend { font-weight:650; font-size:17px; margin-bottom:16px; }
+#fit-form [data-fit-next] { margin-top:16px; width:100%; }
+.fit-selection { flex-wrap:wrap; }
+.fit-selection span { flex:1; font-size:12px; }
+.fit-selection button { padding:4px; }
+#start-estimate { width:100%; margin-bottom:16px; }
+#measurement-workspace .measurement-settings { border:0; }
+#measurement-workspace .measurement-settings > summary { font-weight:650; margin:12px 0; }
+
+.fit-selection select { flex-basis:145px; width:145px; }

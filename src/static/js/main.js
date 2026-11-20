@@ -10,6 +10,7 @@ import {CatalogueUI} from './ui-catalogue.js';
 import {EntitiesUI} from './ui-entities.js';
 import {ContoursUI} from './ui-contours.js';
 import {renderSoundGuide} from './sound-guide.js';
+import {setupWorkflow} from './workflow.js';
 import {setupSidebar} from './sidebar.js';
 import {ScenarioFilesUI} from './scenario-files.js';
 import {FittingUI} from './ui-fitting.js';
@@ -35,9 +36,9 @@ function updateRetry() { $('retry').hidden=!(receiverFailed || geometryFailed ||
 /** @param {string} message Human-readable feedback. */
 const say = message => { $('message').textContent = message; };
 const catalogue = new CatalogueUI(store,say), entities = new EntitiesUI(store,say), contours = new ContoursUI(store,say);
-new MeasurementUI(store,manager,say);
-new FittingUI(store,manager,say);
-catalogue.bind(); entities.bind(); contours.bind(); renderSoundGuide(); setupSidebar();
+const measurements=new MeasurementUI(store,manager,say);
+new FittingUI(store,manager,say,id=>{document.dispatchEvent(new Event('open-measurement'));measurements.open(id);});
+catalogue.bind(); entities.bind(); contours.bind(); renderSoundGuide(); setupSidebar(); setupWorkflow(store);
 const syncBackgroundSpectrum=bindBackgroundSpectrum(store,say);
 
 /** @param {Error} error Failure displayed with an explicit retry. */
