@@ -2,7 +2,7 @@
 
 [Canonical task queue](../docs/tasks/README.md) · [Project rules](../AGENTS.md)
 
-Updated 19 November 2026 after the owner's task-by-task review. The scope is a small proof
+Updated 20 November 2026 after the owner's task-by-task review. The scope is a small proof
 of concept, balancing usability and assessment foundations without building a full assessment
 platform. This plan records the approved work; current implementation states are in the linked briefs.
 Task states and acceptance checkboxes live only in the linked task briefs, not a second todo list.
@@ -45,6 +45,7 @@ Task states and acceptance checkboxes live only in the linked task briefs, not a
 | Model feasibility | [026](../docs/tasks/026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend then editor PRs |
 | Derived emissions | [032](../docs/tasks/032-machine-measurement-calibration.md), [033](../docs/tasks/033-operating-area-estimate.md) | Implemented in stacked fitting/editor slices; preview/apply only, no new propagation physics |
 | Site observations | [031](../docs/tasks/031-site-measurement-pins.md) | Implemented in stacked data/editor PRs; retain unknowns, no automatic calibration |
+| Field preparation | [034](../docs/tasks/034-field-measurement-guide.md) | Implemented; practical isolated/mixed/background/check guidance, documentation only |
 | Optional decision | [016](../docs/tasks/016-print-summary-decision.md) | Complete — owner removed printing from the POC |
 
 An agent should take one task at a time, recording the commit, checks and remaining limits.
@@ -124,5 +125,6 @@ the adaptive background relevance rule implemented by task 024. An extreme 300 d
 - Task 024 policy agreed: one background level and a 0.1 dB increase boundary; implementation ready for review.
 - Task 016 is resolved: printing removed from the POC.
 
-Measurements, environmental propagation selection, regulatory criteria and formal reporting
-remain parked. The app's limitations stay visible; a POC is not an inaudibility certificate.
+Real field measurements still require site work. Environmental propagation selection,
+regulatory criteria and formal reporting remain parked. The app's limitations stay visible;
+a POC is not an inaudibility certificate.

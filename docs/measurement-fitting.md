@@ -21,6 +21,8 @@ flowchart TD
     Apply --> Model[Existing receiver and contour calculations]
 ```
 
+For collecting the inputs, use the [field-measurement guide](field-measurement-guide.md).
+
 ## Eligibility and background
 
 Both workflows require known stationary LAeq averages, positive duration, one matching

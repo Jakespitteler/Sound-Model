@@ -95,6 +95,8 @@ preview/apply workflow for an isolated machine or a combined operating area, wit
 check readings. See the
 [measurement workflow](docs/user-guide.md#record-site-measurements).
 
+Planning site readings? Start with the [field-measurement guide](docs/field-measurement-guide.md).
+
 ## Keep your work
 
 Saves are local to the computer running the Python backend, under `local-data/scenarios/`.

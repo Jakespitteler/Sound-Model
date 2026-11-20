@@ -237,6 +237,9 @@ saves and backups for important work.
 
 ## Record site measurements
 
+Before going on site, read the [field-measurement guide](field-measurement-guide.md) for
+what to record, background requirements and choosing separate check points.
+
 Open **Measurements** below Machine data, select **Add measurement**, and click where the
 meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
 show recorded readings; they are separate from simulated receivers and machine sound power.
