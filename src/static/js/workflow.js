@@ -48,6 +48,7 @@ function setupFitJourney(store) {
   form.addEventListener('fit-invalid',()=>{const invalid=[...form.elements].find(input=>input.willValidate && !input.validity.valid);const step=invalid?.closest('[data-fit-step]');if(step)show(steps.indexOf(step));if(invalid)for(let node=invalid.parentElement;node && node!==form;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;});
   form.querySelectorAll('[data-fit-next]').forEach(button=>button.onclick=()=>{
     const invalid=[...steps[active].querySelectorAll('input,select')].find(input=>input.willValidate && !input.checkValidity());
+    if(active===1 && !invalid) {const roles=[...$('fit-selections').querySelectorAll('select')].map(select=>select.value);if(roles.filter(role=>role==='fit').length<2 || !roles.includes('check')) {$('fit-selection-help').textContent='Choose at least two readings to Build estimate and one different reading to Check prediction.';$('fit-selections').querySelector('select')?.focus();return;}}
     if(invalid){for(let node=invalid.parentElement;node && node!==form;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;invalid.reportValidity();return;}show(Math.min(2,active+1));
   });
   form.querySelectorAll('[data-fit-go]').forEach(button=>button.onclick=()=>show(Number(button.dataset.fitGo)));

@@ -28,6 +28,8 @@ try {
  check(form.elements.activity.value==='Idle','choosing a condition reuses its actual label');
  check(document.querySelector('#fit-selection-help').textContent.includes('1 selected reading(s) have a different activity'),'mismatch explained before model request');
  check(store.measurements[1].activity==='Loading','condition selection never relabels observations');
+ form.elements.background_confirmed.checked=true;form.querySelectorAll('[data-fit-next]')[1].click();
+ check(steps[2].hidden && document.querySelector('#fit-selection-help').textContent.includes('Choose at least two'),'insufficient role selection is explained before leaving the readings step');
  document.dispatchEvent(new Event('estimate-applied'));
  check(document.activeElement.id==='place-receiver','apply hands off to checking a location');
  document.querySelector('#contours-tab').click();check(document.querySelector('#listening-workspace').hidden,'contour editing hides unrelated workflow');
