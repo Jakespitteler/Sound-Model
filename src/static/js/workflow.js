@@ -11,22 +11,22 @@ export function setupWorkflow(store) {
   model.append(document.querySelector('.background-control'),$('background-status'));
   $('measurement-workspace').append(measurements);measurements.open=true;
   $('listening-workspace').append(receivers);$('equipment-workspace').append(catalogue);
-  const tabs=[$('scenario-tab'),$('measurements-tab'),$('contours-tab')];
-  const panels=[scenario,$('measurement-workspace'),$('contours-panel')];
+  const tabs=[$('scenario-tab'),$('measurements-tab'),$('receivers-tab'),$('contours-tab')];
+  const panels=[scenario,$('measurement-workspace'),$('listening-workspace'),$('contours-panel')];
   /** @param {number} index Active workspace. @param {boolean} focus Move tab focus. */
   function select(index,focus=false) {
     if(panels[index].hidden && store.mode) store.setMode(null);
     tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
-    $('listening-workspace').hidden=index===2;$('equipment-workspace').hidden=index!==0;
+    $('equipment-workspace').hidden=index!==0;
     $('workflow-help').hidden=index===0;
-    $('workflow-help').textContent=index===1?'Record the sound at each test location. Drag a meter pin to correct its location.':'Choose which sound levels appear on the map.';
+    $('workflow-help').textContent=index===1?'Record the sound at each test location. Drag a meter pin to correct its location.':index===2?'Place a point at the town or property you want to check.':'Choose which sound levels appear on the map.';
     if(index===1) measurements.open=true;
     document.querySelector('.sidebar').dispatchEvent(new Event('sidebar-view'));
     if(focus) tabs[index].focus();
   }
   tabs.forEach((tab,index)=> {
     tab.onclick=()=>select(index);
-    tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();select(event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3,true);};
+    tab.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();select(event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:tabs.length-1))%tabs.length,true);};
   });
   $('start-estimate').addEventListener('click',()=>{
     for(const card of document.querySelectorAll('.measurement-card > details')) card.open=false;
@@ -37,12 +37,13 @@ export function setupWorkflow(store) {
     next.focus();
     if(next.id==='start-estimate' && !$('measurement-fit').open) next.click();
   };
+  $('open-walkthrough').onclick=()=>$('walkthrough').showModal();
   $('sound-key').open=false;
   select(0);
   document.addEventListener('open-measurement',()=>{select(1);$('measurement-fit').open=false;});
   document.addEventListener('estimate-applied',()=>{
     measurements.open=false;
-    select(0);
+    select(2);
     const target=$('receivers').querySelector('.entity-summary') || $('place-receiver');
     target.focus();
     target.scrollIntoView({block:'nearest'});

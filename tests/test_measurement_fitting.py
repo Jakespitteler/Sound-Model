@@ -75,6 +75,32 @@ def test_fit_recovers_power_and_keeps_check_independent(mode: str) -> None:
     assert changed.rows[2].difference_db is not None and changed.rows[2].difference_db > 6
 
 
+def test_confidence_uses_held_back_agreement_and_background() -> None:
+    """Grade evidence without treating one check as a validated prediction."""
+    request = fitting()
+    initial = fit_measurements(request)
+    assert initial.confidence is not None and initial.confidence.rating == "limited"
+    fourth = request.measurements[-1].model_copy(update={"id": "3", "lat": 0.001})
+    request.measurements.append(fourth)
+    request.check_ids.append(fourth.id)
+    result = fit_measurements(request)
+    assert result.confidence is not None
+    assert result.confidence.rating == "consistent"
+    assert result.confidence.check_count == 2
+    assert result.confidence.max_error_db < 1
+    fourth.level_db += 6
+    result = fit_measurements(request)
+    assert result.confidence is not None
+    assert result.confidence.rating == "limited"
+    assert result.confidence.max_error_db > 3
+    assert result.lwa == pytest.approx(110)
+    fourth.level_db -= 6
+    request.background_db = 40
+    sensitive = fit_measurements(request)
+    assert sensitive.confidence is not None and sensitive.confidence.rating == "limited"
+    assert sensitive.confidence.sensitive_reading_count > 0
+
+
 @pytest.mark.parametrize("gap", [3, 6, 10, 100, 10000])
 def test_stable_background_energy_subtraction(gap: float) -> None:
     """Subtract energies, retaining stable high-dynamic-range levels."""

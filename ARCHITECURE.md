@@ -504,7 +504,7 @@ instance or replacing every placement with one fixed area source. Its saved fit 
 the replaced IDs against the input snapshot. Machines placed afterward join the usual sound calculation.
 Accepted observations, background and receiver/contour settings remain unchanged. Existing
 prediction/cache lanes then consume ordinary source coordinates and effective LwA. No fitted
-metadata is sent to those lanes. Save/Open/recovery retain the detached fitting evidence;
+metadata is sent to those lanes. The backend saved entry wraps a standard machine input with optional fit evidence; the acoustic projection supplies the same machine type to the calculations. Save/Open/recovery retain the detached fitting evidence;
 manual later edits do not rewrite its historical inputs/results.
 
 ```mermaid
@@ -521,8 +521,7 @@ flowchart LR
 
 ## First-use workflow
 
-`workflow.js` arranges existing controls into Scenario, Meter readings and Contours workspaces,
-with listening points shared by the two modeling paths. It does not own acoustic data. Existing
+`workflow.js` arranges existing controls into Machines, Meter readings, Receivers and Contours workspaces. It does not own acoustic data. Existing
 DOM nodes are moved rather than recreated, retaining delegated handlers and unsaved drafts.
 The measurement journey reveals Setup, Readings or Result, opens invalid fields for correction,
 reuses existing activity labels and shows selected-role/activity feedback. Custom events reveal

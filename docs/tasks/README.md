@@ -40,6 +40,7 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 23 | [037 Recalibrate a machine from its recorded readings](037-repeat-machine-calibration.md) | Implemented for review above 036 |
 | 24 | [038 Compare current and proposed sound power](038-calibration-power-preview.md) | Implemented for review above 037 |
 | 25 | [039 Field-workflow rehearsal](039-field-workflow-rehearsal.md) | Implemented for review above 038 |
+| 26 | [041 Map controls and measurement workflow](041-map-and-estimate-workflow.md) | User-requested follow-up after the measurement stack merged |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Implemented; adaptive background boundary ready for review |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend/editor ready for review |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Complete — removed from the POC by owner |

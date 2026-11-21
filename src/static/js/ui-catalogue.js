@@ -17,7 +17,7 @@ function coverageNote(fit) {
   return `<p>Map sources replaced when applied: ${labels.join(', ') || 'none'}.</p>`;
 }
 
-/** Machine catalogue forms, selection and cloud metadata controls. */
+/** Machine catalogue forms, selection. */
 export class CatalogueUI {
   /**
    * @param {import("./state.js").ScenarioStore} store Scenario state.
@@ -70,11 +70,7 @@ export class CatalogueUI {
 
     $('types').addEventListener('input',event=>event.target.setCustomValidity?.(''));
 
-    $('cloud').addEventListener('input', () => {
-      const val = Number($('cloud').value);
-      $('cloud-value').textContent = `${val}%`;
-      this.store.setCloudCover(val);
-    });
+
   }
 
   /** Render catalogue definitions and preserve the selected placement type. */

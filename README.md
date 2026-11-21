@@ -25,6 +25,8 @@ address search uses `photon.komoot.io`.
 
 ## Build your first scenario
 
+Select **Walkthrough** for a short guide inside the app.
+
 ```mermaid
 flowchart LR
     Equipment[Choose type] --> Place[Place machines]
@@ -33,7 +35,7 @@ flowchart LR
     Read --> Save[Save scenario]
 ```
 
-1. Select a type under **Scenario → What’s making noise?**, choose **Place machine**, then click the map.
+1. Select a type under **Machines → What’s making noise?**, choose **Place machine**, then click the map.
 2. Choose **Add listening point**, then click a listening location. Its coloured number is
    the calculated machine contribution there, excluding background noise.
    Expand its receiver row to give it an optional name, such as Town boundary; the name
@@ -54,7 +56,7 @@ small red **×** controls for one-click removal; Undo restores the object.
 **Fit local area** frames nearby objects around the object nearest the current map centre,
 keeping every pair within 10 km. It changes only the view. Type an **Address or place**, then choose a suggestion to move the map. Arrow keys and
 Enter also select a result. **Go to coordinates** remains available. **Machine data** holds the equipment catalogue
-and editable estimate notes. On desktop, Scenario, Meter readings and Contours provide separate workspaces. Machine and
+and editable estimate notes. On desktop, Machines, Meter readings, Receivers and Contours provide separate workspaces. Machine and
 receiver controls share one natural scroll area. Expand an object row to edit it; Machine data and Model info
 share the advanced-settings space.
 
@@ -81,7 +83,7 @@ Under **Contours**, set an optional **Acceptable level** to draw a dashed refere
 **Frequency data** is optional: enter unweighted equipment/background octave bands inside
 Machine data and Model info, then expand a receiver's **Frequency comparison**. These
 comparisons do not alter contours or establish audibility; leave unknown data blank.
-Cloud cover is recorded only. Negative decibels are possible because zero dB is a reference,
+Negative decibels are possible because zero dB is a reference,
 not zero sound. Read [how the model works](docs/model.md) or open **About** in the app.
 
 The eight starter types are project-authored guesses, not verified Charles Hull or Talison

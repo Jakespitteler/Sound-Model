@@ -177,7 +177,7 @@ store.subscribe(reason=> {
   if (reason==='acceptable-level') contours.syncAcceptable();
   if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
-  if (reason==='restore') {contours.render(); $('cloud').value=store.cloud_cover; $('cloud-value').textContent=`${store.cloud_cover}%`;}
+  if (reason==='restore') contours.render();
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }
   if (['geometry','catalogue','receivers','background','restore'].includes(reason)) { if(reason!=='background') manager.renderMarkers(); refreshReceivers(); }
   if (['geometry','catalogue','thresholds','acceptable-level','background','restore'].includes(reason)) {

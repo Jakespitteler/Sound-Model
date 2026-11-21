@@ -40,7 +40,7 @@ changes all those instances. Removing a type is prevented while it is in use.
 4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
    to add an optional name or edit coordinates. **Sound from each source** shows individual sources.
 
-On desktop, Scenario, Meter readings and Contours separate the main jobs.
+Machines, Meter readings, Receivers and Contours each have their own workspace. Select **Walkthrough** for the first-use guide.
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and More settings & model details open one at a time, retaining their drafts.
 
@@ -243,7 +243,7 @@ what to record, background requirements and choosing separate check points.
 Choose the **Meter readings** workspace, select **Add measurement**, and click where the
 meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
 show recorded readings; they are separate from simulated receivers and machine sound power.
-Click a pin to reopen it. Delete uses two clicks in its editor. Drag a meter pin to correct its recorded location, or enter its latitude and longitude in the editor. A correction updates the comparison for that reading. Build a new estimate to use the corrected location in a fit.
+Click a named meter pin and choose **Edit measurement** or **Delete measurement**. Hold **Ctrl** to show the same quick-delete controls used for machines and receivers. Use **Show meter readings** to switch between isolated tests, other stationary averages and other readings. Drag a meter pin to correct its recorded location, or enter its latitude and longitude in the editor. A correction updates the comparison for that reading. Build a new estimate to use the corrected location in a fit.
 
 Leave unknown details blank. Under **Test details (optional)** you can record the tested
 machine, operating activity, duration, meter and conditions. Choose the meter's actual
@@ -283,7 +283,7 @@ In the **Meter readings** workspace, choose **Build a sound source from readings
    visible in the record editor; machine links and extra notes are optional disclosures.
    Unknown values can remain unknown, but may prevent using the reading in an estimate.
 2. Choose **Build a sound source from readings**. **Setup** asks what you are estimating:
-   one machine, or a whole area without machines. For an area, mark its centre and radius.
+   one machine, or a whole area without machines. For an area, mark its centre and radius, then drag the centre handle to adjust the draft circle.
    For a machine, choose its map number. Click **Choose readings →**.
 3. In **Readings**, select the recorded activity, enter a representative background and
    confirm it describes these tests. A unique existing activity is selected automatically;
@@ -298,7 +298,7 @@ In the **Meter readings** workspace, choose **Build a sound source from readings
    applying the preview. For a whole area, the button shows how many placed sources it will
    replace. The result is one area source fixed at the chosen centre. Meter readings,
    listening points and catalogue entries are retained.
-7. Under **Scenario**, use **Place machine** to add equipment that will run in addition
+7. Under **Machines**, use **Place machine** to add equipment that will run in addition
    to the measured activity. Open a listening point under **What reaches town?** to see
    the combined level and each source’s contribution. Save to keep the scenario.
 

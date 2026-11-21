@@ -12,7 +12,10 @@ try {
  const form=document.querySelector('#fit-form');
  setupWorkflow(store);
  check(document.querySelector('#measurement-workspace').hidden,'first use begins with machines');
- check(!document.querySelector('#listening-workspace').hidden,'listening points available on machine path');
+ check(document.querySelector('#listening-workspace').hidden,'receivers have a separate workspace');
+ document.querySelector('#open-walkthrough').click();
+ check(document.querySelector('#walkthrough').open,'walkthrough is available from the sidebar');
+ document.querySelector('#walkthrough').close();
  check(document.querySelector('.model-settings').contains(document.querySelector('#background-level')),'optional global background grouped with settings');
  document.querySelector('#source-from-readings').click();
  check(document.activeElement.id==='add-measurement','short path from Scenario focuses collecting missing readings');
@@ -32,7 +35,7 @@ try {
  form.elements.background_confirmed.checked=true;form.querySelectorAll('[data-fit-next]')[1].click();
  check(steps[2].hidden && document.querySelector('#fit-selection-help').textContent.includes('Choose at least two'),'insufficient role selection is explained before leaving the readings step');
  document.dispatchEvent(new Event('estimate-applied'));
- check(!document.querySelector('#scenario-panel').hidden && document.activeElement.id==='place-receiver','apply hands off to checking a location');
+ check(!document.querySelector('#listening-workspace').hidden && document.activeElement.id==='place-receiver','apply hands off to checking a location');
  document.querySelector('#contours-tab').click();check(document.querySelector('#listening-workspace').hidden,'contour editing hides unrelated workflow');
  document.dispatchEvent(new Event('open-measurement'));check(!document.querySelector('#measurement-workspace').hidden,'marker/editor requests reveal measurement path');
  check(store.sources.length===0 && store.background_db===null,'presentation has not created sources or guessed background');
