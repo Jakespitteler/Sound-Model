@@ -1,7 +1,7 @@
 /**
  * @fileoverview Shared JSDoc domain types. No compiler or runtime library needed.
  * @typedef {{id:string, name:string, lwa:number, provenance:string, note?:string, source_reference?:string, operating_mode?:string, use?:string, kind?:string, spectrum?:?Object, fitting?:?Object}} MachineType
- * @typedef {{id:string, type_id:string, lat:number, lng:number}} Source
+ * @typedef {{id:string, type_id:string, lat:number, lng:number, disabled?:boolean}} Source
  * @typedef {{id:string, lat:number, lng:number, name?:string}} Receiver
  * @typedef {{id:string, level_db:number, acceptable?:boolean, background?:boolean}} ContourLevel
  * @typedef {{id:string, lat:number, lng:number, level_db:number, name:string, metric:string, isolation?:string, test_kind:string, duration_s:?number, source_id:?string, source_context:?Object, activity:string, meter:string, note:string}} Measurement

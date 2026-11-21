@@ -35,7 +35,9 @@ changes all those instances. Removing a type is prevented while it is in use.
 1. Choose a type, select **Place machine**, and click its position. To place several,
    **Ctrl-click** each position, then click without Control to place the last machine.
    **Escape** or **Cancel placement** exits without adding another. Placement stops at 100 machines.
-2. Drag its icon to move it, or expand its machine row and enter coordinates.
+2. Drag its icon to move it, or expand its machine row and enter coordinates. To try a shutdown, choose
+   **Switch off** in the machine row or map popup. The machine stays on the map and you
+   can switch it back on. Undo and Redo work with this action, and Save keeps its state.
 3. Choose **Add listening point**, then click the listening location.
 4. Read its coloured pressure level on the map or in the sidebar. Expand its receiver row
    to add an optional name or edit coordinates. **Sound from each source** shows individual sources.
@@ -53,7 +55,9 @@ starting scenario. When you add, move or remove equipment, the table shows the b
 and current predictions at each receiver’s current position. The change is current
 minus baseline in dB. Both columns show machinery sound before background screening.
 A dash indicates that one scenario has no active sources and a dB change is undefined.
-The captured baseline lasts until you open or reload a scenario.
+The active comparison lasts until you open or reload a scenario. To compare two saves,
+open the proposed scenario first, then choose **Use saved scenario** to select the
+baseline. Each column honors the on/off states of its own configuration.
 
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and More settings & model details open one at a time, retaining their drafts.
@@ -258,6 +262,11 @@ Choose the **Meter readings** workspace, select **Add measurement**, and click w
 meter reading was taken. Enter **Measured pressure** and save it. Violet square **M** pins
 show recorded readings; they are separate from simulated receivers and machine sound power.
 Click a named meter pin and choose **Edit measurement** or **Delete measurement**. Hold **Ctrl** to show the same quick-delete controls used for machines and receivers. Use **Show meter readings** to switch between isolated tests, other stationary averages and other readings. Drag a meter pin to correct its recorded location, or enter its latitude and longitude in the editor. A correction updates the comparison for that reading. Build a new estimate to use the corrected location in a fit.
+
+On an operating reading, open **Pair a background reading** and select the comparable
+machinery-off reading. The editor flags different metrics or durations, non-steady
+tests, locations more than 5 m apart, and gaps under 3 dB. Confirm conditions in the
+field. The link is saved for review and the model uses the entered scenario background.
 
 Leave unknown details blank. Under **Test details (optional)** you can record the tested
 machine, operating activity, duration, meter and conditions. Choose the meter's actual

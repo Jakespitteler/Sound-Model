@@ -43,6 +43,9 @@ Do not treat approval to create tasks as a request to implement the whole queue 
 | 26 | [041 Map controls and measurement workflow](041-map-and-estimate-workflow.md) | User-requested follow-up after the measurement stack merged |
 | 27 | [042 Make the model and confidence visible](042-model-confidence-status.md) | User-requested follow-up to 041 |
 | 28 | [043 Compare baseline and current noise at receivers](043-receiver-baseline-comparison.md) | Implemented for review |
+| 29 | [044 Pair operating and background readings](044-field-pilot-tools.md#044-pair-operating-and-background-readings) | Implemented for review |
+| 30 | [045 Compare saved scenarios](044-field-pilot-tools.md#045-compare-saved-scenarios) | Implemented for review above 043 |
+| 31 | [046 Toggle sources on and off](044-field-pilot-tools.md#046-toggle-sources-on-and-off) | Implemented for review |
 | Investigation | [024 Source-aware scope policy](024-source-aware-model-scope.md) | Implemented; adaptive background boundary ready for review |
 | Investigation | [026 Feasible propagation effects](026-feasible-propagation-effects.md) | Approved optional band foundation implemented; backend/editor ready for review |
 | Decision | [016 Keep or drop printable summary?](016-print-summary-decision.md) | Complete — removed from the POC by owner |

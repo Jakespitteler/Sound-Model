@@ -2,6 +2,7 @@
 import {$,escapeHtml} from './utils.js';
 import {measurementLabel} from './state.js';
 import {RequestLane} from './api.js';
+import {objectDistance} from './local-area.js';
 
 /** Measurement records, movable pins and a bounded cached direct-comparison lane. */
 export class MeasurementUI {
@@ -26,7 +27,14 @@ export class MeasurementUI {
     });
     $('measurement-cards').addEventListener('submit',event=>this.save(event));
     const resetDelete=target=> {const button=target.closest('.measurement-card')?.querySelector('[data-delete-reading]');if(button) {delete button.dataset.confirm;button.textContent='Delete measurement';}};
-    $('measurement-cards').addEventListener('input',event=>resetDelete(event.target));
+    $('measurement-cards').addEventListener('input',event=>{
+      resetDelete(event.target);
+      const form=event.target.closest('form[data-reading]');
+      if(form) this.describePair(form);
+    });
+    $('measurement-cards').addEventListener('change',event=>{
+      if(event.target.name==='background_id') this.describePair(event.target.form);
+    });
     $('measurement-cards').addEventListener('toggle',event=>{if(!event.target.open) resetDelete(event.target);},true);
     $('measurement-cards').addEventListener('click',event=> {
       const cancel=event.target.closest('[data-cancel-reading]');
@@ -46,14 +54,14 @@ export class MeasurementUI {
 
   /** @param {string} id Source ID. @return {?Object} Detached current setup, not derived emission. */
   context(id) {
-    const source=this.store.sources.find(s=>s.id===id);if(!source) return null;
-    const type=this.store.typeFor(source);return {...source,name:type.name,lwa:type.lwa,operating_mode:type.operating_mode || ''};
+    const source=this.store.activeSources().find(s=>s.id===id);if(!source) return null;
+    const type=this.store.typeFor(source);return {id:source.id,type_id:source.type_id,lat:source.lat,lng:source.lng,name:type.name,lwa:type.lwa,operating_mode:type.operating_mode || ''};
   }
 
   /** @param {?string} selected Current/draft source link. @param {Object} item Historical record.
    * @return {string} Escaped options, retaining a removed source rather than selecting another. */
   sourceOptions(selected,item) {
-    const options=this.store.sources.map((source,index)=>`<option value="${escapeHtml(source.id)}" ${source.id===selected?'selected':''}>${index+1}. ${escapeHtml(this.store.typeFor(source).name)}</option>`);
+    const options=this.store.sources.flatMap((source,index)=>source.disabled && source.id!==selected?[]:[`<option value="${escapeHtml(source.id)}" ${source.id===selected?'selected':''}>${index+1}. ${escapeHtml(this.store.typeFor(source).name)}${source.disabled?' (off)':''}</option>`]);
     if(selected && !this.store.sources.some(s=>s.id===selected)) options.push(`<option value="${escapeHtml(selected)}" selected>${escapeHtml(item.source_context?.name || 'Recorded machine')} (removed)</option>`);
     return `<option value="">Not linked / unknown</option>${options.join('')}`;
   }
@@ -74,6 +82,10 @@ export class MeasurementUI {
       <p class="hint">Link a machine only when its modeled setup represents this test.</p><label>Machine<select name="source_id">${this.sourceOptions(item.source_id,item)}</select></label>
       <label>Other machinery<select name="isolation">${options([['unknown','Unsure'],['isolated','Selected machine was isolated'],['mixed','Other machinery contributing']],item.isolation || 'unknown')}</select></label>
       </details>
+      <details><summary>Pair a background reading (optional)</summary>
+      <p class="hint">Choose a reading taken here with the activity stopped and comparable conditions. This link records the pair for review.</p>
+      <label>Background reading<select name="background_id" data-background-id="${e(item.background_id || '')}"></select></label>
+      <p data-pair-status class="hint" role="status"></p></details>
       <details><summary>Notes, meter &amp; coordinates</summary>
       <label>Meter details<input name="meter" maxlength="200" value="${e(item.meter || '')}" placeholder="Unknown until available"></label>
       <label>Conditions / notes<textarea name="note" maxlength="2000" rows="2">${e(item.note || '')}</textarea></label>
@@ -112,7 +124,7 @@ export class MeasurementUI {
     this.activities.replaceChildren(...[...activities].map(activity=>new Option(activity,activity)));
     $('measurement-count').textContent=String(this.store.measurements.length);
     $('add-measurement').disabled=!!this.draft || this.store.measurements.length>=100;
-    this.filterCards();this.renderMarkers();this.updateResults();
+    this.updatePairs();this.filterCards();this.renderMarkers();this.updateResults();
   }
 
   /** Separate reading types in the list while keeping all pins on the map. */
@@ -128,6 +140,42 @@ export class MeasurementUI {
       card.hidden=!!item && filter.value!=='all' && filter.value!==group;
     }
     $('measurement-filter-empty').hidden=filter.value==='all' || cards.some(card=>!card.hidden);
+  }
+
+  /** Keep the link picker up to date without replacing other draft fields. */
+  updatePairs() {
+    for(const form of $('measurement-cards').querySelectorAll('form[data-reading]')) {
+      const select=form.elements.background_id;
+      const value=select.options.length?select.value:select.dataset.backgroundId;
+      const choices=this.store.measurements.flatMap((reading,index)=>reading.id===form.dataset.reading
+        ? [] : [new Option(`${measurementLabel(reading,index)} · ${reading.level_db.toFixed(1)} dB`,reading.id)]);
+      if(value && !choices.some(option=>option.value===value)) choices.push(new Option('Saved background reading unavailable',value));
+      select.replaceChildren(new Option('No background reading linked',''),...choices);
+      select.value=value;
+      this.describePair(form);
+    }
+  }
+
+  /** @param {HTMLFormElement} form Reading editor whose unsaved inputs are being compared. */
+  describePair(form) {
+    const fields=form.elements,id=fields.background_id.value;
+    const output=form.querySelector('[data-pair-status]');
+    const background=this.store.measurements.find(item=>item.id===id);
+    if(!background) {output.textContent=id?'The linked background reading is unavailable.':'';return;}
+    const issues=[];
+    const duration=fields.duration_s.valueAsNumber;
+    if(fields.metric.value!=='LAeq' || background.metric!=='LAeq') issues.push('Both readings should be LAeq averages');
+    if(fields.test_kind.value!=='stationary' || background.test_kind!=='stationary') issues.push('Both readings should use a steady test');
+    if(!Number.isFinite(duration) || background.duration_s==null) issues.push('Averaging duration is missing');
+    else if(duration!==background.duration_s) issues.push('Averaging durations differ');
+    const lat=fields.lat.valueAsNumber,lng=fields.lng.valueAsNumber;
+    if(Number.isFinite(lat) && Number.isFinite(lng)) {
+      const distance=objectDistance({lat,lng},background);
+      if(distance>5) issues.push(`Readings are ${Math.round(distance)} m apart`);
+    }
+    const gap=fields.level_db.valueAsNumber-background.level_db;
+    if(Number.isFinite(gap) && gap<3) issues.push('Operating reading is less than 3 dB above background');
+    output.textContent=issues.length?`${issues.join('. ')}.`:'Recorded settings match. Confirm the activity was stopped and other conditions were comparable.';
   }
 
   /** Keep source selectors current without replacing other draft fields. */
@@ -147,6 +195,7 @@ export class MeasurementUI {
     const current=this.store.measurements.find(m=>m.id===id);
     const source_id=String(data.get('source_id')) || null;
     const item={name:String(data.get('name')).trim(),level_db:Number(data.get('level_db')),metric:String(data.get('metric')),test_kind:String(data.get('test_kind')),
+      background_id:String(data.get('background_id') || '') || null,
       duration_s:data.get('duration_s')===''?null:Number(data.get('duration_s')),source_id,
       source_context:source_id ? current?.source_id===source_id ? current.source_context : this.context(source_id) : null,
       isolation:String(data.get('isolation')),activity:String(data.get('activity')).trim(),meter:String(data.get('meter')).trim(),note:String(data.get('note')).trim(),lat:Number(data.get('lat')),lng:Number(data.get('lng'))};
@@ -210,7 +259,7 @@ export class MeasurementUI {
   /** Reuse per-point results; changing only a reading/name/note does not request calculation. */
   refresh() {
     const payload=this.store.toPayload();payload.receivers=[];
-    payload.source_modes=Object.fromEntries(this.store.sources.map(s=>[s.id,this.store.typeFor(s).operating_mode || '']));
+    payload.source_modes=Object.fromEntries(payload.sources.map(s=>[s.id,this.store.typeFor(s).operating_mode || '']));
     const common={source_modes:payload.source_modes,sources:payload.sources,types:payload.sources.map(s=>{const t=payload.types.find(t=>t.id===s.type_id);return [t.id,t.name,t.lwa,t.provenance];}),background:payload.background_db};
     const keys=new Map(this.store.measurements.map(m=>[m.id,JSON.stringify([common,m.id,m.lat,m.lng,m.metric,m.test_kind,m.duration_s,m.activity,m.source_id,m.source_context])]));
     const signature=JSON.stringify([...keys.values()]);if(signature===this.signature) return;

@@ -49,6 +49,13 @@ try {
  const beforeMove=calls.length;ui.layer.getLayers()[0].setLatLng([.02,.04]).fire('dragend');await settle();
  check(calls.length===beforeMove+1 && calls.at(-1).measurements.length===1 && store.measurements[0].lat===.02 && store.measurements[0].level_db===-5,'moving a recorded pin refreshes only its location comparison');
  check(savedForm.isConnected && savedForm.elements.note.value==='Unsaved note' && savedForm.elements.lat.value==='0.02','pin correction preserves edits in the open form');
+ const partner=store.measurements[1];
+ savedForm.elements.background_id.value=partner.id;
+ savedForm.elements.background_id.dispatchEvent(new Event('change',{bubbles:true}));
+ check(savedForm.querySelector('[data-pair-status]').textContent.includes('Both readings should be LAeq'),'the selected pair flags incompatible averaging settings');
+ const previousBackground=store.background_db;
+ savedForm.requestSubmit();
+ check(store.measurements[0].background_id===partner.id && store.background_db===previousBackground,'saving a pair keeps both readings and the scenario background');
  const record=structuredClone(store.measurements),doc={...store.toPayload(),types:store.types,levels:[40],measurements:record};
  store.restore(doc);await settle();check(JSON.stringify(store.measurements)===JSON.stringify(record),'restore preserves complete and partial observation data');
  const button=document.querySelectorAll('[data-delete-reading]')[1];button.click();check(store.measurements.length===2,'first delete click only confirms intent');

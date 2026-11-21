@@ -36,6 +36,13 @@ try {
  store.addSource(id,0,0.1);
  check(store.toPayload().sources.length===2 && store.sources[1].type_id===id,'separately placed equipment joins the prediction');
  check(store.applyMeasurementFit(area,ready,'New area') && store.sources.length===1,'replacement also removes earlier estimates');
+ store.addSource(id,0,.2);
+ const parked=store.sources.at(-1).id;
+ store.toggleSource(parked);
+ const active=store.sources[0].id;
+ check(store.applyMeasurementFit(area,ready,'With an off machine') &&
+   store.typeFor(store.sources[0]).fitting.covered_source_ids.join()===active,
+   'area fit records only active sources against its input evidence');
  const fresh=new ScenarioStore();fresh.measurements=structuredClone(store.measurements);
  check(fresh.applyMeasurementFit(area,ready,'No-machine area'),'area estimate needs no placed machine');
  check(fresh.sources.length===1 && fresh.toPayload().sources.length===1,'area participates in existing prediction/contour pipeline');

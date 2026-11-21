@@ -53,7 +53,7 @@ export class FittingUI {
    * @param {boolean} [fresh] Select an available starting mode for a new scenario. */
   choices(fresh=false) {
     const select=this.form.elements.source_id,previous=select.value;
-    select.innerHTML='<option value="">Choose machine</option>'+this.store.sources.flatMap((s,index)=>this.store.typeFor(s).kind==='area'?[]:[`<option value="${e(s.id)}">${index+1}. ${e(this.store.typeFor(s).name)}</option>`]).join('');
+    select.innerHTML='<option value="">Choose machine</option>'+this.store.sources.flatMap((s,index)=>s.disabled || this.store.typeFor(s).kind==='area'?[]:[`<option value="${e(s.id)}">${index+1}. ${e(this.store.typeFor(s).name)}</option>`]).join('');
     select.value=previous;
     const machineMode=this.form.elements.mode.querySelector('option[value=machine]');
     machineMode.disabled=select.options.length===1;
@@ -120,7 +120,7 @@ export class FittingUI {
     const mode=f.mode.value,activity=f.activity.value.trim();
     const sourceId=mode==='machine'?f.source_id.value:null;
     return {...this.store.toPayload(),receivers:[],measurements:structuredClone(this.store.measurements),
-      source_modes:Object.fromEntries(this.store.sources.map(s=>[s.id,this.store.typeFor(s).operating_mode || ''])),
+      source_modes:Object.fromEntries(this.store.activeSources().map(s=>[s.id,this.store.typeFor(s).operating_mode || ''])),
       mode,source_id:sourceId,centre:mode==='area'?{lat:Number(f.lat.value),lng:Number(f.lng.value)}:null,
       radius_m:mode==='area'?Number(f.radius.value):null,activity,
       previous_setups:sourceId?this.previousSetups(sourceId,activity):[],
@@ -196,7 +196,7 @@ export class FittingUI {
   /** Render the operating footprint as context only, never as an attenuation barrier. */
   drawArea() {
     this.layer.clearLayers();
-    for(const source of this.store.sources) {
+    for(const source of this.store.activeSources()) {
       const type=this.store.typeFor(source);
       if(type.kind==='area' && type.fitting) L.circle([source.lat,source.lng],{radius:type.fitting.request.radius_m,color:'#176a63',weight:2,dashArray:'5 5',fillOpacity:.04,interactive:false}).addTo(this.layer);
     }

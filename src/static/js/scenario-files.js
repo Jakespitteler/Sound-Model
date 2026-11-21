@@ -3,7 +3,7 @@ import {$,escapeHtml} from './utils.js';
 import {ScenarioStore} from './state.js';
 
 /** @param {string} path API route. @param {string} [method] HTTP method. @param {Object} [body] JSON body. @return {Promise<Object>} Validated API result. */
-async function request(path, method = 'GET', body) {
+export async function request(path, method = 'GET', body) {
   const response = await fetch(path,{method,headers:body ? {'Content-Type':'application/json'} : {},body:body ? JSON.stringify(body) : undefined});
   const data = await response.json();
   if (!response.ok) throw new Error(typeof data.detail==='string' ? data.detail : `Scenario request failed (${response.status}).`);
@@ -60,7 +60,8 @@ export class ScenarioFilesUI {
   /** @return {Object} Detached, versioned document with all notes and current map settings. */
   snapshot() {
     const centre=this.manager.map.getCenter();
-    return structuredClone({version:1,measurements:this.store.measurements,types:this.store.types,sources:this.store.sources,receivers:this.store.receivers,
+    return structuredClone({version:1,measurements:this.store.measurements,types:this.store.types,sources:this.store.sources.map(({disabled,...source})=>source),receivers:this.store.receivers,
+      disabled_source_ids:this.store.sources.filter(source=>source.disabled).map(source=>source.id),
       background_spectrum:this.store.background_spectrum,background_db:this.store.background_db,acceptable_level_db:this.store.acceptable_level_db,levels:this.store.contours.map(c=>c.level_db),cloud_cover:this.store.cloud_cover,
       view:{lat:centre.lat,lng:((centre.lng+180)%360+360)%360-180,zoom:this.manager.map.getZoom()},
       high_contrast:$('contour-contrast').checked,show_contours:$('show-overlay').checked});

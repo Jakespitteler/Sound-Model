@@ -55,7 +55,7 @@ export class ScenarioStore {
   toPayload() {
     // Equipment notes stay with the browser catalogue; they are not acoustic inputs.
     const types = this.types.map(({id,name,lwa,provenance,spectrum}) => ({id,name,lwa,provenance,...(spectrum ? {spectrum} : {})}));
-    return structuredClone({types,sources:this.sources,receivers:this.receivers,cloud_cover:this.cloud_cover,background_spectrum:this.background_spectrum,background_db:this.background_db});
+    return structuredClone({types,sources:this.activeSources().map(({disabled,...source})=>source),receivers:this.receivers,cloud_cover:this.cloud_cover,background_spectrum:this.background_spectrum,background_db:this.background_db});
   }
 
   /** @param {Object} document Validated versioned scenario, supplied by the local backend. */
@@ -69,7 +69,8 @@ export class ScenarioStore {
     this.background_db=background;
     this.clearHistory(); this.acceptable_level_db=acceptable;
     this.types = structuredClone(document.types);
-    this.sources = structuredClone(document.sources);
+    const disabled=new Set(document.disabled_source_ids ?? []);
+    this.sources = structuredClone(document.sources).map(source=>disabled.has(source.id)?{...source,disabled:true}:source);
     this.receivers = structuredClone(document.receivers);
     this.measurements = structuredClone(document.measurements ?? []);
     this.contours = document.levels.map(level_db=>({id:uuid(),level_db})).sort((a,b)=>b.level_db-a.level_db);
@@ -80,6 +81,18 @@ export class ScenarioStore {
 
   /** @param {import('./types.js').Source} source Placed source. @return {import('./types.js').MachineType} Type. */
   typeFor(source) { return this.types.find(t => t.id === source.type_id); }
+
+  /** @return {import('./types.js').Source[]} Placed sources contributing to calculations. */
+  activeSources() {return this.sources.filter(source=>!source.disabled);}
+
+  /** @param {string} id Placed source to switch on or off. */
+  toggleSource(id) {
+    const index=this.sources.findIndex(source=>source.id===id);
+    if(index<0) return;
+    const source=this.sources[index], before={...source};
+    source.disabled=!source.disabled;
+    this.recordPlacement('sources',before,source,index,source.disabled?'Switch source off':'Switch source on');
+  }
 
   /** @param {?string} mode Source/receiver placement, or null to cancel. */
   setMode(mode) { this.mode = mode; this.notify('ui'); }
@@ -145,7 +158,13 @@ export class ScenarioStore {
       command[redo ? 'before' : 'after']=structuredClone(items[index]);
       items.splice(index,1);
     } else if (index<0) items.splice(command.index,0,structuredClone(target));
-    else Object.assign(items[index],{lat:target.lat,lng:target.lng});
+    else {
+      Object.assign(items[index],{lat:target.lat,lng:target.lng});
+      if(command.collection==='sources' && command.before?.disabled!==command.after?.disabled) {
+        if(target.disabled===undefined) delete items[index].disabled;
+        else items[index].disabled=target.disabled;
+      }
+    }
     from.pop(); to.push(command); this.mode=null;
     this.notify(command.collection==='sources' ? 'geometry' : 'receivers');
     return command.label;
@@ -242,7 +261,7 @@ export class ScenarioStore {
       note:`Measurement-derived estimate for ${request.activity}. ${request.fit_ids.length} fit readings; ${request.check_ids.length} independent check readings. Background ${request.background_db} dB(A). Full-space point-source fit; not validated sound power.`,
       fitting:{request:structuredClone(request),result:structuredClone(result),model:'full-space-log-fit-v1'}};
     if(area) {
-      type.fitting.covered_source_ids=this.sources.map(item=>item.id);
+      type.fitting.covered_source_ids=this.activeSources().map(item=>item.id);
       this.sources=[{id:uuid(),type_id:id,...result.centre}];
     } else source.type_id=id;
     this.types.push(type);

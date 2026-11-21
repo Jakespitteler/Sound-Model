@@ -252,7 +252,7 @@ export class MapManager {
     for (const collection of ['sources', 'receivers']) {
       this.store[collection].forEach((item, i) => {
         const isSource = collection === 'sources';
-        const label = isSource ? `${i + 1}. ${this.store.typeFor(item).name}` : receiverLabel(item,i);
+        const label = isSource ? `${i + 1}. ${this.store.typeFor(item).name}${item.disabled?' · Off':''}` : receiverLabel(item,i);
         const machine = isSource ? this.store.typeFor(item) : null;
         const icon = !isSource ? this.receiverIcon(item.id,i) : L.divIcon({
           className:'machine-location',iconSize:[32,32],iconAnchor:[16,16],
@@ -263,6 +263,7 @@ export class MapManager {
           draggable: machine?.kind!=='area',
           alt: label,
           riseOnHover: true,
+          opacity:isSource && item.disabled?0.55:1,
         }).addTo(this.markers);
 
         if (!isSource) this.receiverMarkers.set(item.id, marker);
@@ -283,7 +284,11 @@ export class MapManager {
         if (isSource) {
           const power = document.createElement('p'); power.textContent = `Sound power: ${machine.lwa.toFixed(1)} dB(A) LwA. Sound at a listening point depends on distance.`;
           const evidence = document.createElement('p'); evidence.textContent = machine.note || 'No source note recorded.';
-          popup.append(power,evidence);
+          const toggle=document.createElement('button');
+          toggle.type='button';toggle.className='secondary compact';
+          toggle.textContent=item.disabled?'Switch on':'Switch off';
+          toggle.onclick=()=>{this.map.closePopup();this.store.toggleSource(item.id);};
+          popup.append(power,evidence,toggle);
         } else {
           const reading=document.createElement('p'); reading.dataset.receiverReading=''; popup.append(reading);
         }

@@ -2,6 +2,7 @@
 import {$,escapeHtml} from './utils.js';
 import {RequestLane} from './api.js';
 import {receiverLabel} from './state.js';
+import {request} from './scenario-files.js';
 
 /** Track a captured source configuration separately from the editable scenario. */
 export class ReceiverBaseline {
@@ -12,13 +13,10 @@ export class ReceiverBaseline {
     this.baseline=null;
     this.results=null;
     this.key=null;
-    $('capture-baseline').onclick=()=>{
-      this.baseline=this.sourceSnapshot();
-      $('capture-baseline').textContent='Replace baseline';
-      $('clear-baseline').hidden=false;
-      this.key=null;
-      this.refresh();
-    };
+    this.loadRevision=0;
+    $('capture-baseline').onclick=()=>this.setBaseline(this.sourceSnapshot(),'Captured baseline');
+    $('choose-saved-baseline').onclick=()=>this.listSaved();
+    $('saved-baseline-form').onsubmit=event=>{event.preventDefault();this.loadSaved();};
     $('clear-baseline').onclick=()=>this.clear();
     $('retry-baseline').onclick=()=>{this.key=null;this.refresh();};
     store.subscribe(reason=>{
@@ -29,19 +27,65 @@ export class ReceiverBaseline {
     this.clear();
   }
 
-  /** @return {Object} Detached acoustic inputs limited to active sources. */
-  sourceSnapshot() {
-    const {sources,types}=this.store;
+  /** @param {Object} [document] Saved scenario; defaults to the current placement state.
+   * @return {Object} Detached acoustic inputs limited to active sources. */
+  sourceSnapshot(document) {
+    const types=document?.types ?? this.store.types;
+    const excluded=new Set(document?.disabled_source_ids ?? []);
+    const sources=document?document.sources.filter(source=>!excluded.has(source.id)):this.store.activeSources();
     const activeTypes=new Set(sources.map(source=>source.type_id));
     return {
-      sources:structuredClone(sources),
+      sources:sources.map(({id,type_id,lat,lng})=>({id,type_id,lat,lng})),
       types:types.filter(type=>activeTypes.has(type.id)).map(({id,name,lwa})=>({id,name,lwa})),
     };
+  }
+
+  /** @param {Object} snapshot Detached baseline sound sources. @param {string} label Display label. */
+  setBaseline(snapshot,label) {
+    this.loadRevision++;
+    this.baseline=snapshot;
+    this.baselineLabel=label;
+    $('saved-baseline-form').hidden=true;
+    $('capture-baseline').textContent='Replace baseline';
+    $('clear-baseline').hidden=false;
+    this.key=null;
+    this.refresh();
+  }
+
+  /** Offer stored scenarios without opening or changing the working scene. */
+  async listSaved() {
+    const revision=++this.loadRevision,form=$('saved-baseline-form'),status=$('saved-baseline-status');
+    const select=$('saved-baseline-select'),submit=form.querySelector('[type=submit]');
+    form.hidden=false;
+    select.replaceChildren(new Option('Choose a saved scenario',''));
+    submit.disabled=true;status.textContent='Loading saved scenarios…';
+    try {
+      const data=await request('/api/scenarios');
+      if(revision!==this.loadRevision) return;
+      select.append(...data.scenarios.map(item=>new Option(item.name,item.id)));
+      submit.disabled=!data.scenarios.length;
+      status.textContent=data.scenarios.length?'':'No readable saved scenarios.';
+      select.focus();
+    } catch(error) {if(revision===this.loadRevision) status.textContent=error.message;}
+  }
+
+  /** Load only the saved source configuration as the new comparison baseline. */
+  async loadSaved() {
+    const id=$('saved-baseline-select').value;
+    if(!id) return;
+    const revision=++this.loadRevision, status=$('saved-baseline-status');
+    status.textContent='Loading baseline…';
+    try {
+      const saved=await request(`/api/scenarios/${encodeURIComponent(id)}`);
+      if(revision===this.loadRevision) this.setBaseline(this.sourceSnapshot(saved.document),saved.name);
+    } catch(error) {if(revision===this.loadRevision) status.textContent=error.message;}
   }
 
   /** Cancel comparison work and remove the in-memory baseline. */
   clear() {
     this.lane.cancel();
+    this.loadRevision++;
+    $('saved-baseline-form').hidden=true;
     this.baseline=null;
     this.results=null;
     this.key=null;
@@ -80,7 +124,7 @@ export class ReceiverBaseline {
       success:results=>{
         this.results=results;
         const count=this.baseline.sources.length;
-        $('baseline-status').textContent=`Baseline captured with ${count} ${count===1?'source':'sources'}. Levels in dB(A), change in dB.`;
+        $('baseline-status').textContent=`${this.baselineLabel} · ${count} ${count===1?'source':'sources'}. Levels in dB(A), change in dB.`;
         this.render();
       },
       error:()=>{
