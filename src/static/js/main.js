@@ -15,10 +15,12 @@ import {setupSidebar} from './sidebar.js';
 import {ScenarioFilesUI} from './scenario-files.js';
 import {FittingUI} from './ui-fitting.js';
 import {MeasurementUI} from './ui-measurements.js';
+import {ModelStatus} from './model-status.js';
 import {DraftRecovery} from './draft-recovery.js';
 
 const store = new ScenarioStore();
 const manager = new MapManager(store);
+const modelStatus = new ModelStatus(store);
 new AddressSearch(()=>manager.map.getCenter(),place=> {
   store.setMode(null); manager.map.stop(); manager.map.closePopup();
   if(place.bounds) manager.map.fitBounds([[place.bounds[0],place.bounds[1]],[place.bounds[2],place.bounds[3]]],{padding:[20,20],maxZoom:16,animate:false});
@@ -49,14 +51,16 @@ function failed(error) {
 /** Update receivers only; this lane never rebuilds or removes contours. */
 function refreshReceivers() {
   if (!store.receivers.length) {
+    modelStatus.receivers='No receivers'; modelStatus.render();
     receiverLane.cancel(); receiverResults = {}; receiverFailed=false; updateRetry(); entities.renderReceivers({}); return;
   }
   receiverLane.schedule('/api/predict',store.toPayload(),{
-    start:()=> {receiverFailed=false; updateRetry(); entities.renderReceivers(); manager.setReceiverReadings(null);},
-    success:data=> {receiverFailed=false; updateRetry(); receiverResults=data.receivers; bandResults=data.band_results || {}; entities.renderReceivers(receiverResults,bandResults); manager.setReceiverReadings(receiverResults);},
+    start:()=> {modelStatus.receivers='Updating receivers'; modelStatus.render(); receiverFailed=false; updateRetry(); entities.renderReceivers(); manager.setReceiverReadings(null);},
+    success:data=> {modelStatus.receivers=store.sources.length?'Receivers updated':'Receivers need a source'; modelStatus.render(); receiverFailed=false; updateRetry(); receiverResults=data.receivers; bandResults=data.band_results || {}; entities.renderReceivers(receiverResults,bandResults); manager.setReceiverReadings(receiverResults);},
     error:error=> {
       entities.renderReceivers();
       document.querySelectorAll('#receivers .result').forEach(e=> {e.textContent='Unavailable';});
+      modelStatus.receivers='Receivers unavailable'; modelStatus.render();
       receiverFailed=true; manager.setReceiverReadings(null, true); failed(error);
     },
   });
@@ -69,10 +73,13 @@ function displayGeometry(results) {
   const failures=geometry.filter(c=>c.status==='failed');
   geometryFailed=!!failures.length; updateRetry(); contours.setResults(geometry);
   manager.contourLayer.render(geometry,store.lineSettings()); manager.contourLayer.setPending(false);
-  const empty=geometry.filter(c=>c.status==='empty').map(c=>`${c.level_db} dB(A)`);
-  const examples=store.sources.some(s=>store.typeFor(s).provenance==='example' && !store.typeFor(s).fitting);
-  $('calculation-status').textContent=store.sources.length ?
-    `${store.sources.length} sources · geometry estimate${examples?' · example data':''}${store.sources.some(s=>store.typeFor(s).lwa===300)?' · Extreme input: machinery model unsupported':''}${failures.length?' · '+failures.length+' failed level(s)':''}${empty.length?' · No crossing at '+empty.join(', '):''}` : 'Add a source to begin';
+  const valid=geometry.filter(c=>c.status==='ok').length;
+  modelStatus.contours=failures.length
+    ? `${failures.length} contour ${failures.length===1?'failure':'failures'}`
+    : !store.sources.length ? 'Contours need a source'
+      : !results.length ? 'No contour levels selected'
+        : valid ? 'Contours updated' : 'No contour crossings';
+  modelStatus.render();
 }
 
 /** Reuse exact current-source levels and request only missing ones; every edit still versions the lane. */
@@ -90,7 +97,7 @@ function refreshGeometry() {
       geometryFailed=false; updateRetry(); contours.setResults(cached);
       // Keep valid unaffected levels; discard old-source/removed-level lines immediately.
       manager.contourLayer.render(cached,store.lineSettings()); manager.contourLayer.setPending(false);
-      $('calculation-status').textContent='Updating contours…';
+      modelStatus.contours='Updating contours'; modelStatus.render();
     },
     success:data=> {
       if (data.model!==cache.model || data.tolerance_db!==cache.toleranceDb) {
@@ -105,7 +112,7 @@ function refreshGeometry() {
     },
     error:error=> {
       displayGeometry(merge(missing.map(level_db=>({level_db,lines:[],status:'failed',error:error.message})),error.message));
-      if (!cached.length) $('calculation-status').textContent='Contours unavailable';
+      if (!cached.length) {modelStatus.contours='Contours unavailable'; modelStatus.render();}
       failed(error);
     },
   },(!payload.sources.length || !payload.levels.length || !missing.length) ?
@@ -175,7 +182,7 @@ store.subscribe(reason=> {
   if (reason==='restore') syncBackgroundSpectrum();
   if (reason==='spectra') refreshReceivers();
   if (reason==='acceptable-level') contours.syncAcceptable();
-  if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers();}
+  if (reason==='equipment-metadata') {catalogue.render(); manager.renderMarkers(); modelStatus.render();}
   if (reason==='receiver-name') {entities.updateReceiverNames(); manager.updateReceiverLabels();}
   if (reason==='restore') contours.render();
   if (['geometry','catalogue','restore'].includes(reason)) { catalogue.render(); entities.renderSources(); }

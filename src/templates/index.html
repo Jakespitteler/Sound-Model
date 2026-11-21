@@ -71,6 +71,31 @@
       <button id="retry" class="secondary compact retry" type="button" hidden>Retry calculations</button>
     </aside>
 
+    <dialog id="model-status-dialog" class="scenario-dialog model-status-dialog" aria-labelledby="model-status-title">
+      <h2 id="model-status-title" tabindex="-1" autofocus>Model, evidence and assumptions</h2>
+      <p id="model-evidence-summary"></p>
+      <p>Accuracy at town and audibility remain unverified.</p>
+      <dl class="model-status-states">
+        <div><dt>Contour calculation</dt><dd id="model-contour-state"></dd></div>
+        <div><dt>Receiver calculation</dt><dd id="model-receiver-state"></dd></div>
+      </dl>
+      <h3>Sound sources in this scenario</h3>
+      <p id="model-source-empty">Place a machine or apply an estimate to see its evidence here.</p>
+      <ul id="model-source-evidence"></ul>
+      <h3>How the prediction is calculated</h3>
+      <p>The backend treats each source as a point in open space. Its contribution drops by about 6 dB per doubling of distance. The backend adds the sources by sound energy, then calculates the contours and the level at each receiver. A whole-area estimate acts as one point at the fitted centre.</p>
+      <p id="model-background"></p>
+      <h3>Where results can mislead</h3>
+      <ul>
+        <li>Terrain, buildings, barriers, ground and weather can change the sound reaching town. The model treats the entered sources as operating simultaneously.</li>
+        <li>Point-source estimates are especially weak close to machines and inside a fitted area. The calculation floors distances at 1 m.</li>
+        <li>Held-back checks show agreement only at the tested locations and under the recorded activity. A 0.1 dB background increase rule does not test whether a tone is audible.</li>
+        <li>Adding equipment already heard during an area test counts its sound twice. New equipment needs its own sound-power evidence.</li>
+      </ul>
+      <p><a href="/about" target="_blank" rel="noopener">Read the model explanation</a></p>
+      <form method="dialog"><button class="primary">Back to map</button></form>
+    </dialog>
+
     <dialog id="walkthrough" class="scenario-dialog" aria-labelledby="walkthrough-title">
       <h2 id="walkthrough-title">Check the noise at town</h2>
       <ol class="walkthrough-steps">

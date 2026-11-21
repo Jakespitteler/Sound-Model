@@ -1,6 +1,7 @@
 <!doctype html><meta charset="utf-8"><title>Simple POC workflow</title><div id="fixture"></div><pre id="result">Running…</pre>
 <script type="module">
 import {ScenarioStore} from '../../src/static/js/state.js';
+import {ModelStatus,receiverFitLimits} from '../../src/static/js/model-status.js';
 import {setupWorkflow} from '../../src/static/js/workflow.js';
 let count=0;const check=(ok,message)=>{if(!ok)throw Error(message);count++;};
 try {
@@ -39,6 +40,20 @@ try {
  document.querySelector('#contours-tab').click();check(document.querySelector('#listening-workspace').hidden,'contour editing hides unrelated workflow');
  document.dispatchEvent(new Event('open-measurement'));check(!document.querySelector('#measurement-workspace').hidden,'marker/editor requests reveal measurement path');
  check(store.sources.length===0 && store.background_db===null,'presentation has not created sources or guessed background');
+ const status=new ModelStatus(store),summary=document.querySelector('#calculation-status');
+ check(summary.textContent==='Add a source to begin','status explains why predictions are absent');
+ store.addSource(store.types[0].id,0,0);status.contours='Updating contours';status.render();
+ check(summary.textContent.includes('Limited evidence') && summary.textContent.includes('Updating contours'),'live activity and evidence remain visible together');
+ const source=store.sources[0],type=store.types[0];
+ type.operating_mode='Steady';
+ type.fitting={request:{mode:'machine',source_id:source.id,activity:'Steady'},result:{
+   centre:{lat:0,lng:0},lwa:type.lwa,rows:[{role:'check',eligible:true,distance_m:100}],confidence:{rating:'consistent',check_count:2,max_error_db:.4,sensitive_reading_count:0}
+ }};
+ status.render();
+ check(summary.textContent.includes('Fit checks agree locally'),'held-back agreement is described locally');
+ check(receiverFitLimits(store,{lat:.01,lng:0}).length===1,'receiver flags extrapolation beyond the held-back distances');
+ source.lat=.01;status.render();
+ check(summary.textContent.includes('Limited evidence') && document.querySelector('#model-source-evidence').textContent.includes('Historical fit'),'moving a fitted machine cannot carry its previous check status');
  document.querySelector('#result').textContent=`PASS: ${count} checks`;
 } catch(error){document.querySelector('#result').textContent='FAIL: '+error.stack;throw error;}
 </script>

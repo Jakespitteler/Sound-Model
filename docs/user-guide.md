@@ -41,6 +41,13 @@ changes all those instances. Removing a type is prevented while it is in use.
    to add an optional name or edit coordinates. **Sound from each source** shows individual sources.
 
 Machines, Meter readings, Receivers and Contours each have their own workspace. Select **Walkthrough** for the first-use guide.
+
+The map toolbar shows the evidence level and whether contours or receiver results are
+updating. Open **Model details** to see the evidence behind each active source, the
+background setting and the open-space assumptions. Earlier fit checks describe the
+recorded test. Moving the fitted machine, changing its power or using that catalogue
+entry for another machine makes the evidence historical for the current placement.
+
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and More settings & model details open one at a time, retaining their drafts.
 
