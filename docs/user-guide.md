@@ -48,6 +48,13 @@ background setting and the open-space assumptions. Earlier fit checks describe t
 recorded test. Moving the fitted machine, changing its power or using that catalogue
 entry for another machine makes the evidence historical for the current placement.
 
+In **Receivers**, open **Compare with a baseline** and capture the sources for the
+starting scenario. When you add, move or remove equipment, the table shows the baseline
+and current predictions at each receiver’s current position. The change is current
+minus baseline in dB. Both columns show machinery sound before background screening.
+A dash indicates that one scenario has no active sources and a dB change is undefined.
+The captured baseline lasts until you open or reload a scenario.
+
 Machine rows show their sound power; receiver rows show their current reading. Expand only
 the row you need. Machine data and More settings & model details open one at a time, retaining their drafts.
 

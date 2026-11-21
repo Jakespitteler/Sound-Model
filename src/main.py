@@ -17,7 +17,16 @@ from .measurements import Comparison, MeasurementRequest, compare_measurement
 from .pages import about_page, index_page, machine_estimates_page
 from .scenario_routes import router as scenario_router
 from .scope import screen_receiver
-from .types import ContourRequest, ContourResponse, MachineType, Point, Prediction, Scenario
+from .types import (
+    ContourRequest,
+    ContourResponse,
+    MachineType,
+    Point,
+    Prediction,
+    ReceiverComparison,
+    ReceiverComparisonRequest,
+    Scenario,
+)
 
 app = FastAPI(title="Sound-Model", docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -79,6 +88,32 @@ def predict(scenario: Scenario) -> Prediction:
         example_data=any(types[source.type_id].provenance == "example" for source in scenario.sources),
         model="full-space-point-source-v1",
     )
+
+
+@app.post("/api/receivers/baseline")
+def compare_receiver_baseline(request: ReceiverComparisonRequest) -> dict[str, ReceiverComparison]:
+    """Evaluate both source configurations at each current receiver location.
+
+    Args:
+        request: Captured and current source configurations and current receivers.
+
+    Returns:
+        A comparison per receiver, using machinery levels before background screening.
+    """
+    baseline_types = {item.id: item for item in request.baseline.types}
+    current_types = {item.id: item for item in request.current.types}
+    comparisons: dict[str, ReceiverComparison] = {}
+    for receiver in request.current.receivers:
+        baseline = at_point(receiver, request.baseline.sources, baseline_types)
+        current = at_point(receiver, request.current.sources, current_types)
+        before, after = baseline.level_db, current.level_db
+        comparisons[receiver.id] = ReceiverComparison(
+            baseline_db=before,
+            current_db=after,
+            change_db=after - before if before is not None and after is not None else None,
+            near_field=baseline.near_field or current.near_field,
+        )
+    return comparisons
 
 
 @app.post("/api/measurements/fit", response_model=FitResult)

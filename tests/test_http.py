@@ -252,3 +252,45 @@ def test_scenario_screen_keeps_only_useful_navigation(client: TestClient) -> Non
     assert 'id="home"' in response.text
     assert 'href="/about"' in response.text
     assert 'id="save-scenario"' in response.text
+
+
+def test_receiver_baseline_uses_current_points_before_background_screening(client: TestClient) -> None:
+    """Compare both source layouts at each live point, including below the display threshold."""
+    machine = {"id": "truck", "name": "Truck", "lwa": 110}
+    source = {"id": "plant", "type_id": "truck", "lat": 0, "lng": 0}
+    payload = {
+        "baseline": {"types": [machine], "sources": [source]},
+        "current": {
+            "types": [machine],
+            "sources": [source, {**source, "id": "extra"}],
+            "receivers": [{"id": "town", "lat": 0, "lng": 0.01}, {"id": "close", "lat": 0, "lng": 0}],
+            "background_db": 100,
+        },
+    }
+    response = client.post("/api/receivers/baseline", json=payload)
+    assert response.status_code == 200
+    results = response.json()
+    assert set(results) == {"town", "close"}
+    assert results["town"]["change_db"] == pytest.approx(3.0103)
+    assert results["town"]["current_db"] - results["town"]["baseline_db"] == pytest.approx(3.0103)
+    assert results["close"]["near_field"]
+
+
+def test_receiver_baseline_keeps_missing_source_levels_distinct_from_zero(client: TestClient) -> None:
+    """An empty source configuration has no finite level or change."""
+    response = client.post(
+        "/api/receivers/baseline",
+        json={
+            "baseline": {},
+            "current": {
+                "types": [{"id": "p", "name": "Plant", "lwa": 100}],
+                "sources": [{"id": "s", "type_id": "p", "lat": 0, "lng": 0}],
+                "receivers": [{"id": "town", "lat": 0, "lng": 0.01}],
+            },
+        },
+    )
+    assert response.status_code == 200
+    result = response.json()["town"]
+    assert result["baseline_db"] is None
+    assert result["current_db"] is not None
+    assert result["change_db"] is None

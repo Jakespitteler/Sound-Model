@@ -15,12 +15,14 @@ import {setupSidebar} from './sidebar.js';
 import {ScenarioFilesUI} from './scenario-files.js';
 import {FittingUI} from './ui-fitting.js';
 import {MeasurementUI} from './ui-measurements.js';
+import {ReceiverBaseline} from './receiver-baseline.js';
 import {ModelStatus} from './model-status.js';
 import {DraftRecovery} from './draft-recovery.js';
 
 const store = new ScenarioStore();
 const manager = new MapManager(store);
 const modelStatus = new ModelStatus(store);
+new ReceiverBaseline(store);
 new AddressSearch(()=>manager.map.getCenter(),place=> {
   store.setMode(null); manager.map.stop(); manager.map.closePopup();
   if(place.bounds) manager.map.fitBounds([[place.bounds[0],place.bounds[1]],[place.bounds[2],place.bounds[3]]],{padding:[20,20],maxZoom:16,animate:false});

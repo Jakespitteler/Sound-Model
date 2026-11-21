@@ -197,3 +197,10 @@ details[open] > .entity-summary::before { content:'▾'; }
 .model-status-states { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .model-status-states dt { font-weight:650; }
 .model-status-states dd { margin:4px 0 0; }
+
+.receiver-baseline { margin:12px 0; }
+.baseline-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.baseline-table { width:100%; border-collapse:collapse; font-size:12px; }
+.baseline-table th,.baseline-table td { padding:6px 4px; border-bottom:1px solid var(--line); text-align:right; }
+.baseline-table th:first-child { text-align:left; overflow-wrap:anywhere; }
+.baseline-table small { display:block; color:var(--muted); }

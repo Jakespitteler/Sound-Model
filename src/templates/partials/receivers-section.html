@@ -5,5 +5,16 @@
   </div>
   <p class="hint">Place a listening point to see the combined sound from your sources.</p>
   <button id="place-receiver" class="secondary" type="button">＋ Add listening point</button>
+  <details class="receiver-baseline">
+    <summary>Compare with a baseline</summary>
+    <p class="hint">Capture the sources, then add, move or remove equipment. Both predictions use each receiver’s current position and show machinery sound alone.</p>
+    <div class="baseline-actions">
+      <button id="capture-baseline" class="secondary compact" type="button">Capture baseline</button>
+      <button id="clear-baseline" class="text-button" type="button" hidden>Clear baseline</button>
+    </div>
+    <p id="baseline-status" class="hint" role="status"></p>
+    <button id="retry-baseline" class="text-button" type="button" hidden>Retry comparison</button>
+    <div id="baseline-results"></div>
+  </details>
   <div id="receivers" class="items"></div>
 </section>
