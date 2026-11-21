@@ -15,12 +15,14 @@ import {setupSidebar} from './sidebar.js';
 import {ScenarioFilesUI} from './scenario-files.js';
 import {FittingUI} from './ui-fitting.js';
 import {MeasurementUI} from './ui-measurements.js';
+import {ReceiverBaseline} from './receiver-baseline.js';
 import {ModelStatus} from './model-status.js';
 import {DraftRecovery} from './draft-recovery.js';
 
 const store = new ScenarioStore();
 const manager = new MapManager(store);
 const modelStatus = new ModelStatus(store);
+new ReceiverBaseline(store);
 new AddressSearch(()=>manager.map.getCenter(),place=> {
   store.setMode(null); manager.map.stop(); manager.map.closePopup();
   if(place.bounds) manager.map.fitBounds([[place.bounds[0],place.bounds[1]],[place.bounds[2],place.bounds[3]]],{padding:[20,20],maxZoom:16,animate:false});
@@ -56,7 +58,7 @@ function refreshReceivers() {
   }
   receiverLane.schedule('/api/predict',store.toPayload(),{
     start:()=> {modelStatus.receivers='Updating receivers'; modelStatus.render(); receiverFailed=false; updateRetry(); entities.renderReceivers(); manager.setReceiverReadings(null);},
-    success:data=> {modelStatus.receivers=store.sources.length?'Receivers updated':'Receivers need a source'; modelStatus.render(); receiverFailed=false; updateRetry(); receiverResults=data.receivers; bandResults=data.band_results || {}; entities.renderReceivers(receiverResults,bandResults); manager.setReceiverReadings(receiverResults);},
+    success:data=> {modelStatus.receivers=store.activeSources().length?'Receivers updated':'Receivers need a source'; modelStatus.render(); receiverFailed=false; updateRetry(); receiverResults=data.receivers; bandResults=data.band_results || {}; entities.renderReceivers(receiverResults,bandResults); manager.setReceiverReadings(receiverResults);},
     error:error=> {
       entities.renderReceivers();
       document.querySelectorAll('#receivers .result').forEach(e=> {e.textContent='Unavailable';});
@@ -76,7 +78,7 @@ function displayGeometry(results) {
   const valid=geometry.filter(c=>c.status==='ok').length;
   modelStatus.contours=failures.length
     ? `${failures.length} contour ${failures.length===1?'failure':'failures'}`
-    : !store.sources.length ? 'Contours need a source'
+    : !store.activeSources().length ? 'Contours need a source'
       : !results.length ? 'No contour levels selected'
         : valid ? 'Contours updated' : 'No contour crossings';
   modelStatus.render();
@@ -195,6 +197,16 @@ store.subscribe(reason=> {
 // Delegation keeps handlers stable even when individual entity cards are replaced.
 document.querySelector('.sidebar').addEventListener('click',event=> {
   const button=event.target.closest('button'); if (!button) return;
+  if (button.dataset.toggleSource) {
+    const id=button.dataset.toggleSource;
+    store.toggleSource(id);
+    const updated=$('sources').querySelector(`[data-toggle-source="${CSS.escape(id)}"]`);
+    if(updated) {
+      updated.closest('details').open=true;
+      updated.focus({preventScroll:true});
+    }
+    return;
+  }
   if (button.dataset.removeType) {
     if (store.sources.some(s=>s.type_id===button.dataset.removeType)) return say('Remove this type’s machines before deleting the type.');
     store.removeMachineType(button.dataset.removeType);

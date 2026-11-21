@@ -66,6 +66,7 @@ class ScenarioDocument(StrictModel):
         version: Persisted schema version; unknown versions are rejected.
         types: Equipment catalogue including source notes.
         sources: Placed machines.
+        disabled_source_ids: Placements excluded from acoustic predictions.
         receivers: Listening locations.
         levels: Unique contour thresholds.
         cloud_cover: Recorded cloud percentage.
@@ -81,6 +82,7 @@ class ScenarioDocument(StrictModel):
     version: Literal[1] = 1
     types: list[SavedMachine] = Field(max_length=50)
     sources: list[Source] = Field(max_length=100)
+    disabled_source_ids: list[str] = Field(default_factory=list[str], max_length=100)
     receivers: list[Receiver] = Field(max_length=20)
     levels: list[float] = Field(max_length=25)
     cloud_cover: int = Field(ge=0, le=100, strict=True)
@@ -100,6 +102,9 @@ class ScenarioDocument(StrictModel):
         """
         if len({m.id for m in self.measurements}) != len(self.measurements):
             raise ValueError("Measurement IDs must be unique.")
+        disabled = set(self.disabled_source_ids)
+        if len(disabled) != len(self.disabled_source_ids) or not disabled.issubset(s.id for s in self.sources):
+            raise ValueError("Disabled sources must identify distinct placements in the scenario.")
         unique_levels = set(self.levels)
         if self.acceptable_level_db is not None:
             unique_levels.add(self.acceptable_level_db)

@@ -71,6 +71,7 @@ def test_save_open_update_and_list(saved_client: TestClient) -> None:
     identifier = record["id"]
     expected = {
         "measurements": [],
+        "disabled_source_ids": [],
         "background_spectrum": None,
         "background_db": None,
         "acceptable_level_db": None,
@@ -104,10 +105,29 @@ def test_invalid_document_never_replaces_previous_save(saved_client: TestClient)
         {"version": 2},
         {"levels": [40, 40]},
         {"sources": [{"id": "s", "type_id": "missing", "lat": 0, "lng": 0}]},
+        {"disabled_source_ids": ["unknown"]},
     ):
         invalid = {"name": "Invalid", "document": {**record["document"], **changes}}
         assert saved_client.put(f"/api/scenarios/{record['id']}", json=invalid).status_code == 422
     assert saved_client.get(f"/api/scenarios/{record['id']}").json() == record
+
+
+def test_optional_disabled_source_and_background_link_round_trip(saved_client: TestClient) -> None:
+    """Keep placement state and paired readings in saved documents."""
+    data = payload()
+    document = cast(dict[str, object], data["document"])
+    document["disabled_source_ids"] = ["s"]
+    document["measurements"] = [
+        {"id": "operating", "lat": -33.86, "lng": 116.05, "level_db": 55, "background_id": "background"},
+        {"id": "background", "lat": -33.86, "lng": 116.05, "level_db": 43},
+    ]
+    response = saved_client.post("/api/scenarios", json=data)
+    assert response.status_code == 201
+    record = response.json()
+    reopened = saved_client.get(f"/api/scenarios/{record['id']}").json()["document"]
+    assert reopened["disabled_source_ids"] == ["s"]
+    assert reopened["sources"][0]["id"] == "s"
+    assert reopened["measurements"][0]["background_id"] == "background"
 
 
 def test_write_failure_is_atomic(saved_client: TestClient, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

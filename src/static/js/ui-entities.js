@@ -83,8 +83,9 @@ export class EntitiesUI {
               const origin=type.kind==='area'?'Area estimate':type.fitting?'From meter readings':'';
               const edited=type.fitting && type.lwa!==type.fitting.result.lwa?' · power edited':'';
               return `<div class="item-card">${this.positionForm(s, 'sources',
+                `<button class="secondary compact" type="button" data-toggle-source="${escapeHtml(s.id)}">${s.disabled?'Switch on':'Switch off'}</button>` +
                 `<button class="danger entity-remove" type="button" data-remove-source="${s.id}" aria-label="Remove ${sourceLabel} ${i + 1}">Remove ${sourceLabel}</button>`,
-                `<strong>${i + 1}. ${escapeHtml(type.name)}${origin?`<small class="source-origin">${origin}${edited}</small>`:''}</strong>` +
+                `<strong>${i + 1}. ${escapeHtml(type.name)}${s.disabled?' · Off':''}${origin?`<small class="source-origin">${origin}${edited}</small>`:''}</strong>` +
                 `<span class="source-power">${type.lwa.toFixed(1)} <small>dB(A) LwA</small></span>`)}</div>`;
             }
           )

@@ -35,6 +35,7 @@ class Measurement(Position):
         test_kind: Stationary steady test, pass-by, startup/event or unknown.
         duration_s: Known observation duration, otherwise unknown.
         source_id: Optional placed-source link, allowed to outlive the source.
+        background_id: Optional recorded machinery-off reading for this observation.
         source_context: Recorded source identity, emission and position.
         activity: Operating activity; blank means unknown.
         meter: Optional instrument details.
@@ -50,6 +51,7 @@ class Measurement(Position):
     duration_s: float | None = Field(default=None, gt=0, strict=True)
     source_id: str | None = Field(default=None, min_length=1, max_length=80)
     source_context: SourceContext | None = None
+    background_id: str | None = Field(default=None, min_length=1, max_length=80)
     activity: str = Field(default="", max_length=200)
     meter: str = Field(default="", max_length=200)
     note: str = Field(default="", max_length=2000)
@@ -61,6 +63,8 @@ class Measurement(Position):
         Returns:
             Observation whose optional snapshot identifies its linked source.
         """
+        if self.background_id == self.id:
+            raise ValueError("A reading cannot be its own background.")
         if self.source_context is not None and self.source_context.id != self.source_id:
             raise ValueError("Recorded source context must match the linked source ID.")
         return self

@@ -137,6 +137,34 @@ class Scenario(StrictModel):
         return self
 
 
+class ReceiverComparisonRequest(StrictModel):
+    """Two source configurations compared at the current receiver locations.
+
+    Attributes:
+        baseline: Captured baseline source configuration.
+        current: Current source configuration and the receiver locations for both predictions.
+    """
+
+    baseline: Scenario
+    current: Scenario
+
+
+class ReceiverComparison(StrictModel):
+    """Machinery-only levels for the same point before and after scenario edits.
+
+    Attributes:
+        baseline_db: Baseline contribution, or None when there are no baseline sources.
+        current_db: Current contribution, or None when there are no current sources.
+        change_db: Current minus baseline, when both levels exist.
+        near_field: One or both configurations contain a source within 1 m of the point.
+    """
+
+    baseline_db: float | None
+    current_db: float | None
+    change_db: float | None
+    near_field: bool
+
+
 class Contribution(BaseModel):
     """Predicted acoustic contribution from a single source at a receiver.
 

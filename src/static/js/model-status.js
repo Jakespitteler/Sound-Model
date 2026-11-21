@@ -15,7 +15,7 @@ function fitMatchesPlacement(source,type,fit) {
  * @param {Object} receiver Listening point. @return {string[]} Site-specific interpretation notes. */
 export function receiverFitLimits(store,receiver) {
   const notes=new Set();
-  for(const source of store.sources) {
+  for(const source of store.activeSources()) {
     const type=store.typeFor(source),fit=type.fitting;
     if(!fit) continue;
     const distance=objectDistance(source,receiver);
@@ -62,13 +62,14 @@ export class ModelStatus {
   /** Update the always-visible summary and its current inputs. */
   render() {
     const {store}=this;
-    const sources=store.sources.map(source=>{
+    const sources=store.sources.flatMap((source,index)=>{
+      if(source.disabled) return [];
       const type=store.typeFor(source);
-      return {type,evidence:sourceEvidence(source,type)};
+      return [{type,index,evidence:sourceEvidence(source,type)}];
     });
     const confidence=sources.length
       ? sources.every(({evidence})=>evidence.consistent)?'Fit checks agree locally':'Limited evidence'
-      : 'Add a source to begin';
+      : store.sources.length?'Switch on a source to begin':'Add a source to begin';
     const statusText=sources.length?`${confidence} · ${this.contours} · ${this.receivers}`:confidence;
     if($('calculation-status').textContent!==statusText) $('calculation-status').textContent=statusText;
     if($('model-evidence-summary').textContent!==confidence) $('model-evidence-summary').textContent=confidence;
@@ -77,7 +78,7 @@ export class ModelStatus {
     $('model-background').textContent=store.background_db===null
       ? 'Background level: none entered. Receiver levels show the predicted contribution from the scenario sources.'
       : `Background level: ${store.background_db} dB(A) across the scenario. “Negligible overall increase” means the calculated total rises by less than 0.1 dB.`;
-    $('model-source-evidence').innerHTML=sources.map(({type,evidence},index)=>
+    $('model-source-evidence').innerHTML=sources.map(({type,evidence,index})=>
       `<li><strong>${index+1}. ${escapeHtml(type.name)}</strong> · ${type.lwa.toFixed(1)} dB(A) LwA. ${escapeHtml(evidence.summary)}${type.lwa===300?' This power is outside realistic machinery use.':''}</li>`
     ).join('');
     $('model-source-empty').hidden=!!sources.length;

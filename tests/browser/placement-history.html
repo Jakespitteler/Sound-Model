@@ -40,6 +40,14 @@ try {
  check(JSON.stringify(ordered.sources.map(item=>item.id))===JSON.stringify(ids),'undo removal restores original list order');
  ordered.updateMachineType(orderedType,{lwa:130}); ordered.undo(); ordered.redo();
  check(ordered.typeFor(ordered.sources[2]).lwa===130,'placement replay retains current catalogue power');
+ const switchId=ordered.sources[0].id;
+ ordered.toggleSource(switchId);
+ check(ordered.sources.length===3 && ordered.toPayload().sources.every(item=>item.id!==switchId),'off placement stays on map but leaves the acoustic input');
+ ordered.undo();check(ordered.toPayload().sources.length===3,'undo switches the source back on');
+ ordered.redo();check(ordered.toPayload().sources.length===2,'redo restores the off state');
+ const savedPlacements=ordered.sources.map(({disabled,...item})=>item);
+ ordered.restore({...ordered.toPayload(),sources:savedPlacements,types:ordered.types,levels:[60],disabled_source_ids:[switchId]});
+ check(ordered.sources[0].disabled && ordered.toPayload().sources.length===2,'restoring a save respects disabled placements');
  const capped=new ScenarioStore(); capped.addReceiver(0,0); const id=capped.receivers[0].id;
  for(let i=1;i<=55;i++) capped.updateReceiver(id,{lat:i,lng:0});
  check(capped.undoStack.length===50,'history capped at 50 actions');
