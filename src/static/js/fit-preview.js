@@ -25,6 +25,11 @@ export function fitPreview(result,measurements,{editable=true,currentPower}={}) 
     const reason=result.reason?.startsWith('Review the selected readings')?'Review the readings flagged below.':result.reason;
     return `<p>${e(reason)}</p>${table}`;
   }
+  const confidence=result.confidence;
+  const evidence=confidence?`<div class="fit-checks"><h3>Estimate confidence</h3>
+    <p><strong>${confidence.rating==='consistent'?'Consistent at checked locations':'Limited evidence'}</strong></p>
+    <p>${confidence.check_count} held-back ${confidence.check_count===1?'reading':'readings'} · largest difference ${number(confidence.max_error_db)} dB · ${confidence.sensitive_reading_count} sensitive to background.</p>
+    <p class="hint">Checks describe the tested locations and activity. Accuracy elsewhere depends on distance, terrain, weather and the quality of any added machine data.</p></div>`:'';
   const comparePower=Number.isFinite(currentPower);
   const powerComparison=comparePower?`<div class="fit-power">
     <h3>Machine sound power</h3>
@@ -33,7 +38,7 @@ export function fitPreview(result,measurements,{editable=true,currentPower}={}) 
       <div><dt>Proposed</dt><dd>${number(result.lwa)} dB(A) LwA</dd></div>
     </dl>
   </div>`:'';
-  return `${powerComparison}<div class="fit-checks"><h3>Check against your meter</h3>
+  return `${powerComparison}${evidence}<div class="fit-checks"><h3>Check against your meter</h3>
     <p class="hint">These locations were held back to test the estimate. The readings below have background sound removed.</p>
     <ul>${checks.join('')}</ul></div>
     <details><summary>All readings &amp; calculation details</summary>${table}<p>${e(result.reason)}</p>

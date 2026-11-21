@@ -246,7 +246,7 @@ export class MapManager {
 
   /** Rebuild entity markers only after catalogue/source/receiver mutations. */
   renderMarkers() {
-    this.objectControls.clear();
+    this.objectControls.clear(['sources','receivers']);
     this.markers.clearLayers();
     this.receiverMarkers.clear();
     for (const collection of ['sources', 'receivers']) {

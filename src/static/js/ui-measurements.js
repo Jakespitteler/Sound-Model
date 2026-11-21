@@ -1,5 +1,6 @@
 /** @fileoverview Independent field observations; never calibration or source power inputs. */
 import {$,escapeHtml} from './utils.js';
+import {measurementLabel} from './state.js';
 import {RequestLane} from './api.js';
 
 /** Measurement records, movable pins and a bounded cached direct-comparison lane. */
@@ -15,6 +16,7 @@ export class MeasurementUI {
     this.activities=document.createElement('datalist');
     this.activities.id='measurement-activities';
     this.settings.append(this.activities);
+    $('measurement-filter')?.addEventListener('change',()=>this.filterCards());
     $('add-measurement').onclick=()=>store.setMode('measurement');
     $('retry-measurements').onclick=()=>{this.signature=null;this.refresh();};
     manager.map.on('click',event=> {
@@ -34,7 +36,7 @@ export class MeasurementUI {
       store.removeMeasurement(button.dataset.deleteReading);say('Measurement deleted.');
     });
     store.subscribe(reason=> {
-      if(reason==='restore') {this.draft=null;this.signature=null;this.results={};$('measurement-cards').replaceChildren();}
+      if(reason==='restore') {if($('measurement-filter')) $('measurement-filter').value='all';this.draft=null;this.signature=null;this.results={};$('measurement-cards').replaceChildren();}
       if(['measurements','restore'].includes(reason)) this.render();
       if(['geometry','catalogue','equipment-metadata','restore'].includes(reason)) this.updateSourceOptions();
       if(['measurements','geometry','catalogue','background','equipment-metadata','restore'].includes(reason)) this.refresh();
@@ -56,14 +58,11 @@ export class MeasurementUI {
     return `<option value="">Not linked / unknown</option>${options.join('')}`;
   }
 
-  /** @param {Object} item Observation. @param {number} index Stable list order. @return {string} Label. */
-  label(item,index) {return item.name || `Measurement ${index+1}`;}
-
   /** @param {Object} item Observation/draft. @param {number} index List position. @return {string} Form card. */
   card(item,index) {
     const id=item.id || 'draft',e=escapeHtml;
     const options=(values,current)=>values.map(([value,label])=>`<option value="${value}" ${value===current?'selected':''}>${label}</option>`).join('');
-    return `<details ${id==='draft'?'open':''}><summary class="entity-summary"><strong>${e(id==='draft'?'New measurement':this.label(item,index))}</strong><span class="source-power">${item.level_db==null?'Not recorded':item.level_db.toFixed(1)+' dB'}<small>measured pressure</small></span></summary>
+    return `<details ${id==='draft'?'open':''}><summary class="entity-summary"><strong>${e(id==='draft'?'New measurement':measurementLabel(item,index))}</strong><span class="source-power">${item.level_db==null?'Not recorded':item.level_db.toFixed(1)+' dB'}<small>measured pressure</small></span></summary>
       <div data-comparison></div><form class="measurement-form" data-reading="${e(id)}">
       <label>Name (optional)<input name="name" maxlength="80" value="${e(item.name || '')}"></label>
       <div class="two-columns"><label>Meter reading · dB<input name="level_db" type="number" step="any" value="${item.level_db ?? ''}" required></label>
@@ -92,7 +91,7 @@ export class MeasurementUI {
     items.forEach((item,index)=> {
       let card=[...container.children].find(c=>c.dataset.measurementId===item.id);
       const signature=JSON.stringify(item);
-      if(card?.dataset.record===signature) {card.querySelector('.entity-summary strong').textContent=this.label(item,index);return;}
+      if(card?.dataset.record===signature) {card.querySelector('.entity-summary strong').textContent=measurementLabel(item,index);return;}
       // A map correction updates coordinate inputs in place, preserving other unsaved fields.
       if(card) {
         const previous=JSON.parse(card.dataset.record);
@@ -113,7 +112,22 @@ export class MeasurementUI {
     this.activities.replaceChildren(...[...activities].map(activity=>new Option(activity,activity)));
     $('measurement-count').textContent=String(this.store.measurements.length);
     $('add-measurement').disabled=!!this.draft || this.store.measurements.length>=100;
-    this.renderMarkers();this.updateResults();
+    this.filterCards();this.renderMarkers();this.updateResults();
+  }
+
+  /** Separate reading types in the list while keeping all pins on the map. */
+  filterCards() {
+    const filter=$('measurement-filter');
+    if(!filter) return;
+    const cards=[...$('measurement-cards').children];
+    const items=new Map(this.store.measurements.map(item=>[item.id,item]));
+    for(const card of cards) {
+      const item=items.get(card.dataset.measurementId);
+      const stationary=item?.metric==='LAeq' && item.test_kind==='stationary' && item.duration_s!=null;
+      const group=!stationary?'other':item.isolation==='isolated' && item.source_context?'machine':'area';
+      card.hidden=!!item && filter.value!=='all' && filter.value!==group;
+    }
+    $('measurement-filter-empty').hidden=filter.value==='all' || cards.some(card=>!card.hidden);
   }
 
   /** Keep source selectors current without replacing other draft fields. */
@@ -146,19 +160,21 @@ export class MeasurementUI {
     document.dispatchEvent(new Event('open-measurement'));
     this.settings.open=true;
     const card=[...$('measurement-cards').children].find(c=>c.dataset.measurementId===id);if(!card) return;
+    if(card.hidden) {$('measurement-filter').value='all';this.filterCards();}
     const details=card.querySelector('details');if(!details.open) details.querySelector('summary').click();
     requestAnimationFrame(()=>card.querySelector('[name=level_db]').focus());
   }
 
   /** Render observation markers. Dragging corrects only the selected reading’s coordinates. */
   renderMarkers() {
+    this.manager.objectControls?.clear(['measurements']);
     this.layer.clearLayers();
     const items=[...this.store.measurements,...(this.draft?[{...this.draft,id:'draft'}]:[])];
     items.forEach((item,index)=> {
       const text=item.level_db==null?'…':item.level_db.toFixed(1),units=item.metric && item.metric!=='unknown'?'dB(A)':'dB · type unknown';
-      const marker=L.marker([item.lat,item.lng],{draggable:true,icon:L.divIcon({className:'measurement-location',iconSize:[120,40],iconAnchor:[60,20],html:`<div class="measurement-pin" data-measurement-pin="${escapeHtml(item.id)}"><b>${item.id==='draft'?'New':'M'+(index+1)}</b><strong>${text}<small>${units} · measured</small></strong></div>`})}).addTo(this.layer);
-      marker.getElement().setAttribute('aria-label',`${this.label(item,index)}: ${text} ${units}, measured pressure. Drag to correct its location or select to open.`);
-      const tooltip=document.createElement('span'),title=document.createElement('strong');title.textContent=this.label(item,index);tooltip.append(title);
+      const marker=L.marker([item.lat,item.lng],{draggable:true,icon:L.divIcon({className:'measurement-location',iconSize:[140,44],iconAnchor:[70,22],html:`<div class="measurement-pin" data-measurement-pin="${escapeHtml(item.id)}"><b>${item.id==='draft'?'New':'M'+(index+1)}</b><span><span class="measurement-label">${escapeHtml(item.id==='draft'?'New measurement':measurementLabel(item,index))}</span><strong>${text} <small>${units}</small></strong></span></div>`})}).addTo(this.layer);
+      marker.getElement().setAttribute('aria-label',`${measurementLabel(item,index)}: ${text} ${units}, measured pressure. Drag to correct its location or select for actions.`);
+      const tooltip=document.createElement('span'),title=document.createElement('strong');title.textContent=measurementLabel(item,index);tooltip.append(title);
       marker.bindTooltip(tooltip,{direction:'top',className:'object-tooltip'});
       marker.on('tooltipopen',event=>this.manager.fitObjectTooltip?.(event.tooltip,marker));
       marker.on('dragend',()=>{
@@ -172,8 +188,23 @@ export class MeasurementUI {
         }
         this.say('Measurement location updated.');
       });
-      marker.on('click',()=>{this.store.setMode(null);this.open(item.id);});
+      if(item.id==='draft' || !this.manager.objectControls) {
+        marker.on('click',()=>{this.store.setMode(null);this.open(item.id);});
+        return;
+      }
+      const popup=document.createElement('div');
+      popup.className='object-popup';
+      const name=document.createElement('strong');
+      name.textContent=measurementLabel(item,index);
+      const level=document.createElement('p');
+      level.textContent=`${text} ${units} · measured`;
+      const edit=document.createElement('button');
+      edit.type='button';edit.className='text-button';edit.textContent='Edit measurement';
+      edit.onclick=()=>{marker.closePopup();this.open(item.id);};
+      popup.append(name,level,edit);
+      this.manager.objectControls.bind(marker,'measurements',item.id,popup);
     });
+    this.manager.objectControls?.refresh();
   }
 
   /** Reuse per-point results; changing only a reading/name/note does not request calculation. */

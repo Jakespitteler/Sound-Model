@@ -1,6 +1,6 @@
 /** @fileoverview Popup deletion and temporary Ctrl-held controls; no acoustic calculations. */
 import {freeMapRectangle} from './local-area.js';
-import {receiverLabel} from './state.js';
+import {receiverLabel,measurementLabel} from './state.js';
 
 const CROSS='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2 2l8 8M10 2l-8 8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
 
@@ -43,8 +43,15 @@ export class MapObjectControls {
   /** Return focus to the map before removing the activated control. */
   focusMap() {this.map.getContainer().focus({preventScroll:true});}
 
-  /** Clear bindings before an ordinary marker rebuild, retaining the held-key state. */
-  clear() {this.group.clearLayers(); this.records.clear();}
+  /** Clear only the bindings owned by the marker layer being rebuilt.
+   * @param {string[]} collections Collections being rebuilt. */
+  clear(collections) {
+    for(const [key,record] of this.records) {
+      if(!collections.includes(record.collection)) continue;
+      this.group.removeLayer(record.overlay);
+      this.records.delete(key);
+    }
+  }
 
   /** @param {string} collection Source or receiver collection. @param {string} id Stable identity.
    * @param {boolean} shortcut Whether this is the temporary Ctrl control. @param {MouseEvent|KeyboardEvent} event Activation. */
@@ -56,7 +63,9 @@ export class MapObjectControls {
     if(!this.store[collection].some(item=>item.id===id)) return;
     if(shortcut && event instanceof MouseEvent) this.lastPointer={at:performance.now(),x:event.clientX,y:event.clientY};
     this.focusMap(); this.map.closePopup();
-    if(collection==='sources') this.store.removeSource(id); else this.store.removeReceiver(id);
+    if(collection==='sources') this.store.removeSource(id);
+    else if(collection==='measurements') this.store.removeMeasurement(id);
+    else this.store.removeReceiver(id);
   }
 
   /** @param {string} collection Source or receiver collection. @param {string} id Stable identity.
@@ -65,7 +74,7 @@ export class MapObjectControls {
     const button=document.createElement('button'); button.type='button';
     button.className=shortcut ? 'map-delete-button' : 'object-popup-delete';
     if(shortcut) button.innerHTML=CROSS;
-    else button.textContent=collection==='sources' ? 'Delete machine' : 'Delete receiver';
+    else button.textContent={sources:'Delete machine',receivers:'Delete receiver',measurements:'Delete measurement'}[collection];
     button.addEventListener('click',event=>this.remove(collection,id,shortcut,event));
     button.addEventListener('keydown',event=> {
       if(event.key==='Enter' || event.key===' ') {
@@ -123,7 +132,9 @@ export class MapObjectControls {
       const {marker,overlay,button,action,collection,id,popup}=record;
       const index=this.store[collection].findIndex(item=>item.id===id);
       if(index<0) {this.group.removeLayer(overlay); continue;}
-      const label=collection==='sources' ? `machine ${index+1}: ${this.store.typeFor(this.store.sources[index]).name}` : receiverLabel(this.store.receivers[index],index);
+      const item=this.store[collection][index];
+      const label=collection==='sources' ? `machine ${index+1}: ${this.store.typeFor(item).name}`
+        : collection==='measurements' ? measurementLabel(item,index) : receiverLabel(item,index);
       button.setAttribute('aria-label',`Delete ${label}`); button.title=`Delete ${label}`;
       action.setAttribute('aria-label',`Delete ${label}`);
       const title=popup.querySelector('[data-object-title]');

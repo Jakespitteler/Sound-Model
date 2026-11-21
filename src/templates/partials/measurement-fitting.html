@@ -11,7 +11,7 @@
       <button id="mark-fit-area" type="button" class="secondary compact">Mark area centre on map</button>
       <details><summary>Edit centre coordinates</summary><div class="two-columns"><label>Centre latitude<input name="lat" type="number" min="-85" max="85" step="any"></label><label>Centre longitude<input name="lng" type="number" min="-180" max="180" step="any"></label></div></details>
       <label>Area radius · metres<input id="fit-radius" name="radius" type="number" min="1" step="any"></label>
-      <p class="hint">Use readings taken outside this circle. The estimate represents sound coming from its centre.</p>
+      <p class="hint">Once the circle appears, drag its centre handle to reposition it. Use readings taken outside the circle. The estimate represents sound coming from its centre.</p>
     </div>
     <button type="button" class="primary" data-fit-next>Choose readings →</button></fieldset>
     <fieldset data-fit-step><legend>2. Choose readings from the same test</legend>
@@ -32,7 +32,7 @@
     </fieldset>
   </form>
   <form id="apply-fit-form" hidden>
-    <p id="fit-area-next" class="hint" hidden>Add separate machines afterward using Place machine.</p>
+    <p id="fit-area-next" class="hint" hidden>Place machines that were absent during the test. They will change the combined contours and listening levels.</p>
     <button id="apply-fit" type="submit" class="primary" hidden>Use this estimate on the map</button>
   </form>
 </details>

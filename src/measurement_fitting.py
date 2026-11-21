@@ -111,6 +111,22 @@ class FitRow(StrictModel):
     eligible: bool = False
 
 
+class FitConfidence(StrictModel):
+    """Screening evidence from held-back readings and background separation.
+
+    Attributes:
+        rating: Qualitative agreement at checked locations.
+        check_count: Number of held-back observations.
+        max_error_db: Largest absolute difference at a held-back location.
+        sensitive_reading_count: Selected observations within 10 dB of background.
+    """
+
+    rating: Literal["limited", "consistent"]
+    check_count: int
+    max_error_db: float
+    sensitive_reading_count: int
+
+
 class FitResult(StrictModel):
     """Preview requiring a deliberate apply action, never an automatic mutation.
 
@@ -121,6 +137,7 @@ class FitResult(StrictModel):
         spread_db: Range of individual training-derived powers, not uncertainty bounds.
         centre: Fixed modeled location.
         rows: Fit and independent check observations, including rejected readings.
+        confidence: Screening evidence for a successful fit.
     """
 
     ready: bool = False
@@ -129,6 +146,7 @@ class FitResult(StrictModel):
     spread_db: float | None = None
     centre: Position
     rows: list[FitRow]
+    confidence: FitConfidence | None = None
 
 
 class FitEvidence(StrictModel):
@@ -284,4 +302,14 @@ def fit_measurements(request: FitRequest) -> FitResult:
         assert row.distance_m is not None and row.corrected_db is not None
         row.predicted_db = source_level(power, row.distance_m)
         row.difference_db = row.corrected_db - row.predicted_db
+    check_errors = [abs(row.difference_db) for row in rows if row.role == "check" and row.difference_db is not None]
+    assert request.background_db is not None
+    sensitive_count = sum(item.level_db - request.background_db <= 10 for item in selected)
+    largest_error = max(check_errors)
+    result.confidence = FitConfidence(
+        rating="consistent" if len(check_errors) >= 2 and largest_error <= 3 and not sensitive_count else "limited",
+        check_count=len(check_errors),
+        max_error_db=largest_error,
+        sensitive_reading_count=sensitive_count,
+    )
     return result

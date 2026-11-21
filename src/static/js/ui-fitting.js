@@ -13,6 +13,7 @@ export class FittingUI {
     this.formClick=event=>{const edit=event.target.closest('[data-open-reading]');if(edit)openMeasurement(edit.dataset.openReading);};
     this.store=store;this.manager=manager;this.say=say;this.preview=null;this.generation=0;
     this.root=$('measurement-fit');this.form=$('fit-form');this.layer=L.layerGroup().addTo(manager.map);
+    this.draftLayer=L.layerGroup().addTo(manager.map);
     this.form.addEventListener('click',this.formClick);
     this.form.addEventListener('input',()=>{this.invalidate();this.syncMode();this.drawArea();});
     this.form.addEventListener('change',()=>{this.invalidate();this.syncMode();this.drawArea();});
@@ -26,6 +27,11 @@ export class FittingUI {
       store.setMode(null);this.invalidate();this.drawArea();$('fit-radius').focus();
     });
     this.root.addEventListener('toggle',()=>{if(!this.root.open && store.mode==='fit-area') store.setMode(null);this.drawArea();});
+    const workspace=this.root.closest('.measurement-settings');
+    workspace?.addEventListener('toggle',()=>{
+      if(!workspace.open && store.mode==='fit-area') store.setMode(null);
+      this.drawArea();
+    });
     document.querySelector('.sidebar')?.addEventListener('sidebar-view',()=>this.drawArea());
     store.subscribe(reason=> {
       if(reason==='ui') return;
@@ -168,6 +174,25 @@ export class FittingUI {
     this.say(preview.request.mode==='area'?'Area estimate added. Use Place machine to add separate equipment.':'Calibration applied to this machine only. Original catalogue data and readings were retained.');
   }
 
+  /** Draw a draggable centre for the draft only.
+   * @param {L.LatLng} centre Current draft centre. @param {number} radius Draft radius in metres. */
+  drawDraftArea(centre,radius) {
+    const circle=L.circle(centre,{radius,color:'#176a63',weight:2,dashArray:'5 5',fillOpacity:.06,interactive:false}).addTo(this.draftLayer);
+    const handle=L.marker(centre,{draggable:true,icon:L.divIcon({
+      className:'fit-centre-handle',iconSize:[24,24],iconAnchor:[12,12],html:'<span aria-hidden="true">✥</span>'
+    })}).addTo(this.draftLayer);
+    handle.getElement().setAttribute('aria-label','Drag the draft area centre. Use centre coordinates for keyboard entry.');
+    handle.bindTooltip('Drag area centre',{direction:'top'});
+    handle.on('drag',()=>circle.setLatLng(handle.getLatLng()));
+    handle.on('dragend',()=>{
+      const point=handle.getLatLng().wrap();
+      this.form.elements.lat.value=Math.max(-85,Math.min(85,point.lat));
+      this.form.elements.lng.value=point.lng;
+      this.invalidate();
+      this.drawArea();
+    });
+  }
+
   /** Render the operating footprint as context only, never as an attenuation barrier. */
   drawArea() {
     this.layer.clearLayers();
@@ -176,8 +201,16 @@ export class FittingUI {
       if(type.kind==='area' && type.fitting) L.circle([source.lat,source.lng],{radius:type.fitting.request.radius_m,color:'#176a63',weight:2,dashArray:'5 5',fillOpacity:.04,interactive:false}).addTo(this.layer);
     }
     const f=this.form.elements;
-    if(!this.root.open || this.root.closest('[hidden]') || f.mode.value!=='area' || !f.lat.value || !f.lng.value || !f.radius.value) return;
-    if(![f.lat,f.lng,f.radius].every(input=>input.checkValidity())) return;
-    L.circle([Number(f.lat.value),Number(f.lng.value)],{radius:Number(f.radius.value),color:'#176a63',weight:2,dashArray:'5 5',fillOpacity:.06,interactive:false}).addTo(this.layer);
+    const fields=[f.lat,f.lng,f.radius];
+    const showDraft=this.root.open && !this.root.closest('[hidden]')
+      && !this.root.parentElement.closest('details:not([open])') && f.mode.value==='area'
+      && fields.every(input=>input.value && input.checkValidity());
+    const key=showDraft?fields.map(input=>input.valueAsNumber).join(','):null;
+    // A field can commit on blur as the user starts dragging. Keep the current handle
+    // attached when that change event describes the same circle.
+    if(key===this.draftKey) return;
+    this.draftKey=key;
+    this.draftLayer.clearLayers();
+    if(showDraft) this.drawDraftArea(L.latLng(f.lat.valueAsNumber,f.lng.valueAsNumber),f.radius.valueAsNumber);
   }
 }

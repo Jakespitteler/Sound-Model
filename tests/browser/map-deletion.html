@@ -58,6 +58,16 @@ try {
  controls.remove('receivers',first,true,new MouseEvent('click',{clientX:100,clientY:100,detail:1,cancelable:true}));
  controls.remove('receivers',second,true,new MouseEvent('click',{clientX:200,clientY:100,detail:1,cancelable:true}));
  check(!store.receivers.some(item=>item.id===first||item.id===second),'rapid distinct clicks are not blocked by the overlapping-object guard');
+ const centre=map.getCenter();
+ const reading=store.addMeasurement({name:'Town check',level_db:48,lat:centre.lat,lng:centre.lng});
+ const meter=L.marker(centre,{icon:L.divIcon({iconSize:[140,44],html:'Town check'})}).addTo(map);
+ const mpopup=document.createElement('div');
+ controls.bind(meter,'measurements',reading,mpopup);
+ controls.clear(['sources','receivers']);controls.refresh();
+ const deleteReading=document.querySelector('.map-delete-button');
+ check(deleteReading.getAttribute('aria-label')==='Delete Town check','named meter control survives machine and receiver redraws');
+ deleteReading.click();
+ check(!store.measurements.length && events.at(-1)==='measurements','meter shortcut deletes a reading through its own state lane');
  document.querySelector('#result').textContent=`PASS: ${checks.length} checks\n`+checks.join('\n');document.querySelector('#result').dataset.passed='true';
 } catch(error){document.querySelector('#result').textContent='FAIL: '+error.message;throw error;}
 </script>

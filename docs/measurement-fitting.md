@@ -97,6 +97,24 @@ Neither apply action alters observations, background, receivers or contour thres
 History is reset at the catalogue-reference change, as for other reference-boundary operations;
 this is not a new calibration undo system. Save a named scenario to retain the resulting state.
 
+## Confidence and additional machines
+
+The fit reports the number of held-back readings, the largest absolute prediction error,
+and the number of selected readings within 10 dB of the background. It shows
+**Consistent at checked locations** when at least two held-back readings are each within
+3 dB and none of the selected readings are sensitive to background. Otherwise it shows
+**Limited evidence**. These are screening thresholds. They describe agreement under
+the tested conditions and do not give a probability or an error bound for town.
+
+A placed area estimate supplies the same acoustic machine input as other sources,
+with its estimate evidence stored alongside it. Adding an independent machine adds its
+sound energy at each location and recomputes the combined contours and receiver results.
+Adding an equally loud contribution raises the total by about 3 dB. Adding a machine
+already captured by the readings counts its sound twice. Confidence from the area fit
+does not transfer to the added machine or quantify the accuracy of the combined result.
+Use representative machine power data and check the combined scenario with independent
+readings when possible.
+
 ## Verification
 
 `tests/test_measurement_fitting.py` uses independent synthetic intensities, not real site data.

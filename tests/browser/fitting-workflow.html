@@ -60,6 +60,11 @@ try {
  set('mode','area');set('lat',0);set('lng',0);set('radius',50);
  await ui.calculate();
  check(powerValues().length===0,'area preview has no current machine to compare');
+ const handle=ui.draftLayer.getLayers().find(layer=>layer.getElement()?.classList.contains('fit-centre-handle'));
+ check(handle?.options.draggable,'draft area has a draggable centre');
+ handle.setLatLng([0.002,0.003]).fire('dragend');
+ check(Number(fields.lat.value)===0.002 && Math.abs(Number(fields.lng.value)-0.003)<1e-8 && !ui.preview,'moving the draft updates the centre and clears old results');
+ await ui.calculate();
  const apply=document.querySelector('#apply-fit-form');
  check(document.querySelector('#apply-fit').textContent==='Replace 2 sources with this area estimate','apply action explains replacement including the earlier area');
  check(!apply.querySelector('select') && store.sources.length===2,'preview offers one deliberate action and preserves existing map');

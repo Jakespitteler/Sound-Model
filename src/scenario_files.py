@@ -34,6 +34,15 @@ class SavedMachine(MachineType):
     use: str = Field(default="", max_length=200)
     kind: str = Field(default="generic", max_length=40)
 
+    @property
+    def acoustic_input(self) -> MachineType:
+        """Return the standard acoustic machine wrapped by this saved entry.
+
+        Returns:
+            Machine inputs used by contours and receiver predictions.
+        """
+        return MachineType.model_validate(self.model_dump(include=set(MachineType.model_fields)))
+
 
 class MapView(StrictModel):
     """Saved geographic camera, independent from acoustic calculations.
@@ -97,10 +106,7 @@ class ScenarioDocument(StrictModel):
         if len(unique_levels) > 25:
             raise ValueError("At most 25 unique levels including the acceptable level are supported.")
         ContourRequest(
-            types=[
-                MachineType.model_validate(t.model_dump(include={"id", "name", "lwa", "provenance", "spectrum"}))
-                for t in self.types
-            ],
+            types=[entry.acoustic_input for entry in self.types],
             sources=self.sources,
             receivers=self.receivers,
             levels=self.levels,

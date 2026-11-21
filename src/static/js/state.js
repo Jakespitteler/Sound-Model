@@ -11,6 +11,10 @@ export const DEFAULT_VIEW = {lat:-33.8675,lng:116.07647,zoom:14};
  * @param {number} index Zero-based list position. @return {string} Name or numbered fallback. */
 export function receiverLabel(receiver, index) { return receiver.name || `Receiver ${index+1}`; }
 
+/** @param {import('./types.js').Measurement} item Reading. @param {number} index List position.
+ * @return {string} Recorded name or numbered fallback. */
+export function measurementLabel(item,index) { return item.name || `Measurement ${index+1}`; }
+
 /** Observable scenario. Camera movement is deliberately not part of this state. */
 export class ScenarioStore {
   /** Initialise provisional equipment and five descending decibel thresholds. */
@@ -89,9 +93,6 @@ export class ScenarioStore {
     if (this.background_db!==value) {this.background_db=value; this.notify('background');}
     return true;
   }
-
-  /** @param {number} value Recorded percentage, without any acoustic correction. */
-  setCloudCover(value) { this.cloud_cover = value; this.notify('metadata'); }
 
   /** @param {string} name Type name. @param {number} lwa Sound power. @param {string} provenance Data class.
    * @param {string} [note] User-recorded source or assumption note. */

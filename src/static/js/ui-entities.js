@@ -6,6 +6,7 @@ import {bandComparison} from './band-ui.js';
 import { $, escapeHtml, formatDb } from './utils.js';
 import {receiverLabel} from './state.js';
 import {soundColor} from './sound-style.js';
+import {receiverFitLimits} from './model-status.js';
 
 /** Source and receiver cards with accessible numeric coordinate controls. */
 export class EntitiesUI {
@@ -131,10 +132,14 @@ export class EntitiesUI {
       ? this.store.receivers
           .map((r, i) => {
             const result = results?.[r.id];
+            const distance=result?.nearest_source_m;
+            const basis=result && result.status!=='no_sources'
+              ? `<p class="hint">Open-space model. ${distance==null?'':`Nearest source: ${Math.round(distance).toLocaleString()} m. `}Accuracy at this point is unverified.</p>` : '';
+            const limits=result?receiverFitLimits(this.store,r).map(note=>`<p class="hint">${note}</p>`).join(''):'';
             return (
               `<div class="item-card" data-receiver-card="${escapeHtml(r.id)}">` +
               `${this.positionForm(r, 'receivers',
-                this.contributionList(result?.contributions) +
+                basis + limits + this.contributionList(result?.contributions) +
                 `<button class="danger entity-remove" type="button" data-remove-receiver="${r.id}" aria-label="Remove ${escapeHtml(receiverLabel(r,i))}">Remove receiver</button>` +
                 `${result?.status === 'negligible' ? '<p>Machinery adds less than 0.1 dB to the scenario background.</p>' : ''}` +
                 `${result?.near_field ? '<p>Within 1 m: numerical limit applies.</p>' : ''}` +
